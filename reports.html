@@ -29,7 +29,7 @@
         .chart-container { position: relative; height: 220px; }
         .search-box { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
         .search-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .search-row input, .search-row select { flex: 1; min-width: 140px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; }
+        .search-row select, .search-row input { flex: 1; min-width: 130px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; }
         .search-row button { background: var(--secondary); color: white; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .result-box { display: none; margin-top: 15px; padding: 15px; background: white; border-radius: 10px; border: 2px solid var(--secondary); }
         .result-box.show { display: block; animation: slideIn 0.3s ease; }
@@ -63,10 +63,10 @@
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">أيام التسجيل</div><div class="stat-number" id="statDays">-</div></div>
-        <div class="stat-card green"><div class="stat-label">إجمالي الطلاب</div><div class="stat-number" id="statStudents">-</div></div>
-        <div class="stat-card orange"><div class="stat-label">إجمالي الغياب</div><div class="stat-number" id="statAbsent">-</div></div>
-        <div class="stat-card"><div class="stat-label">متوسط الغياب</div><div class="stat-number" id="statRate">-</div></div>
+        <div class="stat-card"><div class="stat-label">إجمالي الطلاب في الشعبة/المجموعة</div><div class="stat-number" id="statTotalStudents">-</div></div>
+        <div class="stat-card green"><div class="stat-label">إجمالي الغياب المسجل</div><div class="stat-number" id="statAbsent">-</div></div>
+        <div class="stat-card orange"><div class="stat-label">أيام التسجيل</div><div class="stat-number" id="statDays">-</div></div>
+        <div class="stat-card"><div class="stat-label">متوسط نسبة الغياب</div><div class="stat-number" id="statRate">-</div></div>
     </div>
 
     <div class="charts-grid">
@@ -79,13 +79,12 @@
         <div class="search-row">
             <select id="searchGroup"><option value="">اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
             <select id="searchSection"><option value="">اختر الشعبة</option></select>
-            <input type="text" id="searchStudent" placeholder="أدخل اسم الطالب أو رقمه">
-            <button onclick="searchStudent()">🔎 بحث</button>
+            <select id="searchStudent" style="display:none;"><option value="">اختر الطالب</option></select>
         </div>
         <div id="resultBox" class="result-box">
             <h4 id="resName" style="margin:0 0 10px;color:var(--primary)">-</h4>
             <ul id="resList" class="absence-list"></ul>
-            <p id="noRes" style="display:none;color:var(--secondary);font-weight:600;text-align:center;">✅ لا يوجد غياب مسجل</p>
+            <p id="noRes" style="display:none;color:var(--secondary);font-weight:600;text-align:center;">✅ لا يوجد غياب مسجل لهذا الطالب</p>
         </div>
     </div>
 
@@ -108,7 +107,7 @@ const $ = id => document.getElementById(id);
 let trendChart, sectionChart;
 let allSections = [];
 
-// دالة تنظيف المسافات
+// دالة تنظيف المسافات من المفاتيح والقيم
 function deepTrim(obj) {
     if (typeof obj === 'string') return obj.trim();
     if (Array.isArray(obj)) return obj.map(deepTrim);
@@ -116,7 +115,7 @@ function deepTrim(obj) {
     return obj;
 }
 
-// === تحديث قائمة الشعب ديناميكياً ===
+// === تحديث القوائم المنسدلة ===
 function updateSectionDropdown(groupSelId, secSelId) {
     const groupVal = $(groupSelId).value;
     const secSel = $(secSelId);
@@ -129,6 +128,38 @@ function updateSectionDropdown(groupSelId, secSelId) {
         opt.textContent = sec.section_label || sec.section_id;
         secSel.appendChild(opt);
     });
+}
+
+function updateStudentDropdown() {
+    const g = $('searchGroup').value;
+    const secId = $('searchSection').value;
+    const stuSel = $('searchStudent');
+    stuSel.innerHTML = '<option value="">اختر الطالب</option>';
+    stuSel.style.display = 'none';
+    $('resultBox').classList.remove('show');
+
+    if (!g || !secId) return;
+
+    const sec = allSections.find(s => s.group === g && s.section_id === secId);
+    if (sec && sec.students && sec.students.length) {
+        sec.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = (st.id || '').trim();
+            opt.textContent = (st.name || st.id || 'طالب').trim();
+            stuSel.appendChild(opt);
+        });
+        stuSel.style.display = 'inline-block';
+    }
+}
+
+// === حساب العدد الفعلي للطلاب من ملفات الشعبة ===
+function getActualStudentCount() {
+    const g = $('filterGroup').value;
+    const sec = $('filterSection').value;
+    let sections = allSections;
+    if (g) sections = sections.filter(s => s.group === g);
+    if (sec) sections = sections.filter(s => s.section_id === sec);
+    return sections.reduce((sum, s) => sum + (s.students ? s.students.length : 0), 0);
 }
 
 // === تهيئة الصفحة ===
@@ -145,14 +176,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch(e) { console.warn('فشل تحميل الشعب:', e); }
 
     $('filterGroup').addEventListener('change', () => updateSectionDropdown('filterGroup', 'filterSection'));
-    $('searchGroup').addEventListener('change', () => updateSectionDropdown('searchGroup', 'searchSection'));
+    $('searchGroup').addEventListener('change', () => { updateSectionDropdown('searchGroup', 'searchSection'); updateStudentDropdown(); });
+    $('searchSection').addEventListener('change', updateStudentDropdown);
+    $('searchStudent').addEventListener('change', (e) => { if(e.target.value) searchStudent(e.target.value); });
     $('filterPeriod').addEventListener('change', e => {
         const c = e.target.value === 'custom';
         $('filterStart').style.display = c ? 'inline-block' : 'none';
         $('filterEnd').style.display = c ? 'inline-block' : 'none';
     });
 
-    // تشغيل أولي
     updateSectionDropdown('filterGroup', 'filterSection');
     loadReports();
 });
@@ -175,9 +207,11 @@ async function loadReports() {
         const summary = json.data || json.summary || {};
         if (!json.success) throw new Error(json.error || 'فشل جلب البيانات');
 
-        $('statDays').textContent = summary.totalDays || 0;
-        $('statStudents').textContent = summary.totalStudents || 0;
+        // ✅ استخدام العدد الفعلي من ملفات الشعبة بدلاً من جمع السجلات
+        const actualTotal = getActualStudentCount();
+        $('statTotalStudents').textContent = actualTotal > 0 ? actualTotal : '0';
         $('statAbsent').textContent = summary.totalAbsent || 0;
+        $('statDays').textContent = summary.totalDays || 0;
         $('statRate').textContent = (summary.avgRate || 0) + '%';
 
         renderTrendChart(summary.dailyData || []);
@@ -193,9 +227,9 @@ function renderTrendChart(d) {
     if (trendChart) trendChart.destroy();
     trendChart = new Chart($('trendChart').getContext('2d'), {
         type: 'line',
-         {
+        data: {
             labels: d.map(x => x.date || ''),
-            datasets: [{ label: 'غائب',  d.map(x => x.absent || 0), borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.1)', fill: true, tension: 0.3 }]
+            datasets: [{ label: 'غائب', data: d.map(x => x.absent || 0), borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.1)', fill: true, tension: 0.3 }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
@@ -206,7 +240,7 @@ function renderSectionChart(d) {
     const top = d.slice(0, 5);
     sectionChart = new Chart($('sectionChart').getContext('2d'), {
         type: 'doughnut',
-         { labels: top.map(x => x.section || 'غير محدد'), datasets: [{  top.map(x => x.absent || 0), backgroundColor: ['#2c3e50','#27ae60','#e67e22','#8e44ad','#16a085'], borderWidth: 0 }] },
+        data: { labels: top.map(x => x.section || 'غير محدد'), datasets: [{ data: top.map(x => x.absent || 0), backgroundColor: ['#2c3e50','#27ae60','#e67e22','#8e44ad','#16a085'], borderWidth: 0 }] },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
@@ -220,16 +254,19 @@ function renderTable(d) {
     });
 }
 
-async function searchStudent() {
-    const q = $('searchStudent').value.trim();
-    if (!q) return alert('أدخل اسم الطالب أو رقمه');
+async function searchStudent(studentId) {
+    if (!studentId) return;
     $('resultBox').classList.remove('show'); $('noRes').style.display='none'; $('resList').innerHTML='';
     try {
-        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(q)}`);
+        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(studentId)}`);
         const json = await res.json();
         const history = json.data || json.history || [];
         if (!json.success) throw new Error(json.error);
-        $('resName').textContent = `نتائج البحث عن: "${q}"`;
+        
+        const stuSel = $('searchStudent');
+        const name = stuSel.selectedOptions[0]?.text || studentId;
+        $('resName').textContent = `📋 سجل غياب: ${name}`;
+        
         if (!history.length) { $('noRes').style.display='block'; }
         else { history.forEach(h => $('resList').innerHTML += `<li><span>📅 ${h.date}</span><span>${h.group || ''} - ${h.section || ''}</span></li>`); }
         $('resultBox').classList.add('show');
