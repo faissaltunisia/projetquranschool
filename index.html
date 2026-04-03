@@ -186,33 +186,72 @@ function updateSummary(){
 // === جمع البيانات ===
 function getAttendanceData(){
     const secLabel=$('sectionSelect').selectedOptions[0]?.dataset.label||$('sectionSelect').value;
-    return { date:state.date, teacher:state.teacher, group:state.group, section:secLabel, section_id:$('sectionSelect').value, total_students:state.students.length, absent_count:state.absentIds.size, absent_students:Array.from(state.absentIds), absent_names:state.students.filter(s=>state.absentIds.has((s.id||'').trim())).map(s=>(s.name||'').trim()), timestamp:new Date().toISOString() };
+    return { 
+        date:state.date, teacher:state.teacher, group:state.group, 
+        section:secLabel, section_id:$('sectionSelect').value, 
+        total_students:state.students.length, absent_count:state.absentIds.size, 
+        absent_students:Array.from(state.absentIds), 
+        absent_names:state.students.filter(s=>state.absentIds.has((s.id||'').trim())).map(s=>(s.name||'').trim()), 
+        timestamp:new Date().toISOString() 
+    };
 }
 
-// === حفظ مع تنبيه الذكي ===
-$('btnSaveGitHub').onclick=async()=>{
-    const data=getAttendanceData(), statusDiv=$('saveStatus');
-    statusDiv.innerHTML=`<div class="loading"><div class="spinner"></div><div>جاري التحقق...</div></div>`;
-    $('btnSaveGitHub').disabled=true;
-    try{
-        const res=await fetch('/api/save-attendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-        const result=await res.json();
-        
-        // إذا وُجد ملف سابق ولم يتم تفعيل التعديل
-        if(result.exists && !data.overwrite){
-            $('btnSaveGitHub').disabled=false; statusDiv.innerHTML='';
-            if(confirm(result.message || "⚠️ يوجد سجل محفوظ لهذه الشعبة اليوم. هل تريد تعديل البيانات الحالية؟")){
-                data.overwrite=true; $('btnSaveGitHub').disabled=true;
-                statusDiv.innerHTML=`<div class="loading"><div class="spinner"></div><div>جاري التحديث...</div></div>`;
-                const res2=await fetch('/api/save-attendance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-                const res2Data=await res2.json();
-                if(res2.ok && res2Data.success) statusDiv.innerHTML=`<div class="status-message success">✅ تم تعديل السجل بنجاح!</div>`;
-                else throw new Error(res2Data.error||'فشل التعديل');
-            } else statusDiv.innerHTML=`<div class="status-message error">❌ تم إلغاء العملية.</div>`;
-        } else if(res.ok && result.success) statusDiv.innerHTML=`<div class="status-message success">✅ تم الحفظ بنجاح!</div>`;
-        else throw new Error(result.error||'فشل غير معروف');
-    }catch(e){statusDiv.innerHTML=`<div class="status-message error">❌ خطأ: ${e.message}</div>`;}
-    finally{$('btnSaveGitHub').disabled=false;}
+// === حفظ مع تنبيه ذكي ومعالجة أخطاء دقيقة ===
+$('btnSaveGitHub').onclick = async () => {
+    const data = getAttendanceData();
+    const statusDiv = $('saveStatus');
+    const btn = $('btnSaveGitHub');
+
+    statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div><div>جاري التحقق...</div></div>`;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/save-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        // 🟡 حالة وجود ملف سابق
+        if (result.exists && !data.overwrite) {
+            btn.disabled = false;
+            statusDiv.innerHTML = '';
+            if (confirm(result.message || "⚠️ يوجد سجل محفوظ لهذه الشعبة اليوم. هل تريد استبدال البيانات الحالية؟")) {
+                data.overwrite = true;
+                btn.disabled = true;
+                statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div><div>جاري التحديث...</div></div>`;
+
+                const resUpdate = await fetch('/api/save-attendance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const updateResult = await resUpdate.json();
+
+                if (resUpdate.ok && updateResult.success) {
+                    statusDiv.innerHTML = `<div class="status-message success">✅ تم تحديث السجل بنجاح!</div>`;
+                } else {
+                    throw new Error(updateResult.error || `خطأ في التحديث (${resUpdate.status})`);
+                }
+            } else {
+                statusDiv.innerHTML = `<div class="status-message error">❌ تم إلغاء العملية.</div>`;
+            }
+        } 
+        // 🟢 حالة الحفظ الجديد أو الناجح
+        else if (res.ok && result.success) {
+            statusDiv.innerHTML = `<div class="status-message success">✅ تم الحفظ بنجاح!</div>`;
+        } 
+        // 🔴 حالة الخطأ (يعرض السبب الحقيقي بدقة)
+        else {
+            throw new Error(result.error || `فشل الاتصال بالخادم (${res.status})`);
+        }
+    } catch (error) {
+        console.error('Save Error:', error);
+        statusDiv.innerHTML = `<div class="status-message error">❌ خطأ: ${error.message}</div>`;
+    } finally {
+        btn.disabled = false;
+    }
 };
 
 // === التنقل بين الخطوات ===
