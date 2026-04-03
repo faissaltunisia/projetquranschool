@@ -9,7 +9,7 @@
         :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1150px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .container { max-width: 1100px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
         header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
         header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
         header p { color: #666; margin: 5px 0 0; }
@@ -18,7 +18,7 @@
         .filters { background: var(--light); padding: 15px; border-radius: 12px; }
         .filters select, .filters input, .report-filters select, .report-filters input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
         .filters button, .report-filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .filters button:disabled, .report-filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
         .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
@@ -98,12 +98,8 @@
     <div class="report-builder">
         <h3>📄 إنشاء تقرير مخصص</h3>
         <div class="radio-group">
-            <label class="radio-label active">
-                <input type="radio" name="reportType" value="student" checked> 👤 تقرير طالب محدد
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="reportType" value="section"> 🏫 تقرير شعبة كاملة
-            </label>
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked> 👤 تقرير طالب محدد</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section"> 🏫 تقرير شعبة كاملة</label>
         </div>
         <div class="report-filters">
             <select id="rptGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
@@ -225,8 +221,24 @@ async function loadReports() {
     finally { btn.disabled = false; btn.textContent = '🔄 تحديث البيانات'; }
 }
 
-function renderTrendChart(d) { if(trendChart) trendChart.destroy(); trendChart = new Chart($('trendChart').getContext('2d'), { type:'line', data:{ labels:d.map(x=>x.date), datasets:[{label:'غائب',data:d.map(x=>x.absent),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.1)',fill:true,tension:0.3}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} }); }
-function renderSectionChart(d) { if(sectionChart) sectionChart.destroy(); const top=d.slice(0,5); sectionChart = new Chart($('sectionChart').getContext('2d'), { type:'doughnut', data:{labels:top.map(x=>x.section),datasets:[{data:top.map(x=>x.absent),backgroundColor:['#2c3e50','#27ae60','#e67e22','#8e44ad','#16a085'],borderWidth:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} }); }
+function renderTrendChart(d) { 
+    if(trendChart) trendChart.destroy(); 
+    trendChart = new Chart($('trendChart').getContext('2d'), { 
+        type:'line', 
+        data:{ labels:d.map(x=>x.date), datasets:[{label:'غائب',data:d.map(x=>x.absent),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.1)',fill:true,tension:0.3}]}, 
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} 
+    }); 
+}
+
+function renderSectionChart(d) { 
+    if(sectionChart) sectionChart.destroy(); 
+    const top=d.slice(0,5); 
+    sectionChart = new Chart($('sectionChart').getContext('2d'), { 
+        type:'doughnut', 
+        data:{labels:top.map(x=>x.section),datasets:[{data:top.map(x=>x.absent),backgroundColor:['#2c3e50','#27ae60','#e67e22','#8e44ad','#16a085'],borderWidth:0}]}, 
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} 
+    }); 
+}
 
 async function generateCustomReport() {
     const type = document.querySelector('input[name="reportType"]:checked').value;
