@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; --warning: #f39c12; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
+        header p { color: #666; margin: 5px 0 0; }
+
+        .filters, .report-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
+        .filters { background: var(--light); padding: 15px; border-radius: 12px; }
+        .filters select, .filters input, .report-filters select, .report-filters input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .filters button, .report-filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+        .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
+        .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
+
+        /* === بطاقات الإحصائيات الكتابية === */
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; border-right: 4px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .stat-card.gold { border-color: #f1c40f; background: linear-gradient(135deg, #fff9e6, #fff); }
+        .stat-card.red { border-color: var(--danger); background: linear-gradient(135deg, #fff5f5, #fff); }
+        .stat-card.green { border-color: var(--secondary); background: linear-gradient(135deg, #f0fff4, #fff); }
+        .stat-card.blue { border-color: #3498db; background: linear-gradient(135deg, #ebf5fb, #fff); }
+        .stat-card h4 { margin: 0 0 8px; font-size: 0.95em; color: #555; display: flex; align-items: center; gap: 6px; }
+        .stat-card .value { font-size: 1.5em; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .stat-card .detail { font-size: 0.85em; color: #666; }
+        .stat-card .trend { font-size: 0.8em; margin-top: 5px; }
+        .trend.up { color: var(--danger); }
+        .trend.down { color: var(--secondary); }
+
+        #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; }
+        .btn-print { background: var(--primary); }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 10px; }
+            .filters, .report-filters, .radio-group, #reportActionsBtn { display: none !important; }
+            #customReport { display: block !important; border: none; padding: 0; margin: 0; }
+            #customReport table { width: 100%; border: 1px solid #000; }
+            #customReport th, #customReport td { border: 1px solid #000; padding: 8px; }
+            .report-header { display: block !important; border-bottom: 2px solid #000; margin-bottom: 20px; }
+        }
+        @media (max-width: 600px) {
+            .stats-cards { grid-template-columns: 1fr 1fr; }
+            .filters, .report-filters { grid-template-columns: 1fr 1fr; }
+            .radio-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header><h1>📊 تقارير وإحصائيات الغياب</h1><p>يتم جلب البيانات مباشرة من مجلد <code>attendance_logs/</code></p></header>
+
+    <div class="filters">
+        <select id="filterGroup"><option value="">كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+        <select id="filterSection"><option value="">كل الشعب</option></select>
+        <select id="filterPeriod"><option value="week">آخر 7 أيام</option><option value="month">آخر 30 يوم</option><option value="custom">فترة مخصصة</option></select>
+        <input type="date" id="filterStart" style="display:none;"><input type="date" id="filterEnd" style="display:none;">
+        <button id="loadBtn" onclick="loadReports()">🔄 تحديث البيانات</button>
+    </div>
+
+    <!-- 📊 بطاقات الإحصائيات الكتابية (بدلاً من الرسوم البيانية) -->
+    <div class="stats-cards">
+        <div class="stat-card gold">
+            <h4>🏆 أكثر شعبة غياباً</h4>
+            <div class="value" id="topSection">-</div>
+            <div class="detail" id="topSectionDetail">-</div>
+        </div>
+        <div class="stat-card red">
+            <h4>👤 الطالب الأكثر غياباً</h4>
+            <div class="value" id="topStudent">-</div>
+            <div class="detail" id="topStudentDetail">-</div>
+        </div>
+        <div class="stat-card green">
+            <h4>✅ نسبة الحضور العامة</h4>
+            <div class="value" id="attendanceRate">-</div>
+            <div class="detail" id="attendanceDetail">من إجمالي التسجيلات</div>
+        </div>
+        <div class="stat-card blue">
+            <h4>📈 اتجاه الغياب</h4>
+            <div class="value" id="trendText">-</div>
+            <div class="trend" id="trendIndicator">-</div>
+        </div>
+        <div class="stat-card">
+            <h4>📅 آخر تسجيل</h4>
+            <div class="value" id="lastRecord">-</div>
+            <div class="detail" id="lastRecordDetail">-</div>
+        </div>
+        <div class="stat-card">
+            <h4>🎯 متوسط الغياب/طالب</h4>
+            <div class="value" id="avgAbsent">-</div>
+            <div class="detail" id="avgDetail">يوم في الفترة</div>
+        </div>
+    </div>
+
+    <div class="report-builder">
+        <h3>📄 إنشاء تقرير مخصص</h3>
+        <div class="radio-group">
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked> 👤 تقرير طالب محدد</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section"> 🏫 تقرير شعبة كاملة</label>
+        </div>
+        <div class="report-filters">
+            <select id="rptGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
+            <select id="rptSection"><option value="">الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
+            <button onclick="generateCustomReport()">📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <div id="customReport"></div>
+    <div id="reportActionsBtn" style="display:none; margin:10px 0;">
+        <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+
+// ✅ دالة تنظيف المسافات
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    return obj;
+}
+
+// ✅ توحيد هيكل البيانات
+function normalizeData(raw, groupLetter) {
+    const clean = deepTrim(raw);
+    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
+    if (clean.section_id) return [{...clean, group: groupLetter}];
+    return [];
+}
+
+// ✅ تحديث القوائم
+function updateDropdowns() {
+    const g = $('rptGroup').value || $('filterGroup').value;
+    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
+    ['rptSection', 'filterSection'].forEach(id => {
+        const sel = $(id);
+        const prefix = id === 'filterSection' ? 'كل الشعب' : 'الشعبة';
+        sel.innerHTML = `<option value="">${prefix}</option>` + filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    });
+    updateRptStudents();
+}
+
+function updateRptStudents() {
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    const stuSel = $('rptStudent');
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    if (type === 'section') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
+    stuSel.innerHTML = '<option value="">اختر الطالب</option>';
+    if(!g || !sec) return;
+    const secData = allSections.find(s => s.group === g && s.section_id === sec);
+    if(secData?.students) {
+        secData.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
+        });
+    }
+}
+
+// === تهيئة الصفحة ===
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const [resA, resB] = await Promise.all([
+            fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : {}),
+            fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : {})
+        ]);
+        allSections = [...normalizeData(resA, 'أ'), ...normalizeData(resB, 'ب')];
+    } catch(e) { console.warn('فشل تحميل الشعب:', e); }
+
+    $('filterGroup').addEventListener('change', () => { updateDropdowns(); loadReports(); });
+    $('filterSection').addEventListener('change', () => loadReports());
+    $('rptGroup').addEventListener('change', () => { updateDropdowns(); updateRptStudents(); });
+    $('rptSection').addEventListener('change', () => { updateRptStudents(); });
+    
+    document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.querySelectorAll('.radio-label').forEach(l => l.classList.remove('active'));
+            e.target.closest('.radio-label').classList.add('active');
+            updateRptStudents();
+        });
+    });
+
+    $('filterPeriod').addEventListener('change', e => {
+        const c = e.target.value === 'custom';
+        $('filterStart').style.display = c ? 'inline-block' : 'none';
+        $('filterEnd').style.display = c ? 'inline-block' : 'none';
+    });
+
+    updateDropdowns();
+    loadReports();
+});
+
+// === تحميل التقارير والإحصائيات ===
+async function loadReports() {
+    const btn = $('loadBtn'); btn.disabled = true; btn.textContent = '⏳ جاري التحليل...';
+    const g = $('filterGroup').value, sec = $('filterSection').value, p = $('filterPeriod').value;
+    const s = $('filterStart').value, e = $('filterEnd').value;
+    let url = `/api/get-reports?action=summary`;
+    if(g) url += `&group=${encodeURIComponent(g)}`;
+    if(sec) url += `&section=${encodeURIComponent(sec)}`;
+    url += `&period=${p}`;
+    if(s) url += `&startDate=${s}`;
+    if(e) url += `&endDate=${e}`;
+
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        const summary = json.data || json.summary || {};
+        if(!json.success) throw new Error(json.error);
+
+        // 📊 تحديث بطاقات الإحصائيات
+        updateStatsCards(summary, g, sec);
+    } catch(err) { console.error('خطأ التقارير:', err); }
+    finally { btn.disabled = false; btn.textContent = '🔄 تحديث البيانات'; }
+}
+
+// === تحديث بطاقات الإحصائيات الكتابية ===
+async function updateStatsCards(summary, groupFilter, sectionFilter) {
+    // 1️⃣ أكثر شعبة غياباً
+    if(summary.sectionData?.length) {
+        const top = summary.sectionData[0];
+        $('topSection').textContent = top.section || '-';
+        $('topSectionDetail').textContent = `${top.absent} غياب | نسبة ${top.rate || 0}%`;
+    } else {
+        $('topSection').textContent = '-';
+        $('topSectionDetail').textContent = 'لا توجد بيانات';
+    }
+
+    // 2️⃣ الطالب الأكثر غياباً (يحتاج جلب إضافي)
+    try {
+        const allRecords = await fetchAllAttendance(groupFilter, sectionFilter);
+        const studentAbsences = {};
+        allRecords.forEach(r => {
+            if(r.absentIds?.length) {
+                r.absentIds.forEach(id => {
+                    studentAbsences[id] = (studentAbsences[id] || 0) + 1;
+                });
+            }
+        });
+        const topStudentId = Object.entries(studentAbsences).sort((a,b) => b[1]-a[1])[0];
+        if(topStudentId) {
+            const stu = findStudentById(topStudentId[0]);
+            $('topStudent').textContent = stu?.name || topStudentId[0];
+            $('topStudentDetail').textContent = `${topStudentId[1]} أيام غياب | ${stu?.group || ''} - ${stu?.section_label || ''}`;
+        } else {
+            $('topStudent').textContent = '-';
+            $('topStudentDetail').textContent = 'لا توجد بيانات';
+        }
+    } catch { $('topStudent').textContent = '-'; $('topStudentDetail').textContent = 'جاري التحميل...'; }
+
+    // 3️⃣ نسبة الحضور العامة
+    const total = summary.totalStudents || 0;
+    const absent = summary.totalAbsent || 0;
+    const present = total - absent;
+    const rate = total > 0 ? ((present/total)*100).toFixed(1) : 0;
+    $('attendanceRate').textContent = rate + '%';
+    $('attendanceDetail').textContent = `حاضر: ${present} | غائب: ${absent}`;
+
+    // 4️⃣ اتجاه الغياب (مقارنة أول/آخر الفترة)
+    if(summary.dailyData?.length >= 2) {
+        const first = summary.dailyData[0], last = summary.dailyData[summary.dailyData.length-1];
+        const diff = last.absent - first.absent;
+        $('trendText').textContent = diff === 0 ? 'مستقر' : (diff > 0 ? 'في زيادة' : 'في انخفاض');
+        $('trendIndicator').textContent = diff === 0 ? '➡️ لا تغيير' : (diff > 0 ? `📈 +${diff} غياب` : `📉 ${diff} غياب`);
+        $('trendIndicator').className = `trend ${diff > 0 ? 'up' : 'down'}`;
+    } else {
+        $('trendText').textContent = '-';
+        $('trendIndicator').textContent = 'بيانات غير كافية';
+        $('trendIndicator').className = 'trend';
+    }
+
+    // 5️⃣ آخر تسجيل
+    if(summary.dailyData?.length) {
+        const last = summary.dailyData[summary.dailyData.length-1];
+        $('lastRecord').textContent = last.date || '-';
+        $('lastRecordDetail').textContent = `${last.absent} غياب من ${last.total} طالب`;
+    } else {
+        $('lastRecord').textContent = '-';
+        $('lastRecordDetail').textContent = '-';
+    }
+
+    // 6️⃣ متوسط الغياب لكل طالب
+    const uniqueStudents = new Set();
+    allSections.forEach(sec => {
+        if((!groupFilter || sec.group === groupFilter) && (!sectionFilter || sec.section_id === sectionFilter)) {
+            sec.students?.forEach(st => uniqueStudents.add(st.id));
+        }
+    });
+    const studentCount = uniqueStudents.size || 1;
+    const avg = (absent / studentCount).toFixed(1);
+    $('avgAbsent').textContent = avg;
+    $('avgDetail').textContent = `من ${studentCount} طالب مسجل`;
+}
+
+// === جلب كل سجلات الغياب للتحليل ===
+async function fetchAllAttendance(group, section) {
+    let url = `/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31`;
+    if(group) url += `&group=${encodeURIComponent(group)}`;
+    if(section) url += `&section=${encodeURIComponent(section)}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    return (json.data?.rawRecords || json.summary?.rawRecords || []);
+}
+
+// === البحث عن طالب في البيانات المحلية ===
+function findStudentById(id) {
+    for(const sec of allSections) {
+        const stu = sec.students?.find(s => s.id === id);
+        if(stu) return {...stu, section_label: sec.section_label, group: sec.group};
+    }
+    return null;
+}
+
+// === إنشاء التقرير المخصص ===
+async function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    if(!g || !sec) return alert('يرجى اختيار المجموعة والشعبة');
+
+    const rpt = $('customReport');
+    const btns = $('reportActionsBtn');
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">⏳ جاري جلب البيانات...</div>';
+    rpt.classList.add('show');
+    btns.style.display = 'none';
+
+    try {
+        if(type === 'student') {
+            const stuId = $('rptStudent').value;
+            if(!stuId) return alert('يرجى اختيار الطالب');
+            const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stuId)}`);
+            const json = await res.json();
+            const history = json.data?.history || json.history || [];
+            
+            const stuName = $('rptStudent').selectedOptions[0]?.text || stuId;
+            let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم</h2><h3>تقرير طالب: ${stuName}</h3></div>`;
+            if(!history.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات</p>`;
+            else {
+                html += `<table><thead><tr><th>التاريخ</th><th>الشعبة</th></tr></thead><tbody>`;
+                history.forEach(h => html += `<tr><td>${h.date}</td><td>${h.section}</td></tr>`);
+                html += `</tbody></table><p style="margin-top:10px;font-weight:bold">📊 إجمالي الغياب: ${history.length}</p>`;
+            }
+            rpt.innerHTML = html;
+        } else {
+            const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            
+            const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+            let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم</h2><h3>تقرير شعبة: ${secLabel}</h3></div>`;
+            
+            if(summary.dailyData?.length) {
+                html += `<h4>📊 ملخص الغياب</h4>`;
+                html += `<table><thead><tr><th>التاريخ</th><th>إجمالي</th><th>غائب</th><th>%</th></tr></thead><tbody>`;
+                summary.dailyData.forEach(d => {
+                    const rate = d.total > 0 ? ((d.absent/d.total)*100).toFixed(1) : 0;
+                    html += `<tr><td>${d.date}</td><td>${d.total}</td><td>${d.absent}</td><td>${rate}%</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+
+            const secData = allSections.find(s => s.group === g && s.section_id === sec);
+            if(secData?.students?.length) {
+                html += `<div class="section-title">👥 سجل طلاب الشعبة</div>`;
+                html += `<table><thead><tr><th>الطالب</th><th>أيام الغياب</th><th>العدد</th></tr></thead><tbody>`;
+                
+                const studentsData = await Promise.all(secData.students.map(async stu => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stu.id)}`);
+                        const d = await r.json();
+                        return { name: stu.name, dates: (d.data?.history || d.history || []).map(h => h.date) };
+                    } catch { return { name: stu.name, dates: [] }; }
+                }));
+
+                studentsData.forEach(s => {
+                    const daysStr = s.dates.length > 0 ? s.dates.join('، ') : '-';
+                    html += `<tr><td style="font-weight:600">${s.name}</td><td style="font-size:0.85em;color:#555">${daysStr}</td><td>${s.dates.length}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+            rpt.innerHTML = html;
+        }
+        btns.style.display = 'flex';
+    } catch(e) {
+        rpt.innerHTML = `<p style="color:red;text-align:center;">❌ خطأ: ${e.message}</p>`;
+    }
+}
+</script>
+</body>
+</html>
