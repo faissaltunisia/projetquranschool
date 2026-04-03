@@ -1,18 +1,18 @@
 {
   "date": "2026-04-03",
-  "teacher": "فيصل",
+  "teacher": "وسيم",
   "group": "ب",
-  "section": "الشعبة 7ب",
-  "section_id": "7ب",
+  "section": "الشعبة 6ب",
+  "section_id": "6ب",
   "total_students": 2,
   "absent_count": 2,
   "absent_students": [
-    "b7-001",
-    "b7-002"
+    "b6-001",
+    "b6-002"
   ],
   "absent_names": [
-    "ياسر محمد القحطاني",
-    "فهد سليمان العنزي"
+    "عنان معاذ المطيري",
+    "وسام هاني التميمي"
   ],
-  "timestamp": "2026-04-03T20:34:28.969Z"
+  "timestamp": "2026-04-03T20:35:19.942Z"
 }
