@@ -1,18 +1,18 @@
 {
   "date": "2026-04-03",
-  "teacher": "امنة",
+  "teacher": "فيصل",
   "group": "ب",
-  "section": "الشعبة 5ب",
-  "section_id": "5ب",
+  "section": "الشعبة 7ب",
+  "section_id": "7ب",
   "total_students": 2,
   "absent_count": 2,
   "absent_students": [
-    "b5-001",
-    "b5-002"
+    "b7-001",
+    "b7-002"
   ],
   "absent_names": [
-    "نبيل طلال العمري",
-    "صالح أحمد الزهراني"
+    "ياسر محمد القحطاني",
+    "فهد سليمان العنزي"
   ],
-  "timestamp": "2026-04-03T20:23:07.976Z"
+  "timestamp": "2026-04-03T20:34:28.969Z"
 }
