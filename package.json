@@ -1,7 +1,6 @@
 {
   "name": "projetquranschool",
   "version": "1.0.0",
-  "description": "نظام حضور مدرسة التحفيظ",
   "dependencies": {
     "@octokit/rest": "^20.0.0"
   }
