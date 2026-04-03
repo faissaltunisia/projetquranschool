@@ -321,7 +321,7 @@
             </select>
         </div>
         
-        <button class="btn btn-next" onclick="nextStep(2)">التالي ←</button>
+        <button class="btn btn-next" id="btnNext1">التالي ←</button>
     </div>
 
     <!-- الخطوة 2: اختيار الشعبة -->
@@ -337,12 +337,14 @@
         
         <div class="form-group">
             <label>📋 الشعبة</label>
-            <input type="text" id="sectionInput" readonly style="background: #f0f0f0;">
+            <select id="sectionSelect">
+                <option value="">📋 اختر الشعبة أولاً</option>
+            </select>
         </div>
         
         <div class="btn-row">
-            <button class="btn btn-prev" onclick="prevStep(1)">← رجوع</button>
-            <button class="btn btn-next" onclick="nextStep(3)">التالي ←</button>
+            <button class="btn btn-prev" id="btnPrev2">← رجوع</button>
+            <button class="btn btn-next" id="btnNext2">التالي ←</button>
         </div>
     </div>
 
@@ -367,9 +369,9 @@
         <div id="studentsList" style="max-height: 400px; overflow-y: auto; margin: 15px 0;"></div>
         
         <div class="btn-row">
-            <button class="btn btn-prev" onclick="prevStep(2)">← رجوع</button>
-            <button class="btn btn-danger" onclick="clearSelection()" style="flex: 0.8;">مسح الكل</button>
-            <button class="btn btn-next" onclick="nextStep(4)" style="flex: 1.2;">التالي ←</button>
+            <button class="btn btn-prev" id="btnPrev3">← رجوع</button>
+            <button class="btn btn-danger" id="btnClear" style="flex: 0.8;">مسح الكل</button>
+            <button class="btn btn-next" id="btnNext3" style="flex: 1.2;">التالي ←</button>
         </div>
     </div>
 
@@ -412,433 +414,320 @@
             </div>
         </div>
         
-        <button class="btn btn-outline" onclick="downloadJSON()" style="margin-bottom: 10px;">
+        <button class="btn btn-outline" id="btnDownload" style="margin-bottom: 10px;">
             ⬇️ تحميل ملف JSON
         </button>
-        <button class="btn btn-save" onclick="saveToGitHub()">
+        <button class="btn btn-save" id="btnSaveGitHub">
             ☁️ حفظ على GitHub
         </button>
         
         <div id="saveStatus"></div>
         
         <div class="btn-row" style="margin-top: 15px;">
-            <button class="btn btn-prev" onclick="prevStep(3)">← رجوع</button>
-            <button class="btn btn-next" onclick="resetForm()" style="flex: 0.8;">جديد</button>
+            <button class="btn btn-prev" id="btnPrev4">← رجوع</button>
+            <button class="btn btn-next" id="btnReset" style="flex: 0.8;">جديد</button>
         </div>
     </div>
 </div>
 
 <script>
-    let currentStudents = [];
-    let absentStudents = new Set();
-    let currentGroup = '';
-    let currentSection = '';
-
-    // تهيئة التاريخ
-    document.getElementById('attendanceDate').valueAsDate = new Date();
-
-    function nextStep(step) {
-        if(step === 2) {
-            if(!document.getElementById('groupSelect').value) {
-                showNotification('يرجى اختيار المجموعة', 'error');
-                return;
-            }
-            loadSection();
-        }
-        if(step === 3 && !document.getElementById('sectionInput').value) {
-            showNotification('يرجى تحديد الشعبة', 'error');
-            return;
-        }
-        if(step === 4) updateSummary();
-        
-        updateProgress(step);
-        
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-    }
-
-    function prevStep(step) {
-        updateProgress(step);
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-    }
-
-    function updateProgress(step) {
-        document.querySelectorAll('.progress-step').forEach((s, i) => {
-            s.classList.remove('active', 'completed');
-            if(i + 1 < step) s.classList.add('completed');
-            if(i + 1 === step) s.classList.add('active');
-        });
-    }
-
- // ✅ الكود الصحيح
-async function loadSection() {
-    currentGroup = document.getElementById('groupSelect').value;
-    document.getElementById('selectedGroup').innerText = currentGroup;
-
-    document.getElementById('studentsList').innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            <div>جاري تحميل بيانات الطلاب...</div>
-        </div>
-    `;
-
-    try {
-        // استخدام API endpoint بدلاً من الملف مباشرة
-        const res = await fetch(`/api/get-section?group=${encodeURIComponent(currentGroup)}`);
-        
-        if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-        
-        const data = await res.json();
-        currentSection = data.section_label || data.section_id;
-        document.getElementById('sectionInput').value = currentSection;
-        currentStudents = data.students || [];
-        renderStudentsList();
-    } catch (error) {
-        document.getElementById('studentsList').innerHTML = '';
-        showNotification('خطأ في تحميل بيانات الطلاب: ' + error.message, 'error');
-    }
-}
-    function renderStudentsList() {
-        const container = document.getElementById('studentsList');
-        container.innerHTML = '';
-        
-        if(currentStudents.length === 0) {
-            container.innerHTML = '<div class="loading">لا يوجد طلاب في هذه الشعبة</div>';
-            return;
-        }
-        
-        currentStudents.forEach(stu => {
-            const card = document.createElement('div');
-            card.className = 'student-card';
-            card.id = `stu-${stu.id}`;
-            card.onclick = () => toggleAbsent(stu.id);
-            card.innerHTML = `
-                <div class="student-info">
-                    <div class="student-name">${stu.name}</div>
-                    <div class="student-id">ID: ${stu.id}</div>
-                </div>
-                <div class="status-badge">حاضر</div>
-            `;
-            container.appendChild(card);
-        });
-        
-        updateCounts();
-    }
-
-    function toggleAbsent(id) {
-        const card = document.getElementById(`stu-${id}`);
-        const badge = card.querySelector('.status-badge');
-        
-        if(absentStudents.has(id)) {
-            absentStudents.delete(id);
-            card.classList.remove('absent');
-            badge.innerText = 'حاضر';
-            badge.style.background = 'var(--light)';
-            badge.style.color = '#666';
-        } else {
-            absentStudents.add(id);
-            card.classList.add('absent');
-            badge.innerText = 'غائب';
-            badge.style.background = 'var(--danger)';
-            badge.style.color = 'white';
-        }
-        updateCounts();
-    }
-
-    function updateCounts() {
-        const present = currentStudents.length - absentStudents.size;
-        document.getElementById('presentCount').innerText = present;
-        document.getElementById('absentCount').innerText = absentStudents.size;
-    }
-
-    function clearSelection() {
-        absentStudents.clear();
-        document.querySelectorAll('.student-card').forEach(card => {
-            card.classList.remove('absent');
-            const badge = card.querySelector('.status-badge');
-            badge.innerText = 'حاضر';
-            badge.style.background = 'var(--light)';
-            badge.style.color = '#666';
-        });
-        updateCounts();
-        showNotification('تم مسح جميع التحديدات', 'success');
-    }
-
-    function updateSummary() {
-        document.getElementById('sumDate').innerText = document.getElementById('attendanceDate').value;
-        document.getElementById('sumGroup').innerText = currentGroup;
-        document.getElementById('sumSection').innerText = currentSection;
-        document.getElementById('sumTeacher').innerText = document.getElementById('teacherName').value || '-';
-        document.getElementById('sumTotal').innerText = currentStudents.length;
-        document.getElementById('sumPresent').innerText = currentStudents.length - absentStudents.size;
-        document.getElementById('sumAbsent').innerText = absentStudents.size;
-        
-        const absentNames = currentStudents
-            .filter(s => absentStudents.has(s.id))
-            .map(s => s.name)
-            .join('، ');
-        document.getElementById('sumAbsentNames').innerText = absentNames || 'لا يوجد غياب';
-    }
-
-    function getAttendanceData() {
-        return {
-            date: document.getElementById('attendanceDate').value,
-            group: currentGroup,
-            section: currentSection,
-            section_id: currentSection,
-            teacher: document.getElementById('teacherName').value,
-            total: currentStudents.length,
-            present: currentStudents.length - absentStudents.size,
-            absent: absentStudents.size,
-            absentIds: Array.from(absentStudents),
-            absentNames: currentStudents
-                .filter(s => absentStudents.has(s.id))
-                .map(s => s.name),
-            timestamp: new Date().toISOString()
-        };
-    }
-
-    function downloadJSON() {
-        const data = getAttendanceData();
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `attendance_${data.date}_${data.group}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-        showNotification('تم تحميل الملف بنجاح', 'success');
-    }
-
-    async function saveToGitHub() {
-        const data = getAttendanceData();
-        const statusDiv = document.getElementById('saveStatus');
-        statusDiv.innerHTML = `
-            <div class="loading">
-                <div class="spinner"></div>
-                <div>جاري الحفظ على GitHub...</div>
-            </div>
-        `;
-        
-        try {
-            const response = await fetch('/api/save-attendance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            
-            if(response.ok) {
-                statusDiv.innerHTML = `
-                    <div class="status-message success">
-                        ✅ تم الحفظ بنجاح على GitHub!
-                    </div>
-                `;
-            } else {
-                statusDiv.innerHTML = `
-                    <div class="status-message error">
-                        ❌ خطأ: ${result.error}
-                    </div>
-                `;
-            }
-        } catch (error) {
-            statusDiv.innerHTML = `
-                <div class="status-message error">
-                    ❌ خطأ في الاتصال: ${error.message}
-                </div>
-            `;
-        }
-    }
-
-    function showNotification(message, type) {
-        const notification = document.createElement('div');
-        notification.className = `status-message ${type}`;
-        notification.innerText = message;
-        notification.style.position = 'fixed';
-        notification.style.top = '20px';
-        notification.style.left = '50%';
-        notification.style.transform = 'translateX(-50%)';
-        notification.style.zIndex = '1000';
-        notification.style.minWidth = '300px';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => notification.remove(), 3000);
-    }
-
-    function resetForm() {
-        absentStudents.clear();
-        currentStudents = [];
-        currentGroup = '';
-        currentSection = '';
-        
-        document.getElementById('groupSelect').value = '';
-        document.getElementById('teacherName').value = '';
-        document.getElementById('sectionInput').value = '';
-        document.getElementById('attendanceDate').valueAsDate = new Date();
-        
-        updateProgress(1);
-        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-        document.querySelector('.step[data-step="1"]').classList.add('active');
-        document.getElementById('saveStatus').innerHTML = '';
-    }
-</script>
-<script>
-// === حالة التطبيق ===
-const appState = {
-  students: [],
-  absentIds: new Set(),
-  sectionLabel: '',
-  date: '',
-  teacher: '',
-  group: ''
+// === حالة التطبيق المركزية ===
+const state = {
+    group: '',
+    date: '',
+    teacher: '',
+    sectionsData: null,
+    currentSection: null,
+    students: [],
+    absentIds: new Set() // Set يضمن عدم تكرار الغياب وعدّ دقيق 100%
 };
 
 // === دوال مساعدة ===
-function $(sel) { return document.querySelector(sel); }
-function $$(sel) { return document.querySelectorAll(sel); }
+const $ = id => document.getElementById(id);
 
-function renderStudents(students) {
-  const list = $('#students-list');
-  if (!list) return;
-  list.innerHTML = '';
-  students.forEach(st => {
-    const div = document.createElement('div');
-    div.className = 'student-item';
-    div.dataset.id = st.id;
-    div.innerHTML = `
-      <label style="cursor:pointer; display:flex; align-items:center; gap:10px; padding:8px; border:1px solid #eee; margin:4px 0; border-radius:6px;">
-        <input type="checkbox" class="attendance-cb" data-id="${st.id}">
-        <span>${st.name}</span>
-      </label>
-    `;
-    div.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'INPUT') {
-        const cb = div.querySelector('input');
-        cb.checked = !cb.checked;
-      }
-      toggleAbsence(div.querySelector('input').dataset.id);
-    });
-    list.appendChild(div);
-  });
-}
+// 1. الانتقال للخطوة 2 وجلب بيانات الشعب
+$('btnNext1').addEventListener('click', async () => {
+    state.group = $('groupSelect').value;
+    state.date = $('attendanceDate').value;
+    state.teacher = $('teacherName').value;
+    
+    if (!state.group || !state.date || !state.teacher) {
+        return showNotification('يرجى إكمال جميع الحقول', 'error');
+    }
 
-function toggleAbsence(id) {
-  if (appState.absentIds.has(id)) {
-    appState.absentIds.delete(id);
-  } else {
-    appState.absentIds.add(id);
-  }
-  updateCounters();
-}
-
-function updateCounters() {
-  const total = appState.students.length;
-  const absent = appState.absentIds.size;
-  const present = total - absent;
-
-  const totalEl = $('#total-count');
-  const presentEl = $('#present-count');
-  const absentEl = $('#absent-count');
-  if (totalEl) totalEl.textContent = total;
-  if (presentEl) presentEl.textContent = present;
-  if (absentEl) absentEl.textContent = absent;
-}
-
-// === ربط الواجهة ===
-document.addEventListener('DOMContentLoaded', () => {
-  // 1. اختيار المجموعة
-  const groupSelect = $('#group-select');
-  if (groupSelect) {
-    groupSelect.addEventListener('change', async () => {
-      appState.group = groupSelect.value;
-      if (!appState.group) return;
-
-      try {
-        const res = await fetch(`/api/get-section?group=${encodeURIComponent(appState.group)}`);
-        const data = await res.json();
-        if (data.error) return alert(data.error);
-
-        appState.students = data.students || [];
-        appState.sectionLabel = data.section_label || 'غير محدد';
+    $('btnNext1').disabled = true;
+    $('btnNext1').textContent = 'جاري التحميل...';
+    
+    try {
+        const res = await fetch(`/api/get-section?group=${encodeURIComponent(state.group)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         
-        // تحديث واجهة الشعبة
-        const sectionDisplay = $('#section-name-display');
-        if (sectionDisplay) sectionDisplay.textContent = appState.sectionLabel;
-        
-        renderStudents(appState.students);
-        updateCounters();
-        
-        // الانتقال لخطوة اختيار الطلاب
-        showScreen('attendance-screen');
-      } catch (err) {
-        console.error(err);
-        alert('فشل جلب بيانات الطلاب');
-      }
-    });
-  }
-
-  // 2. تاريخ ومعلم
-  const dateInput = $('#date-input');
-  const teacherInput = $('#teacher-input');
-  if (dateInput) dateInput.valueAsDate = new Date();
-  if (dateInput) dateInput.addEventListener('change', () => appState.date = dateInput.value);
-  if (teacherInput) teacherInput.addEventListener('input', () => appState.teacher = teacherInput.value);
-
-  // 3. زر الحفظ
-  const saveBtn = $('#save-attendance-btn');
-  if (saveBtn) {
-    saveBtn.addEventListener('click', async () => {
-      if (!appState.date || !appState.teacher || !appState.group) {
-        return alert('يرجى إكمال جميع الحقول (التاريخ، المعلم، المجموعة)');
-      }
-
-      saveBtn.disabled = true;
-      saveBtn.textContent = 'جاري الحفظ...';
-
-      try {
-        const payload = {
-          date: appState.date,
-          teacher: appState.teacher,
-          group: appState.group,
-          section: appState.sectionLabel,
-          absent_students: Array.from(appState.absentIds),
-          total_students: appState.students.length,
-          absent_count: appState.absentIds.size
-        };
-
-        const res = await fetch('/api/save-attendance', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        const result = await res.json();
-        if (result.success) {
-          alert(`✅ تم الحفظ بنجاح\n📊 الحاضرون: ${payload.total_students - payload.absent_count}\n❌ الغائبون: ${payload.absent_count}`);
-          // إعادة تعيين أو توجيه
-          location.reload();
-        } else {
-          alert('❌ فشل الحفظ: ' + (result.error || 'خطأ غير معروف'));
-        }
-      } catch (err) {
-        alert('خطأ في الاتصال بالخادم');
-      } finally {
-        saveBtn.disabled = false;
-        saveBtn.textContent = '💾 حفظ على GitHub';
-      }
-    });
-  }
+        state.sectionsData = await res.json();
+        populateSectionsDropdown();
+        showStep(2);
+    } catch (e) {
+        showNotification('خطأ في جلب البيانات: ' + e.message, 'error');
+    } finally {
+        $('btnNext1').disabled = false;
+        $('btnNext1').textContent = 'التالي ←';
+    }
 });
 
-// دالة تنقل بسيطة بين الشاشات (عدّل الـ IDs حسب تصميمك)
-function showScreen(screenId) {
-  $$('.screen, .step').forEach(el => el.style.display = 'none');
-  const target = document.getElementById(screenId);
-  if (target) target.style.display = 'block';
-}
-</script>
+// ملء قائمة الشعب المنسدلة
+function populateSectionsDropdown() {
+    const select = $('sectionSelect');
+    select.innerHTML = '<option value="">📋 اختر الشعبة</option>';
     
+    const sections = state.sectionsData.sections || [state.sectionsData]; // دعم البنية القديمة والجديدة
+    
+    sections.forEach(sec => {
+        const id = (sec.section_id || '').trim();
+        const label = (sec.section_label || id || '').trim();
+        if (!id) return;
+        
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = label;
+        opt.dataset.label = label; // حفظ التسمية للعرض لاحقاً
+        select.appendChild(opt);
+    });
+}
+
+// 2. عند اختيار الشعبة من القائمة
+$('sectionSelect').addEventListener('change', () => {
+    const sectionId = $('sectionSelect').value;
+    if (!sectionId) return;
+    
+    const sections = state.sectionsData.sections || [state.sectionsData];
+    state.currentSection = sections.find(s => (s.section_id||'').trim() === sectionId);
+    
+    if (state.currentSection) {
+        state.students = state.currentSection.students || [];
+        state.absentIds.clear();
+        renderStudents();
+        updateCounts();
+    }
+});
+
+// عرض قائمة الطلاب
+function renderStudents() {
+    const list = $('studentsList');
+    list.innerHTML = '';
+    
+    if (!state.students.length) {
+        list.innerHTML = '<div class="loading">لا يوجد طلاب في هذه الشعبة</div>';
+        return;
+    }
+    
+    state.students.forEach(stu => {
+        const id = (stu.id || '').trim();
+        const name = (stu.name || id || 'طالب').trim();
+        
+        const card = document.createElement('div');
+        card.className = 'student-card';
+        card.id = `stu-${id}`;
+        card.innerHTML = `
+            <div class="student-info">
+                <div class="student-name">${name}</div>
+                <div class="student-id">ID: ${id}</div>
+            </div>
+            <div class="status-badge">حاضر</div>
+        `;
+        
+        card.addEventListener('click', () => {
+            toggleAbsent(id);
+            // تأثير بصري فوري
+            const badge = card.querySelector('.status-badge');
+            if (state.absentIds.has(id)) {
+                card.classList.add('absent');
+                badge.textContent = 'غائب';
+                badge.style.background = 'var(--danger)';
+                badge.style.color = 'white';
+            } else {
+                card.classList.remove('absent');
+                badge.textContent = 'حاضر';
+                badge.style.background = 'var(--light)';
+                badge.style.color = '#666';
+            }
+        });
+        
+        list.appendChild(card);
+    });
+}
+
+// تبديل حالة الغياب لطالب
+function toggleAbsent(id) {
+    if (state.absentIds.has(id)) {
+        state.absentIds.delete(id);
+    } else {
+        state.absentIds.add(id);
+    }
+    updateCounts();
+}
+
+// تحديث عدادات الحضور/الغياب
+function updateCounts() {
+    const total = state.students.length;
+    const absent = state.absentIds.size;
+    const present = total - absent;
+    
+    $('presentCount').textContent = present;
+    $('absentCount').textContent = absent;
+}
+
+// 3. أزرار التنقل
+$('btnPrev2').onclick = () => showStep(1);
+$('btnNext2').onclick = () => {
+    if (!$('sectionSelect').value) {
+        return showNotification('يرجى اختيار الشعبة أولاً', 'error');
+    }
+    showStep(3);
+};
+$('btnPrev3').onclick = () => showStep(2);
+$('btnClear').onclick = () => {
+    state.absentIds.clear();
+    document.querySelectorAll('.student-card').forEach(card => {
+        card.classList.remove('absent');
+        const badge = card.querySelector('.status-badge');
+        badge.textContent = 'حاضر';
+        badge.style.background = 'var(--light)';
+        badge.style.color = '#666';
+    });
+    updateCounts();
+    showNotification('تم مسح جميع التحديدات', 'success');
+};
+$('btnNext3').onclick = () => {
+    updateSummary();
+    showStep(4);
+};
+$('btnPrev4').onclick = () => showStep(3);
+$('btnReset').onclick = resetForm;
+
+// 4. تحديث ملخص الحفظ
+function updateSummary() {
+    const sectionLabel = $('sectionSelect').selectedOptions[0]?.dataset.label || $('sectionSelect').value;
+    
+    $('sumDate').textContent = state.date;
+    $('sumGroup').textContent = state.group;
+    $('sumSection').textContent = sectionLabel;
+    $('sumTeacher').textContent = state.teacher || '-';
+    $('sumTotal').textContent = state.students.length;
+    $('sumPresent').textContent = state.students.length - state.absentIds.size;
+    $('sumAbsent').textContent = state.absentIds.size;
+    
+    const absentNames = state.students
+        .filter(s => state.absentIds.has((s.id||'').trim()))
+        .map(s => (s.name||'').trim())
+        .join('، ');
+    $('sumAbsentNames').textContent = absentNames || 'لا يوجد غياب';
+}
+
+// 5. جمع البيانات للإرسال
+function getAttendanceData() {
+    const sectionLabel = $('sectionSelect').selectedOptions[0]?.dataset.label || $('sectionSelect').value;
+    
+    return {
+        date: state.date,
+        teacher: state.teacher,
+        group: state.group,
+        section: sectionLabel,
+        section_id: $('sectionSelect').value,
+        total_students: state.students.length,
+        absent_count: state.absentIds.size,
+        absent_students: Array.from(state.absentIds),
+        absent_names: state.students
+            .filter(s => state.absentIds.has((s.id||'').trim()))
+            .map(s => (s.name||'').trim()),
+        timestamp: new Date().toISOString()
+    };
+}
+
+// 6. تحميل JSON
+$('btnDownload').onclick = () => {
+    const data = getAttendanceData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `attendance_${data.date}_${data.group}_${data.section_id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification('✅ تم تحميل الملف', 'success');
+};
+
+// 7. الحفظ على GitHub
+$('btnSaveGitHub').onclick = async () => {
+    const data = getAttendanceData();
+    const statusDiv = $('saveStatus');
+    
+    statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div><div>جاري الحفظ...</div></div>`;
+    $('btnSaveGitHub').disabled = true;
+    
+    try {
+        const res = await fetch('/api/save-attendance', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await res.json();
+        
+        if (res.ok && result.success) {
+            statusDiv.innerHTML = `<div class="status-message success">✅ تم الحفظ بنجاح على GitHub!</div>`;
+        } else {
+            throw new Error(result.error || 'فشل غير معروف');
+        }
+    } catch (e) {
+        statusDiv.innerHTML = `<div class="status-message error">❌ خطأ: ${e.message}</div>`;
+    } finally {
+        $('btnSaveGitHub').disabled = false;
+    }
+};
+
+// دوال مساعدة للواجهة
+function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    
+    document.querySelectorAll('.progress-step').forEach((step, i) => {
+        step.classList.remove('active', 'completed');
+        if (i + 1 < n) step.classList.add('completed');
+        if (i + 1 === n) step.classList.add('active');
+    });
+    
+    // تحديث حقول الملخص عند العودة للخطوة 4
+    if (n === 4) updateSummary();
+}
+
+function showNotification(msg, type) {
+    const note = document.createElement('div');
+    note.className = `status-message ${type}`;
+    note.textContent = msg;
+    note.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:1000;min-width:280px;';
+    document.body.appendChild(note);
+    setTimeout(() => note.remove(), 3000);
+}
+
+function resetForm() {
+    state.group = ''; state.date = ''; state.teacher = '';
+    state.sectionsData = null; state.currentSection = null;
+    state.students = []; state.absentIds.clear();
+    
+    $('groupSelect').value = '';
+    $('teacherName').value = '';
+    $('attendanceDate').valueAsDate = new Date();
+    $('sectionSelect').innerHTML = '<option value="">📋 اختر الشعبة أولاً</option>';
+    $('studentsList').innerHTML = '';
+    $('saveStatus').innerHTML = '';
+    
+    updateCounts();
+    showStep(1);
+}
+
+// تهيئة أولية
+document.addEventListener('DOMContentLoaded', () => {
+    $('attendanceDate').valueAsDate = new Date();
+});
+</script>
 </body>
 </html>
