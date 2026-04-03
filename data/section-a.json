@@ -1,7 +1,7 @@
 {
-  "group": "ب",
-  "section_id": "1ب",
-  "section_label": "الشعبة 1ب",
+  "group": "أ",
+  "section_id": "1أ",
+  "section_label": "الشعبة أب",
   "students": [
     { "id": "s001", "name": "خلف منصور السلمي" },
     { "id": "s002", "name": "طلال إبراهيم العتيبي" }
