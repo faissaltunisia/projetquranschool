@@ -1,0 +1,16 @@
+{
+  "date": "2026-04-03",
+  "teacher": "وسيم",
+  "group": "أ",
+  "section": "الشعبة 2أ",
+  "section_id": "2أ",
+  "total_students": 2,
+  "absent_count": 1,
+  "absent_students": [
+    "a2-001"
+  ],
+  "absent_names": [
+    "زيد نبيل الجهني"
+  ],
+  "timestamp": "2026-04-03T20:47:58.060Z"
+}
