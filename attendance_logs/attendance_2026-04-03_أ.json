@@ -1,0 +1,17 @@
+{
+  "date": "2026-04-03",
+  "group": "أ",
+  "section": "الشعبة أب",
+  "section_id": "الشعبة أب",
+  "teacher": "فيصل",
+  "total": 2,
+  "present": 1,
+  "absent": 1,
+  "absentIds": [
+    "s001"
+  ],
+  "absentNames": [
+    "خلف منصور السلمي"
+  ],
+  "timestamp": "2026-04-03T20:14:40.126Z"
+}
