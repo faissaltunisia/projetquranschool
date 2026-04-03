@@ -684,5 +684,161 @@ async function loadSection() {
         document.getElementById('saveStatus').innerHTML = '';
     }
 </script>
+<script>
+// === حالة التطبيق ===
+const appState = {
+  students: [],
+  absentIds: new Set(),
+  sectionLabel: '',
+  date: '',
+  teacher: '',
+  group: ''
+};
+
+// === دوال مساعدة ===
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+function renderStudents(students) {
+  const list = $('#students-list');
+  if (!list) return;
+  list.innerHTML = '';
+  students.forEach(st => {
+    const div = document.createElement('div');
+    div.className = 'student-item';
+    div.dataset.id = st.id;
+    div.innerHTML = `
+      <label style="cursor:pointer; display:flex; align-items:center; gap:10px; padding:8px; border:1px solid #eee; margin:4px 0; border-radius:6px;">
+        <input type="checkbox" class="attendance-cb" data-id="${st.id}">
+        <span>${st.name}</span>
+      </label>
+    `;
+    div.addEventListener('click', (e) => {
+      if (e.target.tagName !== 'INPUT') {
+        const cb = div.querySelector('input');
+        cb.checked = !cb.checked;
+      }
+      toggleAbsence(div.querySelector('input').dataset.id);
+    });
+    list.appendChild(div);
+  });
+}
+
+function toggleAbsence(id) {
+  if (appState.absentIds.has(id)) {
+    appState.absentIds.delete(id);
+  } else {
+    appState.absentIds.add(id);
+  }
+  updateCounters();
+}
+
+function updateCounters() {
+  const total = appState.students.length;
+  const absent = appState.absentIds.size;
+  const present = total - absent;
+
+  const totalEl = $('#total-count');
+  const presentEl = $('#present-count');
+  const absentEl = $('#absent-count');
+  if (totalEl) totalEl.textContent = total;
+  if (presentEl) presentEl.textContent = present;
+  if (absentEl) absentEl.textContent = absent;
+}
+
+// === ربط الواجهة ===
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. اختيار المجموعة
+  const groupSelect = $('#group-select');
+  if (groupSelect) {
+    groupSelect.addEventListener('change', async () => {
+      appState.group = groupSelect.value;
+      if (!appState.group) return;
+
+      try {
+        const res = await fetch(`/api/get-section?group=${encodeURIComponent(appState.group)}`);
+        const data = await res.json();
+        if (data.error) return alert(data.error);
+
+        appState.students = data.students || [];
+        appState.sectionLabel = data.section_label || 'غير محدد';
+        
+        // تحديث واجهة الشعبة
+        const sectionDisplay = $('#section-name-display');
+        if (sectionDisplay) sectionDisplay.textContent = appState.sectionLabel;
+        
+        renderStudents(appState.students);
+        updateCounters();
+        
+        // الانتقال لخطوة اختيار الطلاب
+        showScreen('attendance-screen');
+      } catch (err) {
+        console.error(err);
+        alert('فشل جلب بيانات الطلاب');
+      }
+    });
+  }
+
+  // 2. تاريخ ومعلم
+  const dateInput = $('#date-input');
+  const teacherInput = $('#teacher-input');
+  if (dateInput) dateInput.valueAsDate = new Date();
+  if (dateInput) dateInput.addEventListener('change', () => appState.date = dateInput.value);
+  if (teacherInput) teacherInput.addEventListener('input', () => appState.teacher = teacherInput.value);
+
+  // 3. زر الحفظ
+  const saveBtn = $('#save-attendance-btn');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async () => {
+      if (!appState.date || !appState.teacher || !appState.group) {
+        return alert('يرجى إكمال جميع الحقول (التاريخ، المعلم، المجموعة)');
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'جاري الحفظ...';
+
+      try {
+        const payload = {
+          date: appState.date,
+          teacher: appState.teacher,
+          group: appState.group,
+          section: appState.sectionLabel,
+          absent_students: Array.from(appState.absentIds),
+          total_students: appState.students.length,
+          absent_count: appState.absentIds.size
+        };
+
+        const res = await fetch('/api/save-attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          alert(`✅ تم الحفظ بنجاح\n📊 الحاضرون: ${payload.total_students - payload.absent_count}\n❌ الغائبون: ${payload.absent_count}`);
+          // إعادة تعيين أو توجيه
+          location.reload();
+        } else {
+          alert('❌ فشل الحفظ: ' + (result.error || 'خطأ غير معروف'));
+        }
+      } catch (err) {
+        alert('خطأ في الاتصال بالخادم');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 حفظ على GitHub';
+      }
+    });
+  }
+});
+
+// دالة تنقل بسيطة بين الشاشات (عدّل الـ IDs حسب تصميمك)
+function showScreen(screenId) {
+  $$('.screen, .step').forEach(el => el.style.display = 'none');
+  const target = document.getElementById(screenId);
+  if (target) target.style.display = 'block';
+}
+</script>
+    
 </body>
 </html>
