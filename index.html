@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>منصة الحضور والغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; --success: #27ae60; --shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; padding: 15px; min-height: 100vh; overflow-x: hidden; }
+        
+        /* === شاشة الترحيب === */
+        .welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 3000; padding: 20px;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .welcome-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .welcome-card {
+            background: white; padding: 40px 30px; border-radius: 25px;
+            text-align: center; max-width: 420px; width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            transform: translateY(0); transition: transform 0.4s ease;
+        }
+        .welcome-screen.hidden .welcome-card { transform: translateY(-30px); }
+        .welcome-icon { font-size: 4em; margin-bottom: 10px; }
+        .welcome-card h2 { color: #555; margin: 5px 0; font-size: 1.1em; font-weight: 600; }
+        .welcome-card h3 { color: #444; margin: 5px 0; font-size: 1.25em; font-weight: 700; }
+        .welcome-card h4 { color: #666; margin: 5px 0 15px; font-size: 1em; }
+        .welcome-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); margin: 20px auto; width: 70%; }
+        .welcome-card h1 { color: var(--primary); margin: 10px 0; font-size: 1.7em; font-weight: 800; }
+        .platform-name { color: var(--secondary); font-weight: 700; margin: 5px 0 30px; font-size: 1.15em; letter-spacing: 0.5px; }
+        .btn-enter {
+            background: linear-gradient(135deg, var(--primary), #34495e);
+            color: white; padding: 16px; border-radius: 12px; width: 100%;
+            font-size: 1.15em; cursor: pointer; border: none; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(44,62,80,0.3); transition: all 0.3s ease;
+        }
+        .btn-enter:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(44,62,80,0.4); }
+        .btn-enter:active { transform: scale(0.98); }
+
+        /* === واجهة التطبيق الرئيسية === */
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: var(--shadow); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.5em; }
+        header p { color: #666; margin: 5px 0 0; font-size: 0.9em; }
+        .progress { display: flex; justify-content: space-between; margin-bottom: 25px; position: relative; }
+        .progress::before { content: ''; position: absolute; top: 15px; right: 0; left: 0; height: 3px; background: var(--light); z-index: 0; }
+        .progress-step { width: 35px; height: 35px; background: var(--light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; position: relative; z-index: 1; transition: all 0.3s; }
+        .progress-step.active { background: var(--primary); color: white; transform: scale(1.1); }
+        .progress-step.completed { background: var(--secondary); color: white; }
+        .step { display: none; animation: slideIn 0.4s ease; }
+        .step.active { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--primary); font-size: 0.95em; }
+        input, select { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 16px; transition: all 0.3s; background: #fafafa; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; background: white; box-shadow: 0 0 0 3px rgba(44,62,80,0.1); }
+        .btn { padding: 15px 25px; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 16px; transition: all 0.3s; width: 100%; margin-bottom: 10px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-next { background: var(--primary); color: white; }
+        .btn-prev { background: #95a5a6; color: white; }
+        .btn-save { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-row .btn { flex: 1; margin-bottom: 0; }
+        .student-card { padding: 18px; border: 2px solid #e0e0e0; border-radius: 15px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s; display: flex; justify-content: space-between; align-items: center; background: white; touch-action: manipulation; }
+        .student-card.absent { border-color: var(--danger); background: #fff5f5; }
+        .student-card.absent .status-badge { background: var(--danger); color: white; }
+        .student-info { flex: 1; }
+        .student-name { font-weight: 600; color: var(--primary); font-size: 1em; }
+        .student-id { font-size: 0.8em; color: #999; margin-top: 3px; }
+        .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; background: var(--light); color: #666; }
+        .stats { display: flex; gap: 15px; margin: 20px 0; }
+        .stat-box { flex: 1; padding: 20px 15px; background: var(--light); border-radius: 15px; text-align: center; }
+        .stat-label { font-size: 0.85em; color: #666; margin-bottom: 5px; }
+        .stat-number { font-size: 1.8em; font-weight: 700; }
+        .stat-number.present { color: var(--success); }
+        .stat-number.absent { color: var(--danger); }
+        .summary-box { background: #f8f9fa; padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid #e9ecef; }
+        .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { color: #666; }
+        .summary-value { font-weight: 600; color: var(--primary); }
+        .summary-value.danger { color: var(--danger); }
+        .loading { text-align: center; padding: 30px; color: var(--accent); }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--light); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-message { padding: 15px; border-radius: 12px; margin-top: 15px; text-align: center; font-weight: 600; }
+        .status-message.success { background: #d4edda; color: #155724; }
+        .status-message.error { background: #f8d7da; color: #721c24; }
+        
+        /* === بطاقة التنبيه المخصصة === */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 15px; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card { background: white; padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; transform: translateY(20px); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-icon { font-size: 3em; margin-bottom: 10px; }
+        .modal-card h3 { margin: 0 0 10px; color: var(--primary); font-size: 1.3em; }
+        .modal-card p { color: #555; line-height: 1.5; margin: 0 0 20px; font-size: 0.95em; white-space: pre-line; }
+        .modal-actions { display: flex; gap: 10px; }
+        
+        @media (max-width: 400px) { .container { padding: 15px; } header h1 { font-size: 1.3em; } .btn { padding: 13px 20px; font-size: 15px; } }
+    </style>
+</head>
+<body>
+
+<!-- 🕌 شاشة الترحيب الرسمية -->
+<div id="welcome-screen" class="welcome-screen">
+    <div class="welcome-card">
+        <div class="welcome-icon">🕌</div>
+        <h2>سلطنة عُمان</h2>
+        <h3>وزارة التربية والتعليم</h3>
+        <h4>محافظة ظفار</h4>
+        <div class="welcome-divider"></div>
+        <h1>مدرسة القرآن الكريم</h1>
+        <p class="platform-name">منصة الحضور والغياب الإلكترونية</p>
+        <button id="enterAppBtn" class="btn-enter">دخول المنصة</button>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>📖 نظام الحضور والغياب</h1>
+        <p>مدرسة تحفيظ القرآن الكريم</p>
+    </header>
+    <div class="progress">
+        <div class="progress-step active" data-step="1">1</div>
+        <div class="progress-step" data-step="2">2</div>
+        <div class="progress-step" data-step="3">3</div>
+        <div class="progress-step" data-step="4">4</div>
+    </div>
+
+    <!-- الخطوة 1 -->
+    <div class="step active" data-step="1">
+        <h2 style="margin-bottom:20px;color:var(--primary)">📅 التاريخ والمجموعة</h2>
+        <div class="form-group"><label>📅 التاريخ</label><input type="date" id="attendanceDate"></div>
+        <div class="form-group"><label>👤 اسم المعلم / المشرف</label><input type="text" id="teacherName" placeholder="أدخل اسمك"></div>
+        <div class="form-group"><label>👥 اختر المجموعة</label><select id="groupSelect"><option value="">-- اختر المجموعة --</option><option value="أ">المجموعة الأولى (أ)</option><option value="ب">المجموعة الثانية (ب)</option></select></div>
+        <button class="btn btn-next" id="btnNext1">التالي ←</button>
+    </div>
+
+    <!-- الخطوة 2 -->
+    <div class="step" data-step="2">
+        <h2 style="margin-bottom:20px;color:var(--primary)">📚 اختيار الشعبة</h2>
+        <div class="summary-box" style="background:var(--primary);color:white;text-align:center;border:none">
+            <div style="font-size:0.9em;opacity:0.9">📦 المجموعة المختارة</div>
+            <div style="font-size:2em;font-weight:bold;margin:8px 0" id="displayGroup">-</div>
+            <div style="font-size:0.85em;opacity:0.85" id="displayGroupSub">-</div>
+        </div>
+        <div class="form-group" style="margin-top:25px"><label>📋 الشعبة</label><select id="sectionSelect"><option value="">📋 اختر الشعبة</option></select></div>
+        <div class="btn-row"><button class="btn btn-prev" id="btnPrev2">← رجوع</button><button class="btn btn-next" id="btnNext2">التالي ←</button></div>
+    </div>
+
+    <!-- الخطوة 3 -->
+    <div class="step" data-step="3">
+        <h2 style="margin-bottom:15px;color:var(--primary)">✏️ تسجيل الغياب</h2>
+        <p style="color:#666;font-size:0.9em;margin-bottom:20px">👆 انقر على اسم الطالب لتحديده غائباً</p>
+        <div class="stats"><div class="stat-box"><div class="stat-label">حاضر</div><div class="stat-number present" id="presentCount">0</div></div><div class="stat-box"><div class="stat-label">غائب</div><div class="stat-number absent" id="absentCount">0</div></div></div>
+        <div id="studentsList" style="max-height:400px;overflow-y:auto;margin:15px 0"></div>
+        <div class="btn-row"><button class="btn btn-prev" id="btnPrev3">← رجوع</button><button class="btn btn-danger" id="btnClear" style="flex:0.8">مسح الكل</button><button class="btn btn-next" id="btnNext3" style="flex:1.2">التالي ←</button></div>
+    </div>
+
+    <!-- الخطوة 4 -->
+    <div class="step" data-step="4">
+        <h2 style="margin-bottom:20px;color:var(--primary)">💾 مراجعة وحفظ</h2>
+        <div class="summary-box">
+            <div class="summary-row"><span class="summary-label">📅 التاريخ</span><span class="summary-value" id="sumDate">-</span></div>
+            <div class="summary-row"><span class="summary-label">👥 المجموعة</span><span class="summary-value" id="sumGroup">-</span></div>
+            <div class="summary-row"><span class="summary-label">📚 الشعبة</span><span class="summary-value" id="sumSection">-</span></div>
+            <div class="summary-row"><span class="summary-label">👤 المعلم</span><span class="summary-value" id="sumTeacher">-</span></div>
+            <div class="summary-row"><span class="summary-label">📊 إجمالي الطلاب</span><span class="summary-value" id="sumTotal">0</span></div>
+            <div class="summary-row"><span class="summary-label">✅ الحاضرون</span><span class="summary-value" id="sumPresent">0</span></div>
+            <div class="summary-row"><span class="summary-label">❌ الغائبون</span><span class="summary-value danger" id="sumAbsent">0</span></div>
+            <div class="summary-row" style="display:block"><span class="summary-label">📝 أسماء الغائبين</span><span class="summary-value danger" id="sumAbsentNames" style="display:block;margin-top:5px;font-size:0.9em">-</span></div>
+        </div>
+        <button class="btn btn-save" id="btnSaveGitHub" style="width:100%">☁️ حفظ الغياب</button>
+        <div id="saveStatus"></div>
+        <div class="btn-row" style="margin-top:15px"><button class="btn btn-prev" id="btnPrev4">← رجوع</button><button class="btn btn-next" id="btnReset" style="flex:0.8">جديد</button></div>
+    </div>
+</div>
+
+<!-- 🎴 بطاقة التنبيه المخصصة -->
+<div id="customModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-icon">⚠️</div>
+        <h3 id="modalTitle">تنبيه</h3>
+        <p id="modalMessage">هل تريد المتابعة؟</p>
+        <div class="modal-actions">
+            <button id="modalCancel" class="btn btn-prev" style="flex:1;">إلغاء</button>
+            <button id="modalConfirm" class="btn btn-save" style="flex:1;">موافق ومتابعة</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// === إدارة الحالة ===
+const state = { group:'', date:'', teacher:'', sectionsData:null, currentSection:null, students:[], absentIds:new Set() };
+const $ = id => document.getElementById(id);
+
+// === انتقال سلس من شاشة الترحيب ===
+$('enterAppBtn').addEventListener('click', () => {
+    document.getElementById('welcome-screen').classList.add('hidden');
+});
+
+// === عرض اسم المجموعة بوضوح ===
+function updateGroupDisplay() {
+    const g = $('displayGroup'), s = $('displayGroupSub');
+    if(!g) return;
+    if(state.group==='أ'){g.textContent='أ';s.textContent='المجموعة الأولى';}
+    else if(state.group==='ب'){g.textContent='ب';s.textContent='المجموعة الثانية';}
+    else{g.textContent='-';s.textContent='';}
+}
+
+// === تعبئة قائمة الشعب ===
+function populateSectionsDropdown() {
+    const sel = $('sectionSelect'); sel.innerHTML='<option value="">📋 اختر الشعبة</option>';
+    const secs = state.sectionsData.sections || [state.sectionsData];
+    secs.forEach(sec=>{
+        const id=(sec.section_id||'').trim(), label=(sec.section_label||id||'').trim();
+        if(!id) return;
+        const opt=document.createElement('option'); opt.value=id; opt.textContent=label; opt.dataset.label=label;
+        sel.appendChild(opt);
+    });
+}
+
+// === عرض بطاقات الطلاب ===
+function renderStudents() {
+    const list=$('studentsList'); list.innerHTML='';
+    if(!state.students.length){list.innerHTML='<div class="loading">لا يوجد طلاب في هذه الشعبة</div>';return;}
+    state.students.forEach(stu=>{
+        const id=(stu.id||'').trim(), name=(stu.name||id||'طالب').trim();
+        const card=document.createElement('div'); card.className='student-card'; card.id=`stu-${id}`;
+        card.innerHTML=`<div class="student-info"><div class="student-name">${name}</div><div class="student-id">ID: ${id}</div></div><div class="status-badge">حاضر</div>`;
+        card.addEventListener('click',()=>{
+            toggleAbsent(id);
+            const badge=card.querySelector('.status-badge');
+            if(state.absentIds.has(id)){card.classList.add('absent');badge.textContent='غائب';badge.style.background='var(--danger)';badge.style.color='white';}
+            else{card.classList.remove('absent');badge.textContent='حاضر';badge.style.background='var(--light)';badge.style.color='#666';}
+        });
+        list.appendChild(card);
+    });
+}
+
+// === تبديل الغياب ===
+function toggleAbsent(id){ state.absentIds.has(id)?state.absentIds.delete(id):state.absentIds.add(id); updateCounts(); }
+function updateCounts(){
+    const t=state.students.length, a=state.absentIds.size;
+    $('presentCount').textContent=t-a; $('absentCount').textContent=a;
+}
+
+// === تحديث الملخص ===
+function updateSummary(){
+    const secLabel=$('sectionSelect').selectedOptions[0]?.dataset.label||$('sectionSelect').value;
+    $('sumDate').textContent=state.date; $('sumGroup').textContent=state.group; $('sumSection').textContent=secLabel;
+    $('sumTeacher').textContent=state.teacher||'-'; $('sumTotal').textContent=state.students.length;
+    $('sumPresent').textContent=state.students.length-state.absentIds.size; $('sumAbsent').textContent=state.absentIds.size;
+    const names=state.students.filter(s=>state.absentIds.has((s.id||'').trim())).map(s=>(s.name||'').trim()).join('، ');
+    $('sumAbsentNames').textContent=names||'لا يوجد غياب';
+}
+
+// === جمع البيانات ===
+function getAttendanceData(){
+    const secLabel=$('sectionSelect').selectedOptions[0]?.dataset.label||$('sectionSelect').value;
+    return { 
+        date:state.date, teacher:state.teacher, group:state.group, 
+        section:secLabel, section_id:$('sectionSelect').value, 
+        total_students:state.students.length, absent_count:state.absentIds.size, 
+        absent_students:Array.from(state.absentIds), 
+        absent_names:state.students.filter(s=>state.absentIds.has((s.id||'').trim())).map(s=>(s.name||'').trim()), 
+        timestamp:new Date().toISOString() 
+    };
+}
+
+// === دالة عرض البطاقة المنبثقة ===
+function showCustomModal(message) {
+    return new Promise((resolve) => {
+        const modal = $('customModal');
+        $('modalMessage').textContent = message;
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+
+        const confirmBtn = $('modalConfirm');
+        const cancelBtn = $('modalCancel');
+
+        const close = (val) => {
+            modal.classList.remove('active');
+            setTimeout(() => { modal.style.display = 'none'; resolve(val); }, 200);
+            confirmBtn.removeEventListener('click', onConfirm);
+            cancelBtn.removeEventListener('click', onCancel);
+        };
+
+        const onConfirm = () => close(true);
+        const onCancel = () => close(false);
+
+        confirmBtn.addEventListener('click', onConfirm);
+        cancelBtn.addEventListener('click', onCancel);
+    });
+}
+
+// === حفظ مع تنبيه ذكي ومعالجة أخطاء دقيقة ===
+$('btnSaveGitHub').onclick = async () => {
+    const data = getAttendanceData();
+    const statusDiv = $('saveStatus');
+    const btn = $('btnSaveGitHub');
+
+    statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div><div>جاري التحقق...</div></div>`;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/save-attendance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+
+        if (result.exists && !data.overwrite) {
+            btn.disabled = false; statusDiv.innerHTML = '';
+            const confirmed = await showCustomModal(result.message || "⚠️ يوجد سجل محفوظ لهذه الشعبة اليوم.\nهل تريد استبدال البيانات الحالية؟");
+            if (confirmed) {
+                data.overwrite = true; btn.disabled = true;
+                statusDiv.innerHTML = `<div class="loading"><div class="spinner"></div><div>جاري التحديث...</div></div>`;
+                const resUpdate = await fetch('/api/save-attendance', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+                const updateResult = await resUpdate.json();
+                if(resUpdate.ok && updateResult.success) statusDiv.innerHTML=`<div class="status-message success">✅ تم تحديث السجل بنجاح!</div>`;
+                else throw new Error(updateResult.error||`خطأ في التحديث (${resUpdate.status})`);
+            } else statusDiv.innerHTML=`<div class="status-message error">❌ تم إلغاء العملية.</div>`;
+        } else if (res.ok && result.success) statusDiv.innerHTML=`<div class="status-message success">✅ تم الحفظ بنجاح!</div>`;
+        else throw new Error(result.error||`فشل الاتصال بالخادم (${res.status})`);
+    } catch (error) { statusDiv.innerHTML=`<div class="status-message error">❌ خطأ: ${error.message}</div>`; }
+    finally { btn.disabled = false; }
+};
+
+// === التنقل بين الخطوات ===
+function showStep(n){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    document.querySelectorAll('.progress-step').forEach((step,i)=>{
+        step.classList.remove('active','completed');
+        if(i+1<n) step.classList.add('completed');
+        if(i+1===n) step.classList.add('active');
+    });
+    if(n===2) updateGroupDisplay();
+    if(n===4) updateSummary();
+}
+function showNotification(msg,type){
+    const n=document.createElement('div'); n.className=`status-message ${type}`; n.textContent=msg;
+    n.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:1000;min-width:280px;';
+    document.body.appendChild(n); setTimeout(()=>n.remove(),3000);
+}
+function resetForm(){
+    state.group='';state.date='';state.teacher='';state.sectionsData=null;state.currentSection=null;state.students=[];state.absentIds.clear();
+    $('groupSelect').value='';$('teacherName').value='';$('attendanceDate').valueAsDate=new Date();
+    $('sectionSelect').innerHTML='<option value="">📋 اختر الشعبة</option>';$('studentsList').innerHTML='';$('saveStatus').innerHTML='';
+    updateCounts(); showStep(1);
+}
+
+// === أحداث الأزرار ===
+$('btnNext1').addEventListener('click',async()=>{
+    state.group=$('groupSelect').value;state.date=$('attendanceDate').value;state.teacher=$('teacherName').value;
+    if(!state.group||!state.date||!state.teacher) return showNotification('يرجى إكمال جميع الحقول','error');
+    $('btnNext1').disabled=true;$('btnNext1').textContent='جاري التحميل...';
+    try{
+        const res=await fetch(`/api/get-section?group=${encodeURIComponent(state.group)}`);
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        state.sectionsData=await res.json(); populateSectionsDropdown(); updateGroupDisplay(); showStep(2);
+    }catch(e){showNotification('خطأ في جلب البيانات: '+e.message,'error');}
+    finally{$('btnNext1').disabled=false;$('btnNext1').textContent='التالي ←';}
+});
+$('sectionSelect').addEventListener('change',()=>{
+    const id=$('sectionSelect').value; if(!id) return;
+    const secs=state.sectionsData.sections||[state.sectionsData];
+    state.currentSection=secs.find(s=>(s.section_id||'').trim()===id);
+    if(state.currentSection){state.students=state.currentSection.students||[];state.absentIds.clear();renderStudents();updateCounts();}
+});
+$('btnPrev2').onclick=()=>showStep(1);
+$('btnNext2').onclick=()=>$('sectionSelect').value?showStep(3):showNotification('يرجى اختيار الشعبة أولاً','error');
+$('btnPrev3').onclick=()=>showStep(2);
+$('btnClear').onclick=()=>{state.absentIds.clear();document.querySelectorAll('.student-card').forEach(c=>{c.classList.remove('absent');const b=c.querySelector('.status-badge');b.textContent='حاضر';b.style.background='var(--light)';b.style.color='#666';});updateCounts();showNotification('تم مسح جميع التحديدات','success');};
+$('btnNext3').onclick=()=>{updateSummary();showStep(4);};
+$('btnPrev4').onclick=()=>showStep(3);
+$('btnReset').onclick=resetForm;
+document.addEventListener('DOMContentLoaded',()=>{$('attendanceDate').valueAsDate=new Date();});
+</script>
+</body>
+</html>
