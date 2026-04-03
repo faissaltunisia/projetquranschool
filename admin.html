@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>إدارة مدرسة التحفيظ</title>
+    <style>
+        :root {
+            --primary-dark: #1a1a2e;
+            --primary-light: #16213e;
+            --accent: #f4c430;
+            --accent-hover: #d4a410;
+            --text-light: #ffffff;
+            --text-dark: #1a1a2e;
+            --bg-light: #f8f9fa;
+            --border: #e0e0e0;
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --radius: 16px;
+        }
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            margin: 0;
+            padding-bottom: 80px;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            color: var(--text-light);
+            padding: 20px 16px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+        }
+        .school-name {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+        .header-date {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 5px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-bottom: 3px solid var(--accent);
+            position: sticky;
+            top: 0;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: all 0.3s;
+            color: #999;
+        }
+        .nav-item.active {
+            color: var(--primary-dark);
+            background: var(--bg-light);
+        }
+        .nav-icon {
+            font-size: 1.5em;
+            margin-bottom: 4px;
+        }
+        .nav-label {
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9em;
+        }
+        .form-control {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            -webkit-appearance: none;
+        }
+        .form-control:focus {
+            border-color: var(--accent);
+            outline: none;
+            background: white;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1em;
+            transition: all 0.3s;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-primary {
+            background: var(--primary-dark);
+            color: var(--accent);
+        }
+        .btn-primary:hover {
+            background: var(--primary-light);
+        }
+        .btn-accent {
+            background: var(--accent);
+            color: var(--primary-dark);
+        }
+        .btn-accent:hover {
+            background: var(--accent-hover);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            width: auto;
+        }
+        
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        th, td {
+            padding: 14px 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        th {
+            background: var(--primary-dark);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr:hover {
+            background: #e8f4f8;
+        }
+        
+        /* Report Header */
+        .report-title {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 20px 0;
+            padding: 15px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+        
+        /* Footer */
+        .app-footer {
+            background: var(--primary-dark);
+            color: var(--accent);
+            text-align: center;
+            padding: 12px;
+            font-size: 0.85em;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 999;
+        }
+        
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        .section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* Print Area */
+        #printArea {
+            display: none;
+        }
+        
+        /* Print Styles */
+        @media print {
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
+            #printArea {
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 20px;
+                background: white;
+            }
+            .no-print, .top-nav, .app-footer, .app-header {
+                display: none !important;
+            }
+            .print-header {
+                text-align: center;
+                border-bottom: 3px solid var(--primary-dark);
+                padding-bottom: 15px;
+                margin-bottom: 20px;
+            }
+            .print-school {
+                font-size: 1.5em;
+                font-weight: 700;
+                color: var(--primary-dark);
+                margin-bottom: 5px;
+            }
+            .print-title {
+                font-size: 1.2em;
+                font-weight: 700;
+                color: var(--text-dark);
+                margin: 15px 0;
+            }
+            .print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .print-table th, .print-table td {
+                border: 1px solid #333;
+                padding: 12px;
+                text-align: center;
+            }
+            .print-table th {
+                background: #f0f0f0;
+                color: #000;
+            }
+            .print-btn {
+                background: var(--primary-dark);
+                color: var(--accent);
+                padding: 16px;
+                border-radius: 12px;
+                text-align: center;
+                font-weight: 700;
+                margin-top: 20px;
+                display: inline-block;
+                width: 100%;
+            }
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--accent);
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        /* Mobile */
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .school-name {
+                font-size: 1.1em;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="app-header">
+    <div class="school-name">🏫 مدرسة تحفيظ القرآن</div>
+    <div class="header-date" id="headerDate"></div>
+</header>
+
+<!-- Top Navigation -->
+<nav class="top-nav no-print">
+    <button class="nav-item active" onclick="showSection('students', this)">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">إدارة</span>
+    </button>
+    <button class="nav-item" onclick="showSection('student-report', this)">
+        <span class="nav-icon">📋</span>
+        <span class="nav-label">التقارير</span>
+    </button>
+    <button class="nav-item" onclick="showSection('correct', this)">
+        <span class="nav-icon">✏️</span>
+        <span class="nav-label">رصد</span>
+    </button>
+</nav>
+
+<div class="container">
+
+    <!-- إدارة الطلاب -->
+    <div id="students" class="section active">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 class="card-title" style="margin: 0;">👥 إدارة الطلاب</h3>
+                <button class="btn btn-accent" onclick="openAddStudentModal()" style="width: auto; padding: 10px 20px;">
+                    ➕ إضافة طالب
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <select class="form-control" id="filterGroup" onchange="renderStudents()">
+                    <option value="all">الكل</option>
+                    <option value="أ">المجموعة أ</option>
+                    <option value="ب">المجموعة ب</option>
+                </select>
+            </div>
+
+            <div id="loadingStudents" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <div>جاري التحميل...</div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>المجموعة</th>
+                            <th>الشعبة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- تقرير الطالب -->
+    <div id="student-report" class="section">
+        <div class="card">
+            <h3 class="card-title">📋 نوع التقرير</h3>
+            
+            <div class="form-group">
+                <select class="form-control" id="reportType">
+                    <option value="single">تقرير طالب مفرد</option>
+                    <option value="section">تقرير الشعبة</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>من:</label>
+                    <input type="date" class="form-control" id="fromDate">
+                </div>
+                <div class="form-group">
+                    <label>إلى:</label>
+                    <input type="date" class="form-control" id="toDate">
+                </div>
+            </div>
+
+            <div class="form-row" id="sectionFilters">
+                <div class="form-group">
+                    <label>المجموعة:</label>
+                    <select class="form-control" id="groupSelect" onchange="loadSections()">
+                        <option value="">اختر</option>
+                        <option value="أ">أ</option>
+                        <option value="ب">ب</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الشعبة:</label>
+                    <select class="form-control" id="sectionSelect" disabled>
+                        <option value="">اختر</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" id="studentFilter">
+                <label>الطالب:</label>
+                <select class="form-control" id="studentSelect" disabled>
+                    <option value="">اختر الطالب</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="generateReport()">
+                🔍 عرض التقرير
+            </button>
+        </div>
+
+        <div id="reportResult" style="display: none;">
+            <div class="report-title" id="reportTitle"></div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statDays">0</div>
+                    <div class="stat-label">إجمالي الأيام</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statAbsent">0</div>
+                    <div class="stat-label">الغياب</div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>م</th>
+                            <th>اليوم</th>
+                            <th>التاريخ</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTable"></tbody>
+                </table>
+            </div>
+
+            <button class="btn btn-accent" onclick="printReport()" style="margin-top: 20px;">
+                🖨️ طباعة التقرير
+            </button>
+        </div>
+
+        <!-- Print Area -->
+        <div id="printArea">
+            <div class="print-header">
+                <div class="print-school">مدرسة تحفيظ القرآن الكريم</div>
+                <div class="print-title" id="printTitle"></div>
+            </div>
+            <table class="print-table">
+                <thead>
+                    <tr>
+                        <th>م</th>
+                        <th>اليوم</th>
+                        <th>التاريخ</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="printTable"></tbody>
+            </table>
+            <div class="print-btn">تم طباعة التقرير</div>
+        </div>
+    </div>
+
+    <!-- تصحيح الغياب -->
+    <div id="correct" class="section">
+        <div class="card">
+            <h3 class="card-title">✏️ تصحيح الغياب</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>التاريخ:</label>
+                    <input type="date" class="form-control" id="correctDate">
+                </div>
+                <div class="form-group">
+                    <label>المجموعة:</label>
+                    <select class="form-control" id="correctGroup" onchange="loadCorrectStudents()">
+                        <option value="">اختر</option>
+                        <option value="أ">أ</option>
+                        <option value="ب">ب</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>الطالب:</label>
+                <select class="form-control" id="correctStudent" disabled>
+                    <option value="">اختر الطالب</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary" onclick="loadCorrectRecord()">
+                🔍 عرض السجل
+            </button>
+        </div>
+
+        <div id="correctResult" style="display: none;">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="correctTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal إضافة طالب -->
+<div id="addStudentModal" class="modal">
+    <div class="card" style="width: 90%; max-width: 500px; margin: 0;">
+        <h3 class="card-title">➕ إضافة طالب جديد</h3>
+        
+        <div class="form-group">
+            <label>اسم الطالب:</label>
+            <input type="text" class="form-control" id="newStudentName" placeholder="أدخل اسم الطالب الثلاثي">
+        </div>
+        
+        <div class="form-group">
+            <label>المجموعة:</label>
+            <select class="form-control" id="newStudentGroup">
+                <option value="أ">المجموعة أ</option>
+                <option value="ب">المجموعة ب</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>الشعبة:</label>
+            <input type="text" class="form-control" id="newStudentSection" placeholder="مثال: 1أ" value="1أ">
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="closeAddStudentModal()" style="flex: 1;">
+                ❌ إلغاء
+            </button>
+            <button class="btn btn-accent" onclick="saveNewStudent()" style="flex: 1;">
+                ✅ حفظ
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="app-footer no-print">
+    تصميم وبرمجة: أ. فيصل العربي | 2026
+</div>
+
+<script>
+    let allStudents = [];
+    let attendanceRecords = [];
+
+    // تهيئة التاريخ
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('headerDate').innerText = today.toLocaleDateString('ar-SA', options);
+    
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+    document.getElementById('fromDate').value = firstDayOfMonth;
+    document.getElementById('toDate').value = today.toISOString().split('T')[0];
+    document.getElementById('correctDate').value = today.toISOString().split('T')[0];
+
+    function showSection(id, navElement) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(navElement) navElement.classList.add('active');
+        
+        if(id === 'students') loadAllStudents();
+        if(id === 'student-report') loadAllStudents();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // تغيير نوع التقرير
+    document.getElementById('reportType').addEventListener('change', function() {
+        const type = this.value;
+        if(type === 'single') {
+            document.getElementById('studentFilter').style.display = 'block';
+            document.getElementById('sectionFilters').style.display = 'grid';
+        } else {
+            document.getElementById('studentFilter').style.display = 'none';
+            document.getElementById('sectionFilters').style.display = 'grid';
+        }
+    });
+
+    async function loadAllStudents() {
+        document.getElementById('loadingStudents').style.display = 'block';
+        try {
+            const resA = await fetch('/api/section-1.json');
+            const dataA = await resA.json();
+            const studentsA = (dataA.students || []).map(s => ({...s, group: 'أ', section: dataA.section_label}));
+
+            const resB = await fetch('/api/section-1%20(1).json');
+            const dataB = await resB.json();
+            const studentsB = (dataB.students || []).map(s => ({...s, group: 'ب', section: dataB.section_label}));
+
+            allStudents = [...studentsA, ...studentsB];
+            renderStudents();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            document.getElementById('loadingStudents').style.display = 'none';
+        }
+    }
+
+    function renderStudents() {
+        const tbody = document.getElementById('studentsTable');
+        const filter = document.getElementById('filterGroup').value;
+        tbody.innerHTML = '';
+        
+        const filtered = allStudents.filter(s => filter === 'all' || s.group === filter);
+        
+        if(filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="empty-state">لا يوجد طلاب</td></tr>';
+            return;
+        }
+        
+        filtered.forEach(stu => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${stu.name}</td>
+                    <td>${stu.group}</td>
+                    <td>${stu.section}</td>
+                    <td><button class="btn btn-danger" onclick="deleteStudent('${stu.id}', '${stu.group}')">🗑️</button></td>
+                </tr>`;
+        });
+    }
+
+    // Modal إضافة طالب
+    function openAddStudentModal() {
+        document.getElementById('addStudentModal').style.display = 'flex';
+        document.getElementById('newStudentName').value = '';
+        document.getElementById('newStudentGroup').value = 'أ';
+        document.getElementById('newStudentSection').value = '1أ';
+    }
+
+    function closeAddStudentModal() {
+        document.getElementById('addStudentModal').style.display = 'none';
+    }
+
+    async function saveNewStudent() {
+        const name = document.getElementById('newStudentName').value.trim();
+        const group = document.getElementById('newStudentGroup').value;
+        const section = document.getElementById('newStudentSection').value.trim();
+        
+        if(!name) {
+            alert('يرجى إدخال اسم الطالب');
+            return;
+        }
+        
+        if(!section) {
+            alert('يرجى إدخال الشعبة');
+            return;
+        }
+        
+        const newId = 's' + String(allStudents.filter(s => s.group === group).length + 1).padStart(3, '0');
+        const fileName = group === 'أ' ? 'section-1.json' : 'section-1%20(1).json';
+        
+        try {
+            const response = await fetch('/api/students', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'add',
+                    file: fileName,
+                    student: {
+                        id: newId,
+                        name: name
+                    }
+                })
+            });
+            
+            if(response.ok) {
+                alert('✅ تم إضافة الطالب بنجاح');
+                closeAddStudentModal();
+                loadAllStudents();
+            } else {
+                alert('❌ فشل إضافة الطالب');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('❌ خطأ في الاتصال');
+        }
+    }
+
+    function loadSections() {
+        const group = document.getElementById('groupSelect').value;
+        const sectionSelect = document.getElementById('sectionSelect');
+        const studentSelect = document.getElementById('studentSelect');
+        sectionSelect.innerHTML = '<option value="">اختر</option>';
+        studentSelect.innerHTML = '<option value="">اختر الطالب</option>';
+        studentSelect.disabled = true;
+        
+        if(group) {
+            const sections = [...new Set(allStudents.filter(s => s.group === group).map(s => s.section))];
+            sections.forEach(sec => {
+                sectionSelect.innerHTML += `<option value="${sec}">${sec}</option>`;
+            });
+            sectionSelect.disabled = false;
+        } else {
+            sectionSelect.disabled = true;
+        }
+    }
+
+    document.getElementById('sectionSelect').addEventListener('change', function() {
+        const group = document.getElementById('groupSelect').value;
+        const section = this.value;
+        const studentSelect = document.getElementById('studentSelect');
+        studentSelect.innerHTML = '<option value="">اختر الطالب</option>';
+        
+        if(section && group) {
+            const students = allStudents.filter(s => s.group === group && s.section === section);
+            students.forEach(stu => {
+                studentSelect.innerHTML += `<option value="${stu.id}" data-name="${stu.name}">${stu.name}</option>`;
+            });
+            studentSelect.disabled = false;
+        } else {
+            studentSelect.disabled = true;
+        }
+    });
+
+    async function generateReport() {
+        const type = document.getElementById('reportType').value;
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+        const group = document.getElementById('groupSelect').value;
+        const section = document.getElementById('sectionSelect').value;
+        
+        if(!fromDate || !toDate || !group || !section) {
+            alert('يرجى تعبئة جميع الحقول');
+            return;
+        }
+
+        if(type === 'single') {
+            const stuId = document.getElementById('studentSelect').value;
+            if(!stuId) {
+                alert('يرجى اختيار الطالب');
+                return;
+            }
+            await generateStudentReport(stuId, fromDate, toDate, group, section);
+        } else {
+            await generateSectionReport(fromDate, toDate, group, section);
+        }
+    }
+
+    async function generateStudentReport(stuId, fromDate, toDate, group, section) {
+        try {
+            const res = await fetch('/api/attendance-history');
+            attendanceRecords = await res.json();
+            
+            const student = allStudents.find(s => s.id === stuId);
+            const studentName = student ? student.name : 'طالب';
+            
+            document.getElementById('reportTitle').innerText = `تقرير: ${studentName}`;
+            
+            let studentRecords = [];
+            attendanceRecords.forEach(log => {
+                if(log.group !== group || log.section !== section) return;
+                if(log.date < fromDate || log.date > toDate) return;
+                
+                const isAbsent = log.absentIds && log.absentIds.includes(stuId);
+                const dayName = new Date(log.date).toLocaleDateString('ar-SA', { weekday: 'long' });
+                studentRecords.push({
+                    date: log.date,
+                    day: dayName,
+                    status: isAbsent ? 'غائب' : 'حاضر',
+                    isAbsent: isAbsent
+                });
+            });
+            
+            studentRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const total = studentRecords.length;
+            const absent = studentRecords.filter(r => r.isAbsent).length;
+            
+            document.getElementById('statDays').innerText = total;
+            document.getElementById('statAbsent').innerText = absent;
+            
+            const tbody = document.getElementById('reportTable');
+            tbody.innerHTML = '';
+            
+            if(studentRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">لا توجد سجلات</td></tr>';
+            } else {
+                studentRecords.forEach((r, i) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${r.day}</td>
+                            <td>${r.date}</td>
+                            <td><button class="btn btn-danger" onclick="deleteAttendance('${stuId}', '${r.date}')">🗑️</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('printTitle').innerText = `تقرير: ${studentName}`;
+            const printTbody = document.getElementById('printTable');
+            printTbody.innerHTML = '';
+            studentRecords.forEach((r, i) => {
+                printTbody.innerHTML += `<tr><td>${i + 1}</td><td>${r.day}</td><td>${r.date}</td><td>${r.status}</td></tr>`;
+            });
+            
+            document.getElementById('reportResult').style.display = 'block';
+            
+        } catch (e) {
+            console.error(e);
+            alert('خطأ في تحميل البيانات');
+        }
+    }
+
+    async function generateSectionReport(fromDate, toDate, group, section) {
+        try {
+            const res = await fetch('/api/attendance-history');
+            attendanceRecords = await res.json();
+            
+            document.getElementById('reportTitle').innerText = `تقرير الشعبة: ${section}`;
+            
+            let filtered = attendanceRecords.filter(r => 
+                r.group === group && r.section === section && r.date >= fromDate && r.date <= toDate
+            );
+            filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            const totalDays = filtered.length;
+            const totalAbsent = filtered.reduce((sum, r) => sum + (r.absent || 0), 0);
+            
+            document.getElementById('statDays').innerText = totalDays;
+            document.getElementById('statAbsent').innerText = totalAbsent;
+            
+            const tbody = document.getElementById('reportTable');
+            tbody.innerHTML = '';
+            
+            if(filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">لا توجد سجلات</td></tr>';
+            } else {
+                filtered.forEach((r, i) => {
+                    const dayName = new Date(r.date).toLocaleDateString('ar-SA', { weekday: 'long' });
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${i + 1}</td>
+                            <td>${dayName}</td>
+                            <td>${r.date}</td>
+                            <td><button class="btn btn-danger">🗑️</button></td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            document.getElementById('printTitle').innerText = `تقرير الشعبة: ${section}`;
+            const printTbody = document.getElementById('printTable');
+            printTbody.innerHTML = '';
+            filtered.forEach((r, i) => {
+                const dayName = new Date(r.date).toLocaleDateString('ar-SA', { weekday: 'long' });
+                printTbody.innerHTML += `<tr><td>${i + 1}</td><td>${dayName}</td><td>${r.date}</td><td>${r.absent} غائب</td></tr>`;
+            });
+            
+            document.getElementById('reportResult').style.display = 'block';
+            
+        } catch (e) {
+            console.error(e);
+            alert('خطأ في تحميل البيانات');
+        }
+    }
+
+    function printReport() {
+        const printContent = document.getElementById('printArea').innerHTML;
+        const originalContent = document.body.innerHTML;
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+        location.reload();
+    }
+
+    function loadCorrectStudents() {
+        const group = document.getElementById('correctGroup').value;
+        const studentSelect = document.getElementById('correctStudent');
+        studentSelect.innerHTML = '<option value="">اختر الطالب</option>';
+        
+        if(group) {
+            const students = allStudents.filter(s => s.group === group);
+            students.forEach(stu => {
+                studentSelect.innerHTML += `<option value="${stu.id}" data-section="${stu.section}">${stu.name}</option>`;
+            });
+            studentSelect.disabled = false;
+        } else {
+            studentSelect.disabled = true;
+        }
+    }
+
+    async function loadCorrectRecord() {
+        const stuId = document.getElementById('correctStudent').value;
+        const date = document.getElementById('correctDate').value;
+        const group = document.getElementById('correctGroup').value;
+        
+        if(!stuId || !date || !group) {
+            alert('يرجى تعبئة جميع الحقول');
+            return;
+        }
+        
+        const select = document.getElementById('correctStudent');
+        const section = select.options[select.selectedIndex].getAttribute('data-section');
+        
+        try {
+            if(attendanceRecords.length === 0) {
+                const res = await fetch('/api/attendance-history');
+                attendanceRecords = await res.json();
+            }
+            
+            const record = attendanceRecords.find(r => 
+                r.date === date && r.group === group && r.section === section
+            );
+            
+            const tbody = document.getElementById('correctTable');
+            tbody.innerHTML = '';
+            
+            if(!record) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">لا يوجد سجل</td></tr>';
+            } else {
+                const isAbsent = record.absentIds && record.absentIds.includes(stuId);
+                const status = isAbsent ? 'غائب' : 'حاضر';
+                const actionBtn = isAbsent ? 
+                    `<button class="btn btn-danger" onclick="confirmCorrection('${stuId}', '${date}', '${group}', '${section}', 'present')">✅ حاضر</button>` :
+                    `<button class="btn btn-danger" onclick="confirmCorrection('${stuId}', '${date}', '${group}', '${section}', 'absent')">❌ غائب</button>`;
+                
+                tbody.innerHTML += `<tr><td>${date}</td><td>${status}</td><td>${actionBtn}</td></tr>`;
+            }
+            
+            document.getElementById('correctResult').style.display = 'block';
+            
+        } catch (e) {
+            console.error(e);
+            alert('خطأ في التحميل');
+        }
+    }
+
+    async function confirmCorrection(stuId, date, group, section, newStatus) {
+        if(!confirm('هل أنت متأكد من التصحيح؟')) return;
+        
+        try {
+            const response = await fetch('/api/correct-attendance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, group, section, studentId: stuId, newStatus })
+            });
+            
+            if(response.ok) {
+                alert('تم التصحيح بنجاح ✅');
+                loadCorrectRecord();
+            } else {
+                alert('فشل التصحيح');
+            }
+        } catch (e) {
+            alert('خطأ في الاتصال');
+        }
+    }
+
+    async function deleteAttendance(stuId, date) {
+        if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+        alert('سيتم حذف السجل (يتطلب API)');
+    }
+
+    async function deleteStudent(id, group) {
+        if(!confirm('هل أنت متأكد من حذف الطالب؟')) return;
+        const file = group === 'أ' ? 'section-1.json' : 'section-1%20(1).json';
+        try {
+            const res = await fetch('/api/students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ action: 'delete', file, studentId: id })
+            });
+            if(res.ok) {
+                alert('تم الحذف بنجاح ✅');
+                loadAllStudents();
+            } else {
+                alert('فشل الحذف');
+            }
+        } catch(e) {
+            alert('خطأ في الاتصال');
+        }
+    }
+
+    // إغلاق Modal عند النقر خارجها
+    window.onclick = function(event) {
+        const modal = document.getElementById('addStudentModal');
+        if (event.target == modal) {
+            closeAddStudentModal();
+        }
+    }
+</script>
+</body>
+</html>

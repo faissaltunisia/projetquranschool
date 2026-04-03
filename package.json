@@ -1,0 +1,12 @@
+{
+  "name": "quran-attendance-system",
+  "version": "1.0.0",
+  "description": "نظام حضور مدرسة تحفيظ القرآن",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.0"
+  }
+}
