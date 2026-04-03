@@ -1,12 +1,9 @@
-// api/save-attendance.js
 import { Octokit } from "@octokit/rest";
 export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
-  }
-
+  if (req.method !== 'POST') return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 });
+  
   let data;
   try { data = await req.json(); } 
   catch { return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 }); }
@@ -14,43 +11,42 @@ export default async function handler(req) {
   const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
-  
-  if (!owner || !repo) {
-    return new Response(JSON.stringify({ error: 'Missing GITHUB env vars' }), { status: 500 });
-  }
 
-  const fileName = `attendance_logs/attendance_${data.date}_${data.group}.json`;
+  // إنشاء اسم ملف مستقل لكل شعبة يومياً
+  const safeSectionId = (data.section_id || 'unknown').trim().replace(/\s+/g, '_');
+  const fileName = `attendance_logs/attendance_${data.date}_${data.group}_${safeSectionId}.json`;
 
   try {
-    // محاولة جلب الملف الحالي للحصول على sha (مطلوب للتحديث)
-    let sha = null;
+    // التحقق من وجود الملف وجلب sha للتحديث الآمن
+    let existingSha = null;
     try {
-      const { data: existing } = await octokit.repos.getContent({ 
-        owner, repo, path: fileName 
-      });
-      sha = existing.sha;
-    } catch (e) {
-      if (e.status !== 404) throw e; // 404 = ملف جديد، مقبول
+      const { data: existing } = await octokit.repos.getContent({ owner, repo, path: fileName });
+      existingSha = existing.sha;
+    } catch (e) { if (e.status !== 404) throw e; }
+
+    // تنبيه إذا وُجد ملف سابق ولم يطلب المستخدم التعديل
+    if (existingSha && !data.overwrite) {
+      return new Response(JSON.stringify({
+        exists: true,
+        message: `⚠️ يوجد سجل محفوظ اليوم (${data.date}) للشعبة: ${data.section}\nهل تريد تعديل البيانات الحالية؟`
+      }), { status: 200 });
     }
 
-    const content = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
+    // تنظيف البيانات من الحقول الداخلية قبل الحفظ
+    const cleanData = { ...data };
+    delete cleanData.overwrite;
+    delete cleanData.sha;
 
+    const content = Buffer.from(JSON.stringify(cleanData, null, 2)).toString('base64');
     await octokit.repos.createOrUpdateFileContents({
       owner, repo, path: fileName,
-      message: `Attendance ${data.date} - Group ${data.group} - Section ${data.section || ''}`,
+      message: `Attendance ${data.date} - ${data.group} - ${safeSectionId}`,
       content,
-      ...(sha && { sha }) // إرسال sha فقط إذا كان الملف موجوداً
+      ...(existingSha && { sha: existingSha })
     });
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      saved: data.absent_count,
-      group: data.group,
-      section: data.section
-    }), { status: 200 });
-
+    return new Response(JSON.stringify({ success: true, action: existingSha ? 'updated' : 'created' }), { status: 200 });
   } catch (error) {
-    console.error('GitHub Save Error:', error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
