@@ -16,40 +16,38 @@ export default async function handler(req) {
   const repo = process.env.GITHUB_REPO;
 
   try {
-    // 1️⃣ جلب شجرة الملفات للعثور على ملفات attendance_logs فقط
-    const {  tree } = await octokit.git.getTree({
-      owner, repo, tree_sha: 'main', recursive: '1'
-    });
+    // ✅ قراءة مجلد attendance_logs مباشرة (أضمن من getTree)
+    let files = [];
+    try {
+      const res = await octokit.repos.getContent({ owner, repo, path: 'attendance_logs' });
+      files = Array.isArray(res.data) ? res.data : [];
+    } catch (e) {
+      if (e.status !== 404) throw e; // 404 يعني أن المجلد فارغ أو غير موجود بعد
+    }
 
-    const attendanceFiles = tree.tree.filter(f => 
-      f.path.startsWith('attendance_logs/') && f.path.endsWith('.json') && f.type === 'blob'
-    );
-
+    const jsonFiles = files.filter(f => f.name?.endsWith('.json') && f.type === 'file');
     let records = [];
 
-    // 2️⃣ قراءة كل ملف غياب وتحليله
-    for (const file of attendanceFiles) {
+    for (const file of jsonFiles) {
       try {
-        const {  content } = await octokit.repos.getContent({
+        const { data: content } = await octokit.repos.getContent({
           owner, repo, path: file.path
         });
-        const record = JSON.parse(Buffer.from(content.content, 'base64').toString('utf-8'));
-        
-        // تنظيف البيانات وضمان وجود الحقول الأساسية
+        const raw = JSON.parse(Buffer.from(content.content, 'base64').toString('utf-8'));
         records.push({
-          date: record.date || '',
-          group: record.group || '',
-          section_id: record.section_id || '',
-          section: record.section || '',
-          total: Number(record.total_students) || 0,
-          absent: Number(record.absent_count) || 0,
-          absentIds: Array.isArray(record.absent_students) ? record.absent_students : [],
-          absentNames: Array.isArray(record.absent_names) ? record.absent_names : []
+          date: raw.date || '',
+          group: raw.group || '',
+          section_id: raw.section_id || '',
+          section: raw.section || '',
+          total: Number(raw.total_students) || 0,
+          absent: Number(raw.absent_count) || 0,
+          absentIds: Array.isArray(raw.absent_students) ? raw.absent_students : [],
+          absentNames: Array.isArray(raw.absent_names) ? raw.absent_names : []
         });
       } catch { continue; }
     }
 
-    // 3️⃣ تصفية حسب المعايير المطلوبة
+    // 🔍 تصفية البيانات
     if (group) records = records.filter(r => r.group === group);
     if (section) records = records.filter(r => r.section_id === section || r.section.includes(section));
     
@@ -63,7 +61,7 @@ export default async function handler(req) {
       records = records.filter(r => new Date(r.date) >= d);
     }
 
-    // 4️⃣ معالجة الطلب حسب النوع
+    // 📊 معالجة الطلبات
     if (action === 'student-history' && studentId) {
       const history = records
         .filter(r => r.absentIds.includes(studentId))
@@ -73,7 +71,6 @@ export default async function handler(req) {
       });
     }
 
-    // 5️⃣ إحصائيات عامة
     const summary = {
       totalDays: new Set(records.map(r => r.date)).size,
       totalStudents: records.reduce((sum, r) => sum + r.total, 0),
@@ -83,7 +80,6 @@ export default async function handler(req) {
     };
     summary.avgRate = summary.totalStudents > 0 ? ((summary.totalAbsent / summary.totalStudents) * 100).toFixed(1) : 0;
 
-    // تجميع يومي
     const dayMap = {};
     records.forEach(r => {
       if (!dayMap[r.date]) dayMap[r.date] = { date: r.date, absent: 0, total: 0 };
@@ -92,7 +88,6 @@ export default async function handler(req) {
     });
     summary.dailyData = Object.values(dayMap).sort((a, b) => a.date.localeCompare(b.date));
 
-    // تجميع حسب الشعبة
     const secMap = {};
     records.forEach(r => {
       const key = r.section_id || r.section || 'غير محدد';
