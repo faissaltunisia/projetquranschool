@@ -44,14 +44,15 @@
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
         th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
         th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
 
         .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; }
         .btn-print { background: var(--primary); }
-        .btn-share { background: var(--accent); }
 
         @media print {
             body { background: white; padding: 0; }
@@ -104,7 +105,7 @@
         <div class="report-filters">
             <select id="rptGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
             <select id="rptSection"><option value="">الشعبة</option></select>
-            <select id="rptStudent"><option value="">اختر الطالب</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
             <button onclick="generateCustomReport()">📊 عرض التقرير</button>
         </div>
     </div>
@@ -112,7 +113,6 @@
     <div id="customReport"></div>
     <div id="reportActionsBtn" style="display:none; margin:10px 0;">
         <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
-        <button class="btn-act btn-share" onclick="navigator.clipboard.writeText(location.href).then(()=>alert('✅ تم نسخ الرابط'))">🔗 مشاركة</button>
     </div>
 </div>
 
@@ -121,19 +121,26 @@ const $ = id => document.getElementById(id);
 let trendChart, sectionChart;
 let allSections = [];
 
+// ✅ دالة تنظيف شاملة لإزالة المسافات الزائدة من المفاتيح والقيم
 function deepTrim(obj) {
     if (typeof obj === 'string') return obj.trim();
     if (Array.isArray(obj)) return obj.map(deepTrim);
-    if (obj && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    }
     return obj;
 }
 
+// ✅ تحديث قوائم الشعب ديناميكياً عند تغيير المجموعة
 function updateDropdowns() {
     const g = $('rptGroup').value || $('filterGroup').value;
-    const rSec = $('rptSection'); 
-    rSec.innerHTML = '<option value="">الشعبة</option>';
     const filtered = g ? allSections.filter(s => s.group === g) : allSections;
-    filtered.forEach(s => { if(s.section_id) { const o=document.createElement('option'); o.value=s.section_id; o.textContent=s.section_label||s.section_id; rSec.appendChild(o); } });
+    
+    // تحديث قائمة تقرير المخصص
+    $('rptSection').innerHTML = '<option value="">الشعبة</option>' + filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    // تحديث قائمة الفلتر العلوي
+    $('filterSection').innerHTML = '<option value="">كل الشعب</option>' + filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    
     updateRptStudents();
 }
 
@@ -141,14 +148,18 @@ function updateRptStudents() {
     const g = $('rptGroup').value, sec = $('rptSection').value;
     const stuSel = $('rptStudent');
     const type = document.querySelector('input[name="reportType"]:checked').value;
+    
     if (type === 'section') { stuSel.style.display = 'none'; return; }
     stuSel.style.display = 'block';
     stuSel.innerHTML = '<option value="">اختر الطالب</option>';
+    
     if(!g || !sec) return;
     const secData = allSections.find(s => s.group === g && s.section_id === sec);
     if(secData?.students) {
         secData.students.forEach(st => {
-            const o = document.createElement('option'); o.value = (st.id || '').trim(); o.textContent = (st.name || st.id || 'طالب').trim(); stuSel.appendChild(o);
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
         });
     }
 }
@@ -161,15 +172,22 @@ function getActualStudentCount() {
     return sections.reduce((sum, s) => sum + (s.students?.length || 0), 0);
 }
 
+// === تهيئة الصفحة ===
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // جلب البيانات وتنظيفها تلقائياً من المسافات الزائدة
         const [resA, resB] = await Promise.all([
             fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : {}),
             fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : {})
         ]);
-        allSections = [...deepTrim(resA).sections?.map(s=>({...s,group:'أ'}))||[], ...deepTrim(resB).sections?.map(s=>({...s,group:'ب'}))||[]];
+        
+        const dA = deepTrim(resA); const dB = deepTrim(resB);
+        const secA = (dA.sections || []).map(s => ({...s, group: 'أ'}));
+        const secB = (dB.sections || []).map(s => ({...s, group: 'ب'}));
+        allSections = [...secA, ...secB];
     } catch(e) { console.warn('فشل تحميل الشعب:', e); }
 
+    // ربط الأحداث
     $('filterGroup').addEventListener('change', () => { updateDropdowns(); loadReports(); });
     $('filterSection').addEventListener('change', () => loadReports());
     $('rptGroup').addEventListener('change', () => { updateDropdowns(); updateRptStudents(); });
@@ -193,6 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadReports();
 });
 
+// === تحميل التقارير العامة ===
 async function loadReports() {
     const btn = $('loadBtn'); btn.disabled = true; btn.textContent = '⏳ جاري القراءة...';
     const g = $('filterGroup').value, sec = $('filterSection').value, p = $('filterPeriod').value;
@@ -225,7 +244,7 @@ function renderTrendChart(d) {
     if(trendChart) trendChart.destroy(); 
     trendChart = new Chart($('trendChart').getContext('2d'), { 
         type:'line', 
-        data:{ labels:d.map(x=>x.date), datasets:[{label:'غائب',data:d.map(x=>x.absent),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.1)',fill:true,tension:0.3}]}, 
+        data:{ labels:d.map(x=>x.date), datasets:[{label:'غائب',d.map(x=>x.absent),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.1)',fill:true,tension:0.3}]}, 
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} 
     }); 
 }
@@ -240,6 +259,7 @@ function renderSectionChart(d) {
     }); 
 }
 
+// === إنشاء التقرير المخصص ===
 async function generateCustomReport() {
     const type = document.querySelector('input[name="reportType"]:checked').value;
     const g = $('rptGroup').value, sec = $('rptSection').value;
@@ -247,7 +267,7 @@ async function generateCustomReport() {
 
     const rpt = $('customReport');
     const btns = $('reportActionsBtn');
-    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">⏳ جاري جلب البيانات...</div>';
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">⏳ جاري جلب البيانات وإنشاء الجدول...</div>';
     rpt.classList.add('show');
     btns.style.display = 'none';
 
@@ -270,6 +290,7 @@ async function generateCustomReport() {
             }
             rpt.innerHTML = html;
         } else {
+            // 1️⃣ جلب ملخص الشعبة
             const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
             const json = await res.json();
             const summary = json.data || json.summary || {};
@@ -277,14 +298,40 @@ async function generateCustomReport() {
             
             const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
             let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</h2><h3>تقرير غياب شعبة: ${secLabel}</h3><p>المجموعة: ${g} | تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')}</p></div>`;
-            if(!summary.dailyData?.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذه الشعبة</p>`;
-            else {
-                html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>إجمالي الطلاب</th><th>عدد الغائبين</th><th>النسبة</th></tr></thead><tbody>`;
+            
+            // 2️⃣ جدول الملخص اليومي
+            if(summary.dailyData?.length) {
+                html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>إجمالي الطلاب</th><th>الغائبون</th><th>النسبة</th></tr></thead><tbody>`;
                 summary.dailyData.forEach((d,i) => {
                     const rate = d.total > 0 ? ((d.absent/d.total)*100).toFixed(1) : 0;
                     html += `<tr><td>${i+1}</td><td>${d.date}</td><td>${d.total}</td><td>${d.absent}</td><td>${rate}%</td></tr>`;
                 });
-                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📅 إجمالي أيام التسجيل: ${summary.totalDays || 0} | ❌ إجمالي الغياب: ${summary.totalAbsent || 0}</p>`;
+                html += `</tbody></table><p style="margin-top:10px;font-weight:bold;">📅 إجمالي أيام التسجيل: ${summary.totalDays || 0} | ❌ إجمالي الغياب: ${summary.totalAbsent || 0}</p>`;
+            } else {
+                html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذه الشعبة</p>`;
+            }
+
+            // 3️⃣ جلب بيانات الطلاب وعرض جدولهم أسفل التقرير
+            const secData = allSections.find(s => s.group === g && s.section_id === sec);
+            if(secData?.students?.length) {
+                html += `<div class="section-title">👥 سجل غياب طلاب الشعبة</div>`;
+                html += `<table><thead><tr><th>اسم الطالب</th><th>أيام الغياب</th><th>عدد المرات</th></tr></thead><tbody>`;
+                
+                // جلب الغياب لكل طالب بالتوازي
+                const studentsData = await Promise.all(secData.students.map(async stu => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stu.id)}`);
+                        const d = await r.json();
+                        const hist = (d.data?.history || d.history || []).map(h => h.date);
+                        return { name: stu.name, dates: hist };
+                    } catch { return { name: stu.name, dates: [] }; }
+                }));
+
+                studentsData.forEach(s => {
+                    const daysStr = s.dates.length > 0 ? s.dates.join('، ') : 'لا يوجد';
+                    html += `<tr><td style="font-weight:600">${s.name}</td><td style="font-size:0.85em;color:#555">${daysStr}</td><td>${s.dates.length}</td></tr>`;
+                });
+                html += `</tbody></table>`;
             }
             rpt.innerHTML = html;
         }
