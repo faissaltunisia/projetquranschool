@@ -14,47 +14,20 @@
         header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
         header p { color: #666; margin: 5px 0 0; }
 
-        /* === تنسيقات الفلاتر === */
         .filters, .report-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; }
         .filters { background: var(--light); padding: 15px; border-radius: 12px; }
         .filters select, .filters input, .report-filters select, .report-filters input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
         .filters button, .report-filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .filters button:disabled, .report-filters button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* === تنسيق أزرار الاختيار (Radio Buttons) بشكل بارز === */
         .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
         .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
-        .radio-group { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 15px; 
-            margin-bottom: 20px; 
-            background: white; 
-            padding: 15px; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .radio-label { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1.05em;
-            background: var(--light);
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-            flex: 1;
-            justify-content: center;
-        }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
         .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
-        /* تنسيق الزر النشط */
         .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
         .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
 
-        /* === الإحصائيات والرسوم === */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
         .stat-card { background: linear-gradient(135deg, var(--primary), #34495e); color: white; padding: 15px; border-radius: 12px; text-align: center; }
         .stat-card.green { background: linear-gradient(135deg, var(--secondary), #2ecc71); }
@@ -66,34 +39,24 @@
         .chart-box h3 { margin: 0 0 10px; color: var(--primary); font-size: 1em; }
         .chart-container { position: relative; height: 220px; }
 
-        /* === البحث السريع === */
-        .search-box { background: #fff3cd; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ffeeba; }
-        .search-box h3 { margin: 0 0 10px; color: #856404; }
-        
-        /* === التقرير المخصص والنتيجة === */
         #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
         #customReport.show { display: block; animation: slideIn 0.3s ease; }
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+
         .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
-        .absence-list { list-style: none; padding: 0; margin: 10px 0; max-height: 250px; overflow-y: auto; }
-        .absence-list li { padding: 8px 12px; margin: 4px 0; background: #fff5f5; border-right: 4px solid var(--danger); border-radius: 6px; display: flex; justify-content: space-between; font-size: 0.9em; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
         th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
         th { background: var(--light); color: var(--primary); font-weight: 600; }
 
-        /* === الأزرار العامة === */
         .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; }
         .btn-print { background: var(--primary); }
         .btn-share { background: var(--accent); }
-        .btn-csv { background: var(--secondary); }
 
-        /* === الطباعة === */
         @media print {
             body { background: white; padding: 0; }
             .container { box-shadow: none; max-width: 100%; padding: 10px; }
-            .filters, .stats-grid, .charts-grid, .search-box, .actions, .report-filters, .radio-group, #reportActionsBtn, .table-wrap { display: none !important; }
+            .filters, .stats-grid, .charts-grid, .report-filters, .radio-group, #reportActionsBtn { display: none !important; }
             #customReport { display: block !important; border: none; padding: 0; margin: 0; }
             #customReport table { width: 100%; border: 1px solid #000; }
             #customReport th, #customReport td { border: 1px solid #000; padding: 8px; }
@@ -112,7 +75,6 @@
 <div class="container">
     <header><h1>📊 تقارير وإحصائيات الغياب</h1><p>يتم جلب البيانات مباشرة من مجلد <code>attendance_logs/</code></p></header>
 
-    <!-- فلاتر التقرير العام -->
     <div class="filters">
         <select id="filterGroup"><option value="">كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
         <select id="filterSection"><option value="">كل الشعب</option></select>
@@ -133,61 +95,28 @@
         <div class="chart-box"><h3>🥧 أعلى 5 شعب غياباً</h3><div class="chart-container"><canvas id="sectionChart"></canvas></div></div>
     </div>
 
-    <!-- بحث سريع -->
-    <div class="search-box">
-        <h3>🔍 بحث سريع عن طالب</h3>
-        <div class="report-filters">
-            <select id="searchGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
-            <select id="searchSection"><option value="">الشعبة</option></select>
-            <input type="text" id="searchStudentQuick" placeholder="اسم الطالب أو رقمه">
-            <button onclick="searchStudentQuick()">🔎 بحث</button>
-        </div>
-        <div id="quickResult" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- 📄 نظام التقارير المخصصة (أزرار الاختيار هنا) -->
     <div class="report-builder">
         <h3>📄 إنشاء تقرير مخصص</h3>
-        
-        <!-- هنا أزرار الاختيار (Radio Buttons) -->
         <div class="radio-group">
             <label class="radio-label active">
-                <input type="radio" name="reportType" value="student" checked> 
-                👤 تقرير طالب محدد
+                <input type="radio" name="reportType" value="student" checked> 👤 تقرير طالب محدد
             </label>
             <label class="radio-label">
-                <input type="radio" name="reportType" value="section"> 
-                🏫 تقرير شعبة كاملة
+                <input type="radio" name="reportType" value="section"> 🏫 تقرير شعبة كاملة
             </label>
         </div>
-
         <div class="report-filters">
             <select id="rptGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
             <select id="rptSection"><option value="">الشعبة</option></select>
-            <!-- قائمة الطلاب تظهر فقط عند اختيار "طالب محدد" -->
             <select id="rptStudent"><option value="">اختر الطالب</option></select>
             <button onclick="generateCustomReport()">📊 عرض التقرير</button>
         </div>
     </div>
 
-    <!-- مكان عرض التقرير -->
     <div id="customReport"></div>
-    
-    <!-- أزرار التحكم بالتقرير -->
     <div id="reportActionsBtn" style="display:none; margin:10px 0;">
         <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
         <button class="btn-act btn-share" onclick="navigator.clipboard.writeText(location.href).then(()=>alert('✅ تم نسخ الرابط'))">🔗 مشاركة</button>
-    </div>
-
-    <div class="actions">
-        <button class="btn-act btn-csv" onclick="exportCSV()">📥 تصدير CSV للجدول العام</button>
-    </div>
-
-    <div class="table-wrap">
-        <table>
-            <thead><tr><th>التاريخ</th><th>المجموعة</th><th>الشعبة</th><th>إجمالي</th><th>غائب</th><th>النسبة</th></tr></thead>
-            <tbody id="tblBody"><tr><td colspan="6" style="text-align:center;color:#888;">اضغط "تحديث البيانات"</td></tr></tbody>
-        </table>
     </div>
 </div>
 
@@ -196,7 +125,6 @@ const $ = id => document.getElementById(id);
 let trendChart, sectionChart;
 let allSections = [];
 
-// دالة تنظيف المسافات
 function deepTrim(obj) {
     if (typeof obj === 'string') return obj.trim();
     if (Array.isArray(obj)) return obj.map(deepTrim);
@@ -204,57 +132,31 @@ function deepTrim(obj) {
     return obj;
 }
 
-// === تحديث القوائم ===
 function updateDropdowns() {
-    const g = $('rptGroup').value || $('filterGroup').value || $('searchGroup').value;
-    
-    // تحديث فلاتر التقارير
+    const g = $('rptGroup').value || $('filterGroup').value;
     const rSec = $('rptSection'); 
     rSec.innerHTML = '<option value="">الشعبة</option>';
     const filtered = g ? allSections.filter(s => s.group === g) : allSections;
     filtered.forEach(s => { if(s.section_id) { const o=document.createElement('option'); o.value=s.section_id; o.textContent=s.section_label||s.section_id; rSec.appendChild(o); } });
-    
-    // تحديث قوائم البحث السريع
-    updateSearchDropdowns();
-    // تحديث قائمة الطلاب إذا كانت ظاهرة
     updateRptStudents();
 }
 
 function updateRptStudents() {
     const g = $('rptGroup').value, sec = $('rptSection').value;
     const stuSel = $('rptStudent');
-    
-    // إخفاء قائمة الطلاب إذا تم اختيار "شعبة كاملة"
     const type = document.querySelector('input[name="reportType"]:checked').value;
-    if (type === 'section') {
-        stuSel.style.display = 'none';
-        return;
-    } else {
-        stuSel.style.display = 'block';
-    }
-
+    if (type === 'section') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
     stuSel.innerHTML = '<option value="">اختر الطالب</option>';
     if(!g || !sec) return;
-
     const secData = allSections.find(s => s.group === g && s.section_id === sec);
     if(secData?.students) {
         secData.students.forEach(st => {
-            const o = document.createElement('option'); 
-            o.value = (st.id || '').trim(); 
-            o.textContent = (st.name || st.id || 'طالب').trim(); 
-            stuSel.appendChild(o);
+            const o = document.createElement('option'); o.value = (st.id || '').trim(); o.textContent = (st.name || st.id || 'طالب').trim(); stuSel.appendChild(o);
         });
     }
 }
 
-function updateSearchDropdowns() {
-    const g = $('searchGroup').value;
-    const sec = $('searchSection'); sec.innerHTML = '<option value="">الشعبة</option>';
-    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
-    filtered.forEach(s => { if(s.section_id) { const o=document.createElement('option'); o.value=s.section_id; o.textContent=s.section_label||s.section_id; sec.appendChild(o); } });
-}
-
-// حساب العدد الفعلي للطلاب
 function getActualStudentCount() {
     const g = $('filterGroup').value, sec = $('filterSection').value;
     let sections = allSections;
@@ -263,7 +165,6 @@ function getActualStudentCount() {
     return sections.reduce((sum, s) => sum + (s.students?.length || 0), 0);
 }
 
-// === تهيئة الصفحة ===
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const [resA, resB] = await Promise.all([
@@ -273,24 +174,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         allSections = [...deepTrim(resA).sections?.map(s=>({...s,group:'أ'}))||[], ...deepTrim(resB).sections?.map(s=>({...s,group:'ب'}))||[]];
     } catch(e) { console.warn('فشل تحميل الشعب:', e); }
 
-    // ربط الأحداث
     $('filterGroup').addEventListener('change', () => { updateDropdowns(); loadReports(); });
     $('filterSection').addEventListener('change', () => loadReports());
-    $('searchGroup').addEventListener('change', updateSearchDropdowns);
-    
-    // أحداث تقرير مخصص
     $('rptGroup').addEventListener('change', () => { updateDropdowns(); updateRptStudents(); });
     $('rptSection').addEventListener('change', () => { updateRptStudents(); });
     
-    // ✅ تفعيل/تعطيل أزرار الاختيار (Radio Buttons) وتحديث القائمة
     document.querySelectorAll('input[name="reportType"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            const type = e.target.value;
-            // تغيير تنسيق الزر النشط
             document.querySelectorAll('.radio-label').forEach(l => l.classList.remove('active'));
             e.target.closest('.radio-label').classList.add('active');
-            
-            updateRptStudents(); // إخفاء/إظهار قائمة الطلاب
+            updateRptStudents();
         });
     });
 
@@ -304,7 +197,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadReports();
 });
 
-// === تحميل التقارير العامة ===
 async function loadReports() {
     const btn = $('loadBtn'); btn.disabled = true; btn.textContent = '⏳ جاري القراءة...';
     const g = $('filterGroup').value, sec = $('filterSection').value, p = $('filterPeriod').value;
@@ -329,32 +221,13 @@ async function loadReports() {
 
         renderTrendChart(summary.dailyData || []);
         renderSectionChart(summary.sectionData || []);
-        renderTable(summary.dailyData || []);
-    } catch(err) {
-        $('tblBody').innerHTML = `<tr><td colspan="6" style="color:var(--danger);text-align:center">${err.message}</td></tr>`;
-    } finally { btn.disabled = false; btn.textContent = '🔄 تحديث البيانات'; }
+    } catch(err) { console.error('خطأ التقارير:', err); }
+    finally { btn.disabled = false; btn.textContent = '🔄 تحديث البيانات'; }
 }
 
 function renderTrendChart(d) { if(trendChart) trendChart.destroy(); trendChart = new Chart($('trendChart').getContext('2d'), { type:'line', data:{ labels:d.map(x=>x.date), datasets:[{label:'غائب',data:d.map(x=>x.absent),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.1)',fill:true,tension:0.3}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}} }); }
 function renderSectionChart(d) { if(sectionChart) sectionChart.destroy(); const top=d.slice(0,5); sectionChart = new Chart($('sectionChart').getContext('2d'), { type:'doughnut', data:{labels:top.map(x=>x.section),datasets:[{data:top.map(x=>x.absent),backgroundColor:['#2c3e50','#27ae60','#e67e22','#8e44ad','#16a085'],borderWidth:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}} }); }
-function renderTable(d) { const tb=$('tblBody'); tb.innerHTML=''; if(!d.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:#888">لا توجد بيانات</td></tr>';return;} d.forEach(r=>{tb.innerHTML+=`<tr><td>${r.date}</td><td>-</td><td>جميع الشعب</td><td>${r.total}</td><td>${r.absent}</td><td>${r.total>0?((r.absent/r.total)*100).toFixed(1):0}%</td></tr>`;}); }
 
-// === بحث سريع ===
-async function searchStudentQuick() {
-    const q = $('searchStudentQuick').value.trim();
-    if(!q) return alert('أدخل اسم الطالب أو رقمه');
-    try {
-        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(q)}`);
-        const {success, data} = await res.json();
-        if(!success || !data.history?.length) return $('quickResult').innerHTML = '<p style="color:var(--secondary)">✅ لا يوجد غياب مسجل</p>';
-        let html = `<ul class="absence-list">`;
-        data.history.forEach(h => html += `<li><span>${h.date}</span><span>${h.group} - ${h.section}</span></li>`);
-        html += `</ul>`;
-        $('quickResult').innerHTML = html;
-    } catch(e) { $('quickResult').innerHTML = `<p style="color:red">خطأ: ${e.message}</p>`; }
-}
-
-// === إنشاء التقرير المخصص ===
 async function generateCustomReport() {
     const type = document.querySelector('input[name="reportType"]:checked').value;
     const g = $('rptGroup').value, sec = $('rptSection').value;
@@ -371,34 +244,35 @@ async function generateCustomReport() {
             const stuId = $('rptStudent').value;
             if(!stuId) return alert('يرجى اختيار الطالب من القائمة');
             const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stuId)}`);
-            const {success, data} = await res.json();
-            if(!success) throw new Error(data.error);
+            const json = await res.json();
+            const history = json.data?.history || json.history || [];
+            if(!json.success) throw new Error(json.error);
             
             const stuName = $('rptStudent').selectedOptions[0]?.text || stuId;
             let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</h2><h3>تقرير غياب طالب: ${stuName}</h3><p>المجموعة: ${g} | الشعبة: ${sec} | تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')}</p></div>`;
-            if(!data.history?.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذا الطالب</p>`;
+            if(!history.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذا الطالب</p>`;
             else {
                 html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>الشعبة</th><th>المجموعة</th></tr></thead><tbody>`;
-                data.history.forEach((h,i) => html += `<tr><td>${i+1}</td><td>${h.date}</td><td>${h.section}</td><td>${h.group}</td></tr>`);
-                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📊 إجمالي أيام الغياب: ${data.history.length}</p>`;
+                history.forEach((h,i) => html += `<tr><td>${i+1}</td><td>${h.date}</td><td>${h.section}</td><td>${h.group}</td></tr>`);
+                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📊 إجمالي أيام الغياب: ${history.length}</p>`;
             }
             rpt.innerHTML = html;
         } else {
-            // تقرير الشعبة الكاملة
             const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
-            const {success, data} = await res.json();
-            if(!success) throw new Error(data.error);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            if(!json.success) throw new Error(json.error);
+            
             const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
-
             let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</h2><h3>تقرير غياب شعبة: ${secLabel}</h3><p>المجموعة: ${g} | تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')}</p></div>`;
-            if(!data.summary?.dailyData?.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذه الشعبة</p>`;
+            if(!summary.dailyData?.length) html += `<p style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب مسجلة لهذه الشعبة</p>`;
             else {
                 html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>إجمالي الطلاب</th><th>عدد الغائبين</th><th>النسبة</th></tr></thead><tbody>`;
-                data.summary.dailyData.forEach((d,i) => {
+                summary.dailyData.forEach((d,i) => {
                     const rate = d.total > 0 ? ((d.absent/d.total)*100).toFixed(1) : 0;
                     html += `<tr><td>${i+1}</td><td>${d.date}</td><td>${d.total}</td><td>${d.absent}</td><td>${rate}%</td></tr>`;
                 });
-                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📅 إجمالي أيام التسجيل: ${data.summary.totalDays || 0} | ❌ إجمالي الغياب: ${data.summary.totalAbsent || 0}</p>`;
+                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📅 إجمالي أيام التسجيل: ${summary.totalDays || 0} | ❌ إجمالي الغياب: ${summary.totalAbsent || 0}</p>`;
             }
             rpt.innerHTML = html;
         }
@@ -406,12 +280,6 @@ async function generateCustomReport() {
     } catch(e) {
         rpt.innerHTML = `<p style="color:red;text-align:center;">❌ خطأ في جلب التقرير: ${e.message}</p>`;
     }
-}
-
-function exportCSV() {
-    let csv = '\ufeffالتاريخ,المجموعة,الشعبة,إجمالي,غائب,النسبة\n';
-    $('tblBody').querySelectorAll('tr').forEach(tr => csv += Array.from(tr.querySelectorAll('td')).map(td => td.textContent.replace(',', '،')).join(',') + '\n');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8;'})); a.download = `تقرير_الغياب_${new Date().toISOString().slice(0,10)}.csv`; a.click();
 }
 </script>
 </body>
