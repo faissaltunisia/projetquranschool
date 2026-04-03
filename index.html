@@ -25,7 +25,13 @@
             transform: translateY(0); transition: transform 0.4s ease;
         }
         .welcome-screen.hidden .welcome-card { transform: translateY(-30px); }
-        .welcome-icon { font-size: 4em; margin-bottom: 10px; }
+        
+        /* 🖼️ صورة المدرسة */
+        .welcome-img {
+            width: 110px; height: 110px; object-fit: contain;
+            margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+        
         .welcome-card h2 { color: #555; margin: 5px 0; font-size: 1.1em; font-weight: 600; }
         .welcome-card h3 { color: #444; margin: 5px 0; font-size: 1.25em; font-weight: 700; }
         .welcome-card h4 { color: #666; margin: 5px 0 15px; font-size: 1em; }
@@ -110,7 +116,9 @@
 <!-- 🕌 شاشة الترحيب الرسمية -->
 <div id="welcome-screen" class="welcome-screen">
     <div class="welcome-card">
-        <div class="welcome-icon">🕌</div>
+        <!-- ✅ تم استبدال الأيقونة بصورة مدرسة احترافية -->
+        <img src="https://cdn-icons-png.flaticon.com/512/2922/2922510.png" alt="مدرسة القرآن الكريم" class="welcome-img">
+        
         <h2>سلطنة عُمان</h2>
         <h3>وزارة التربية والتعليم</h3>
         <h4>محافظة ظفار</h4>
@@ -176,7 +184,7 @@
             <div class="summary-row"><span class="summary-label">❌ الغائبون</span><span class="summary-value danger" id="sumAbsent">0</span></div>
             <div class="summary-row" style="display:block"><span class="summary-label">📝 أسماء الغائبين</span><span class="summary-value danger" id="sumAbsentNames" style="display:block;margin-top:5px;font-size:0.9em">-</span></div>
         </div>
-        <button class="btn btn-save" id="btnSaveGitHub" style="width:100%">☁️ حفظ الغياب</button>
+        <button class="btn btn-save" id="btnSaveGitHub" style="width:100%">☁️ حفظ على GitHub</button>
         <div id="saveStatus"></div>
         <div class="btn-row" style="margin-top:15px"><button class="btn btn-prev" id="btnPrev4">← رجوع</button><button class="btn btn-next" id="btnReset" style="flex:0.8">جديد</button></div>
     </div>
