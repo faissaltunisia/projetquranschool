@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #27ae60; --light: #ecf0f1; --danger: #c0392b; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
+        header p { color: #666; margin: 5px 0 0; }
+
+        .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+        .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
+        .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
+
+        .report-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .report-filters select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .report-filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .report-filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+
+        .actions { display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
+        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; }
+        .btn-print { background: var(--primary); }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 10px; }
+            .report-filters, .radio-group, #reportActionsBtn { display: none !important; }
+            #customReport { display: block !important; border: none; padding: 0; margin: 0; }
+            #customReport table { width: 100%; border: 1px solid #000; }
+            #customReport th, #customReport td { border: 1px solid #000; padding: 8px; }
+            .report-header { display: block !important; border-bottom: 2px solid #000; margin-bottom: 20px; }
+        }
+        @media (max-width: 600px) {
+            .report-filters { grid-template-columns: 1fr 1fr; }
+            .radio-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header><h1>📄 تقارير الغياب</h1><p>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</p></header>
+
+    <div class="report-builder">
+        <h3>📋 إنشاء تقرير</h3>
+        <div class="radio-group">
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked> 👤 طالب محدد</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section"> 🏫 شعبة كاملة</label>
+        </div>
+        <div class="report-filters">
+            <select id="rptGroup"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
+            <select id="rptSection"><option value="">الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
+            <button onclick="generateCustomReport()">📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <div id="customReport"></div>
+    <div id="reportActionsBtn" style="display:none; margin:10px 0;">
+        <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+
+// ✅ دالة تنظيف المسافات
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    return obj;
+}
+
+// ✅ توحيد هيكل البيانات
+function normalizeData(raw, groupLetter) {
+    const clean = deepTrim(raw);
+    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
+    if (clean.section_id) return [{...clean, group: groupLetter}];
+    return [];
+}
+
+// ✅ تحديث القوائم
+function updateDropdowns() {
+    const g = $('rptGroup').value;
+    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
+    const secSel = $('rptSection');
+    secSel.innerHTML = '<option value="">الشعبة</option>' + filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    updateRptStudents();
+}
+
+function updateRptStudents() {
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    const stuSel = $('rptStudent');
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    
+    if (type === 'section') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
+    stuSel.innerHTML = '<option value="">اختر الطالب</option>';
+    
+    if(!g || !sec) return;
+    const secData = allSections.find(s => s.group === g && s.section_id === sec);
+    if(secData?.students) {
+        secData.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
+        });
+    }
+}
+
+// === تهيئة الصفحة ===
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const [resA, resB] = await Promise.all([
+            fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : {}),
+            fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : {})
+        ]);
+        allSections = [...normalizeData(resA, 'أ'), ...normalizeData(resB, 'ب')];
+    } catch(e) { console.warn('فشل تحميل الشعب:', e); }
+
+    $('rptGroup').addEventListener('change', () => { updateDropdowns(); });
+    $('rptSection').addEventListener('change', () => { updateRptStudents(); });
+    
+    document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.querySelectorAll('.radio-label').forEach(l => l.classList.remove('active'));
+            e.target.closest('.radio-label').classList.add('active');
+            updateRptStudents();
+        });
+    });
+
+    updateDropdowns();
+});
+
+// === إنشاء التقرير المخصص ===
+async function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    if(!g || !sec) return alert('يرجى اختيار المجموعة والشعبة');
+
+    const rpt = $('customReport');
+    const btns = $('reportActionsBtn');
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:20px;">⏳ جاري جلب البيانات...</div>';
+    rpt.classList.add('show');
+    btns.style.display = 'none';
+
+    try {
+        if(type === 'student') {
+            const stuId = $('rptStudent').value;
+            if(!stuId) return alert('يرجى اختيار الطالب');
+            const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stuId)}`);
+            const json = await res.json();
+            const history = json.data?.history || json.history || [];
+            
+            const stuName = $('rptStudent').selectedOptions[0]?.text || stuId;
+            let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</h2><h3>تقرير غياب طالب: ${stuName}</h3><p>المجموعة: ${g} | الشعبة: ${sec} | تاريخ: ${new Date().toLocaleDateString('ar-OM')}</p></div>`;
+            
+            if(!history.length) {
+                html += `<p style="text-align:center;color:var(--secondary);padding:20px;">✅ لا توجد سجلات غياب مسجلة لهذا الطالب</p>`;
+            } else {
+                html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>الشعبة</th><th>المجموعة</th></tr></thead><tbody>`;
+                history.forEach((h,i) => html += `<tr><td>${i+1}</td><td>${h.date}</td><td>${h.section}</td><td>${h.group}</td></tr>`);
+                html += `</tbody></table><p style="margin-top:15px;font-weight:bold;">📊 إجمالي أيام الغياب: ${history.length}</p>`;
+            }
+            rpt.innerHTML = html;
+        } else {
+            // تقرير شعبة كاملة
+            const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            
+            const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+            let html = `<div class="report-header"><h2>مدرسة تحفيظ القرآن الكريم - محافظة ظفار</h2><h3>تقرير غياب شعبة: ${secLabel}</h3><p>المجموعة: ${g} | تاريخ: ${new Date().toLocaleDateString('ar-OM')}</p></div>`;
+            
+            // 1️⃣ جدول الملخص اليومي
+            if(summary.dailyData?.length) {
+                html += `<h4 style="margin:15px 0 10px">📊 ملخص الغياب اليومي</h4>`;
+                html += `<table><thead><tr><th>#</th><th>التاريخ</th><th>إجمالي الطلاب</th><th>الغائبون</th><th>النسبة</th></tr></thead><tbody>`;
+                summary.dailyData.forEach((d,i) => {
+                    const rate = d.total > 0 ? ((d.absent/d.total)*100).toFixed(1) : 0;
+                    html += `<tr><td>${i+1}</td><td>${d.date}</td><td>${d.total}</td><td>${d.absent}</td><td>${rate}%</td></tr>`;
+                });
+                html += `</tbody></table><p style="margin-top:10px;font-weight:bold;">📅 إجمالي أيام التسجيل: ${summary.totalDays || 0} | ❌ إجمالي الغياب: ${summary.totalAbsent || 0}</p>`;
+            } else {
+                html += `<p style="text-align:center;color:var(--secondary);padding:20px">✅ لا توجد سجلات غياب مسجلة لهذه الشعبة</p>`;
+            }
+
+            // 2️⃣ جدول طلاب الشعبة مع غياب كل منهم
+            const secData = allSections.find(s => s.group === g && s.section_id === sec);
+            if(secData?.students?.length) {
+                html += `<div class="section-title">👥 سجل غياب طلاب الشعبة</div>`;
+                html += `<table><thead><tr><th>اسم الطالب</th><th>تواريخ الغياب</th><th>عدد الأيام</th></tr></thead><tbody>`;
+                
+                const studentsData = await Promise.all(secData.students.map(async stu => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stu.id)}`);
+                        const d = await r.json();
+                        return { name: stu.name, dates: (d.data?.history || d.history || []).map(h => h.date) };
+                    } catch { return { name: stu.name, dates: [] }; }
+                }));
+
+                studentsData.forEach(s => {
+                    const daysStr = s.dates.length > 0 ? s.dates.join('، ') : '-';
+                    html += `<tr><td style="font-weight:600">${s.name}</td><td style="font-size:0.85em;color:#555">${daysStr}</td><td>${s.dates.length}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+            rpt.innerHTML = html;
+        }
+        btns.style.display = 'flex';
+    } catch(e) {
+        rpt.innerHTML = `<p style="color:red;text-align:center;">❌ خطأ في جلب التقرير: ${e.message}</p>`;
+    }
+}
+</script>
+</body>
+</html>
