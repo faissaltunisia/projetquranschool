@@ -1,0 +1,18 @@
+{
+  "date": "2026-04-04",
+  "teacher": "فيصل",
+  "group": "ب",
+  "section": "الشعبة 2ب",
+  "section_id": "2ب",
+  "total_students": 2,
+  "absent_count": 2,
+  "absent_students": [
+    "b2-001",
+    "b2-002"
+  ],
+  "absent_names": [
+    "زيد نبيل الجهني",
+    "عادل جاسم البقمي"
+  ],
+  "timestamp": "2026-04-04T09:41:25.539Z"
+}
