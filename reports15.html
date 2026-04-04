@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root { 
+            --primary: #2c3e50; 
+            --secondary: #27ae60; 
+            --accent: #e67e22; 
+            --light: #ecf0f1; 
+            --danger: #c0392b;
+            --surface: #ffffff;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            padding: 20px; 
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: var(--surface); 
+            border-radius: var(--radius-lg); 
+            padding: 25px; 
+            box-shadow: var(--shadow-lg); 
+        }
+        header { 
+            text-align: center; 
+            margin-bottom: 25px; 
+            padding-bottom: 15px; 
+            border-bottom: 2px solid var(--light); 
+        }
+        header h1 { color: var(--primary); font-size: 1.5em; font-weight: 700; }
+        header p { color: #666; font-size: 0.9em; margin-top: 5px; }
+
+        /* === الفلاتر === */
+        .filters { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 20px; 
+            background: var(--light); 
+            padding: 15px; 
+            border-radius: var(--radius-md); 
+        }
+        .filters select { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border: 2px solid #ddd; 
+            border-radius: var(--radius-sm); 
+            font-size: 14px; 
+            background: white;
+            transition: border-color 0.2s;
+        }
+        .filters select:focus { 
+            border-color: var(--primary); 
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(44,62,80,0.1);
+        }
+        .filters button { 
+            background: var(--primary); 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            border-radius: var(--radius-sm); 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        .filters button:hover { background: #1a252f; transform: translateY(-1px); }
+        .filters button:active { transform: translateY(0); }
+        .filters button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* === جدول المقارنة === */
+        .comparison-section { margin-bottom: 30px; }
+        .comparison-section h3 { 
+            color: var(--primary); 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 2px solid var(--light);
+            font-size: 1.2em;
+        }
+        .comparison-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            background: white; 
+            border-radius: var(--radius-md); 
+            overflow: hidden; 
+            box-shadow: var(--shadow-md); 
+        }
+        .comparison-table th { 
+            background: var(--primary); 
+            color: white; 
+            padding: 14px 15px; 
+            text-align: right; 
+            font-weight: 600;
+            font-size: 0.9em;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .comparison-table td { 
+            padding: 14px 15px; 
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+        .comparison-table tr:hover { background: #f9f9f9; }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        
+        .bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--secondary); border-radius: 4px; transition: width 0.4s ease; }
+        
+        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; display: inline-block; }
+        .status-good { background: #e8f5e9; color: #2e7d32; }
+        .status-warning { background: #fff3e0; color: #e65100; }
+        .status-danger { background: #ffebee; color: #c62828; }
+
+        /* === منشئ التقارير === */
+        .report-builder { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            border-radius: var(--radius-md); 
+            border: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+        .report-builder h3 { 
+            color: var(--primary); 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 1px dashed #ccc;
+            font-size: 1.1em;
+        }
+        .radio-group { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+        .radio-label { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            background: white; 
+            padding: 10px 15px; 
+            border-radius: var(--radius-sm); 
+            border: 2px solid transparent; 
+            transition: all 0.2s;
+            font-size: 0.95em;
+            flex: 1;
+            min-width: 140px;
+            justify-content: center;
+        }
+        .radio-label:hover { border-color: var(--primary); background: #f8f9fa; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input { margin: 0; transform: scale(1.2); }
+        
+        .builder-filters { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 10px; 
+        }
+        .builder-filters select { 
+            padding: 12px 15px; 
+            border: 2px solid #ddd; 
+            border-radius: var(--radius-sm); 
+            font-size: 14px; 
+            background: white;
+            transition: border-color 0.2s;
+        }
+        .builder-filters select:focus { border-color: var(--secondary); outline: none; }
+        .builder-filters button { 
+            background: var(--secondary); 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            border-radius: var(--radius-sm); 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .builder-filters button:hover { background: #1e8449; transform: translateY(-1px); }
+        .builder-filters button:active { transform: translateY(0); }
+
+        /* === التقرير المخصص === */
+        #customReport { 
+            display: none; 
+            margin-top: 20px; 
+            padding: 20px; 
+            background: white; 
+            border: 2px solid var(--primary); 
+            border-radius: var(--radius-md); 
+            box-shadow: var(--shadow-md);
+        }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .report-header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            padding-bottom: 15px; 
+            border-bottom: 2px dashed #ccc; 
+        }
+        .report-header h2 { color: var(--primary); margin-bottom: 5px; font-size: 1.3em; }
+        .report-header p { color: #666; font-size: 0.85em; }
+        
+        .summary-box { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: var(--radius-sm); 
+            margin-bottom: 20px; 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+        }
+        .summary-item { 
+            text-align: center; 
+            min-width: 90px; 
+            flex: 1;
+            padding: 10px;
+            background: white;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+        }
+        .summary-item .label { font-size: 0.8em; color: #666; margin-bottom: 5px; }
+        .summary-item .value { font-size: 1.3em; font-weight: 700; color: var(--primary); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 12px 15px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .btn-print { 
+            background: var(--primary); 
+            color: white; 
+            padding: 12px 20px; 
+            border: none; 
+            border-radius: var(--radius-sm); 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-print:active { transform: translateY(0); }
+        
+        .alert { 
+            padding: 12px 15px; 
+            border-radius: var(--radius-sm); 
+            margin: 10px 0; 
+            font-size: 0.9em;
+            border-right: 4px solid;
+        }
+        .alert-info { background: #e3f2fd; color: #1565c0; border-color: #2196f3; }
+        .alert-error { background: #ffebee; color: #c62828; border-color: var(--danger); }
+
+        /* === تحسينات الهاتف الاحترافية === */
+        @media (max-width: 768px) {
+            /* تحسينات عامة */
+            body { 
+                padding: 12px; 
+                font-size: 15px;
+                -webkit-text-size-adjust: 100%;
+            }
+            .container { 
+                border-radius: var(--radius-md); 
+                padding: 16px;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            /* الهيدر */
+            header h1 { font-size: 1.3em; }
+            header p { font-size: 0.85em; }
+            
+            /* الفلاتر - تخطيط عمودي مع تحسين اللمس */
+            .filters { 
+                grid-template-columns: 1fr; 
+                gap: 10px;
+                padding: 12px;
+            }
+            .filters select,
+            .filters button {
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 48px; /* حجم مناسب للإصبع */
+            }
+            
+            /* عنوان القسم */
+            .comparison-section h3 {
+                font-size: 1.1em;
+                margin-bottom: 12px;
+            }
+            
+            /* جدول المقارنة - تحويل لبطاقات على الهاتف */
+            .comparison-table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                border-radius: var(--radius-sm);
+            }
+            .comparison-table thead {
+                display: table;
+                width: 100%;
+                table-layout: fixed;
+            }
+            .comparison-table tbody {
+                display: table;
+                width: 100%;
+                table-layout: fixed;
+            }
+            .comparison-table th,
+            .comparison-table td {
+                padding: 12px 10px;
+                font-size: 0.9em;
+                white-space: nowrap;
+            }
+            .comparison-table th {
+                position: sticky;
+                top: 0;
+                background: var(--primary);
+                z-index: 20;
+                font-size: 0.85em;
+            }
+            
+            /* شريط التقدم في الجدول */
+            .bar { height: 6px; }
+            
+            /* حالة الغياب */
+            .status {
+                padding: 4px 10px;
+                font-size: 0.75em;
+            }
+            
+            /* منشئ التقارير - تحسين اللمس */
+            .report-builder {
+                padding: 16px;
+            }
+            .report-builder h3 {
+                font-size: 1em;
+                margin-bottom: 12px;
+            }
+            .radio-group {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .radio-label {
+                padding: 12px 15px;
+                font-size: 1em;
+                min-height: 48px;
+                justify-content: flex-start;
+            }
+            .radio-label input {
+                transform: scale(1.3);
+                margin-left: 8px;
+            }
+            
+            .builder-filters {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .builder-filters select,
+            .builder-filters button {
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 48px;
+            }
+            
+            /* التقرير المخصص */
+            #customReport {
+                padding: 16px;
+                margin-top: 16px;
+            }
+            .report-header h2 {
+                font-size: 1.2em;
+            }
+            .report-header p {
+                font-size: 0.8em;
+            }
+            
+            /* صندوق الملخص - تخطيط عمودي */
+            .summary-box {
+                flex-direction: column;
+                gap: 10px;
+                padding: 12px;
+            }
+            .summary-item {
+                min-width: 100%;
+                padding: 12px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .summary-item .label {
+                margin: 0;
+                font-size: 0.9em;
+                color: #555;
+            }
+            .summary-item .value {
+                font-size: 1.2em;
+            }
+            
+            /* الجداول داخل التقرير */
+            #customReport table {
+                display: block;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                font-size: 0.85em;
+            }
+            #customReport th,
+            #customReport td {
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+            
+            /* زر الطباعة */
+            .btn-print {
+                padding: 14px 20px;
+                font-size: 15px;
+                min-height: 48px;
+                width: 100%;
+            }
+            
+            /* التنبيهات */
+            .alert {
+                padding: 12px 15px;
+                font-size: 0.9em;
+                margin: 8px 0;
+            }
+            
+            /* تحسينات إضافية للهاتف */
+            select, button, input {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+            }
+            select {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: left 12px center;
+                padding-right: 30px;
+            }
+            
+            /* منع التكبير غير المرغوب عند النقر على الحقول */
+            input, select, textarea, button {
+                font-size: 16px !important;
+            }
+            
+            /* تحسين التمرير */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: #c1c1c1;
+                border-radius: 3px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: #a1a1a1;
+            }
+        }
+
+        /* === تحسينات إضافية للشاشات الصغيرة جدًا === */
+        @media (max-width: 400px) {
+            body { padding: 8px; font-size: 14px; }
+            .container { padding: 12px; border-radius: var(--radius-sm); }
+            .filters, .builder-filters { padding: 10px; }
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px 8px;
+                font-size: 0.85em;
+            }
+            .summary-item {
+                padding: 10px;
+            }
+            .summary-item .value {
+                font-size: 1.1em;
+            }
+        }
+
+        /* === 🖨️ تنسيق الطباعة المحسن === */
+        @media print {
+            body * { visibility: hidden; }
+            #customReport, #customReport * { 
+                visibility: visible; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                margin: 0; 
+                padding: 15px; 
+                background: #fff; 
+                color: #000; 
+                font-size: 11pt;
+            }
+            .report-header { 
+                display: block !important; 
+                border-bottom: 3px double #000; 
+                padding-bottom: 12px;
+                margin-bottom: 15px;
+            }
+            .report-header h2 { font-size: 14pt; margin-bottom: 3px; }
+            .report-header p { font-size: 9pt; }
+            
+            #customReport table { 
+                border: 1px solid #000; 
+                font-size: 9pt;
+            }
+            #customReport th, 
+            #customReport td { 
+                border: 1px solid #000; 
+                background: #fff !important; 
+                padding: 6px 8px;
+            }
+            #customReport th { background: #f0f0f0 !important; }
+            
+            .summary-box {
+                border: 1px solid #000;
+                padding: 10px;
+            }
+            .summary-item {
+                border: none;
+                box-shadow: none;
+            }
+            
+            .filters, .comparison-section, .report-builder, #reportActions { 
+                display: none !important; 
+            }
+            
+            /* إخفاء العناصر غير الضرورية في الطباعة */
+            .bar, .status { display: none; }
+        }
+
+        /* === تحسينات الوصول === */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* دعم الوضع الداكن (اختياري) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --surface: #1a1a2e;
+                --light: #16213e;
+            }
+            body { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+            .container { background: var(--surface); }
+            .filters, .report-builder, .summary-box { background: #0f3460; }
+            select, .builder-filters select { background: #1a1a2e; color: #fff; border-color: #0f3460; }
+            .comparison-table, #customReport table { background: #1a1a2e; }
+            .comparison-table td, #customReport td { border-color: #0f3460; }
+            .comparison-table tr:hover, #customReport tr:hover { background: #0f3460; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📊 تقارير الغياب المدرسية</h1>
+        <p>مقارنة الشعب • إنشاء تقارير مفصلة</p>
+    </header>
+
+    <div class="filters">
+        <select id="filterGroup" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+        <select id="filterSection" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+        <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث</button>
+    </div>
+
+    <div class="comparison-section">
+        <h3>📈 مقارنة نسب الغياب بين الشعب</h3>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+            <table class="comparison-table">
+                <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
+                <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:20px;">⏳ جاري تحميل البيانات...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="report-builder">
+        <h3>📋 إنشاء تقرير مفصل</h3>
+        <div class="radio-group">
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
+        </div>
+        <div class="builder-filters">
+            <select id="rptGroup" onchange="onReportGroupChange()" disabled><option value="">✦ اختر المجموعة ✦</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+            <select id="rptSection" onchange="onReportSectionChange()" disabled><option value="">✦ اختر الشعبة ✦</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">✦ اختر الطالب ✦</option></select>
+            <button onclick="generateCustomReport()" id="genBtn" disabled>📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <div id="customReport"></div>
+    <div id="reportActions" style="display:none; margin-top:15px;"><button class="btn-print" onclick="printReport()">🖨️ طباعة التقرير</button></div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+let attendanceRecords = [];
+let dataLoaded = false;
+
+// ✅ دالة تنظيف المسافات من المفاتيح والقيم
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    }
+    return obj;
+}
+
+// === 📦 تحميل البيانات من واجهات API الخاصة بمشروعك ===
+async function loadData() {
+    try {
+        const [resA, resB] = await Promise.all([
+            fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        
+        const parseSections = (raw, group) => {
+            if (!raw) return [];
+            const clean = deepTrim(raw);
+            if (Array.isArray(clean)) return clean.map(s => ({...s, group}));
+            if (clean.sections) return clean.sections.map(s => ({...s, group}));
+            if (clean.section_id) return [{...clean, group}];
+            return [];
+        };
+        allSections = [...parseSections(resA, 'أ'), ...parseSections(resB, 'ب')];
+        
+        try {
+            const attRes = await fetch('/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31');
+            if (attRes.ok) {
+                const attData = await attRes.json();
+                const summary = attData.data || attData.summary || {};
+                if (summary.dailyData) {
+                    attendanceRecords = summary.dailyData.map(d => ({
+                        date: d.date,
+                        section_id: 'all',
+                        absent_ids: []
+                    }));
+                }
+            }
+        } catch(e) {
+            console.warn('⚠️ لم يتم تحميل سجلات الغياب:', e);
+        }
+        
+        if (allSections.length === 0) throw new Error('لا توجد بيانات شعب');
+        
+        ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn'].forEach(id => $(id).disabled = false);
+        $('filterGroup').innerHTML = `<option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+        $('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة ✦</option><option value="أ">أ</option><option value="ب">ب</option>`;
+        
+        updateSectionsDropdown();
+        onReportGroupChange();
+        loadComparisonTable();
+        dataLoaded = true;
+        
+    } catch(err) {
+        console.error('❌ فشل تحميل البيانات:', err);
+        $('comparisonBody').innerHTML = `<tr><td colspan="6" class="alert alert-error">❌ خطأ: ${err.message}<br><small>تأكد من تشغيل المشروع على Vercel</small></td></tr>`;
+        ['loadBtn','genBtn'].forEach(btn => $(btn).disabled = true);
+    }
+}
+
+function updateSectionsDropdown() {
+    const group = $('filterGroup').value;
+    const sel = $('filterSection');
+    const current = sel.value;
+    
+    sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
+    const sections = group ? allSections.filter(s => s.group === group) : allSections;
+    sections.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec.section_id;
+        opt.textContent = sec.section_label || sec.section_id;
+        sel.appendChild(opt);
+    });
+    if (current && [...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
+function onFilterChange() {
+    updateSectionsDropdown();
+    loadComparisonTable();
+}
+
+async function loadComparisonTable() {
+    if (!dataLoaded) return;
+    const group = $('filterGroup').value;
+    const section = $('filterSection').value;
+    const tbody = $('comparisonBody');
+    
+    let data = allSections.filter(s => (!group || s.group === group) && (!section || s.section_id === section));
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:20px;">لا توجد بيانات</td></tr>';
+        return;
+    }
+    
+    const results = await Promise.all(data.map(async sec => {
+        const studentCount = sec.students?.length || 0;
+        try {
+            const res = await fetch(`/api/get-reports?action=summary&group=${sec.group}&section=${sec.section_id}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            const absentDays = summary.totalAbsent || 0;
+            const totalDays = summary.totalDays || 1;
+            const rate = studentCount > 0 && totalDays > 0 ? ((absentDays / (studentCount * totalDays)) * 100).toFixed(1) : 0;
+            return {...sec, studentCount, absentDays, rate: parseFloat(rate)};
+        } catch {
+            return {...sec, studentCount, absentDays: 0, rate: 0};
+        }
+    }));
+    
+    const maxRate = Math.max(...results.map(r => r.rate), 1);
+    
+    tbody.innerHTML = results.map(sec => {
+        const barW = Math.min((sec.rate / maxRate) * 100, 100);
+        const status = sec.rate >= 5 ? {c:'status-danger',t:'🔴 عالي'} : sec.rate >= 2 ? {c:'status-warning',t:'🟡 متوسط'} : {c:'status-good',t:'🟢 منخفض'};
+        return `<tr>
+            <td><strong>${sec.section_label || sec.section_id}</strong></td>
+            <td>${sec.group}</td>
+            <td>${sec.studentCount}</td>
+            <td>${sec.absentDays}</td>
+            <td><strong>${sec.rate}%</strong><div class="bar"><div class="bar-fill" style="width:${barW}%"></div></div></td>
+            <td><span class="status ${status.c}">${status.t}</span></td>
+        </tr>`;
+    }).join('');
+}
+
+function toggleReportFields() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    $('rptStudent').style.display = (type === 'student') ? 'block' : 'none';
+    document.querySelectorAll('.radio-label').forEach(l => l.classList.toggle('active', l.querySelector('input').checked));
+    if (type === 'student' && $('rptSection').value) updateStudentsDropdown();
+}
+
+function onReportGroupChange() {
+    const group = $('rptGroup').value;
+    const secSel = $('rptSection'), stuSel = $('rptStudent');
+    secSel.disabled = !group;
+    secSel.innerHTML = '<option value="">✦ اختر الشعبة ✦</option>';
+    stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
+    stuSel.style.display = 'none';
+    
+    if (!group) return;
+    const sections = allSections.filter(s => s.group === group);
+    sections.forEach(sec => {
+        const opt = document.createElement('option');
+        opt.value = sec.section_id;
+        opt.textContent = sec.section_label || sec.section_id;
+        secSel.appendChild(opt);
+    });
+}
+
+function onReportSectionChange() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    if (type === 'student' && $('rptSection').value) {
+        updateStudentsDropdown();
+        $('rptStudent').style.display = 'block';
+    } else {
+        $('rptStudent').style.display = 'none';
+    }
+}
+
+function updateStudentsDropdown() {
+    const sec = $('rptSection').value;
+    const stuSel = $('rptStudent');
+    stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
+    const secData = allSections.find(s => s.section_id === sec);
+    secData?.students?.forEach(st => {
+        const opt = document.createElement('option');
+        opt.value = st.id; opt.textContent = st.name;
+        stuSel.appendChild(opt);
+    });
+}
+
+function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const group = $('rptGroup').value, section = $('rptSection').value;
+    if (!group || !section) return alert('❌ اختر المجموعة والشعبة');
+    if (type === 'student' && !$('rptStudent').value) return alert('❌ اختر الطالب');
+    
+    const rpt = $('customReport'), actions = $('reportActions');
+    rpt.innerHTML = '<div style="text-align:center;padding:30px;color:#666;">⏳ جاري الإنشاء...</div>';
+    rpt.classList.add('show');
+    actions.style.display = 'none';
+    
+    setTimeout(() => {
+        if (type === 'student') generateStudentReport(group, section, $('rptStudent').value, rpt);
+        else generateSectionReport(group, section, rpt);
+        actions.style.display = 'block';
+    }, 300);
+}
+
+async function generateStudentReport(group, section, studentId, container) {
+    const secData = allSections.find(s => s.section_id === section);
+    const student = secData?.students?.find(st => st.id === studentId);
+    if (!student) return container.innerHTML = '<div class="alert alert-error">❌ لم يُعثر على الطالب</div>';
+    
+    try {
+        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(studentId)}`);
+        const json = await res.json();
+        const history = json.data?.history || json.history || [];
+        
+        const totalDays = 20;
+        const rate = ((totalDays - history.length) / totalDays * 100).toFixed(0);
+        const status = history.length >= 5 ? {t:'🔴 متكرر',c:'var(--danger)'} : history.length >= 3 ? {t:'🟡 مراقبة',c:'var(--accent)'} : {t:'🟢 جيد',c:'var(--secondary)'};
+        
+        container.innerHTML = `
+            <div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <p>تقرير غياب طالب • ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>
+            <div style="text-align:center;margin-bottom:20px;">
+                <h3 style="color:var(--primary);margin-bottom:5px;">👤 ${student.name}</h3>
+                <p style="color:#666;">${secData.section_label} • المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value" style="color:${status.c}">${history.length}</div></div>
+                <div class="summary-item"><div class="label">الحالة</div><div class="value" style="font-size:1.1em;color:${status.c}">${status.t}</div></div>
+                <div class="summary-item"><div class="label">نسبة الحضور</div><div class="value">${rate}%</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:20px 0 10px;">📅 سجل الغياب</h4>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                <table><thead><tr><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>
+                    ${history.length ? history.map(h => `<tr><td>${h.date}</td><td style="color:var(--danger);font-weight:600">❌ غائب</td><td>${h.section || '-'}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب</td></tr>'}
+                </tbody></table>
+            </div>
+            ${history.length >= 3 ? `<div class="alert" style="background:#fff3e0;color:#e65100;margin-top:15px;">⚠️ تنبيه: يُرجى التواصل مع ولي الأمر</div>` : ''}
+        `;
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+    }
+}
+
+async function generateSectionReport(group, section, container) {
+    const secData = allSections.find(s => s.section_id === section);
+    const students = secData?.students || [];
+    
+    try {
+        const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+        const json = await res.json();
+        const summary = json.data || json.summary || {};
+        
+        const totalAbsent = summary.totalAbsent || 0;
+        const totalDays = summary.totalDays || 1;
+        const rate = students.length > 0 && totalDays > 0 ? ((totalAbsent / (students.length * totalDays)) * 100).toFixed(1) : 0;
+        
+        container.innerHTML = `
+            <div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <p>تقرير شعبة • ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>
+            <div style="text-align:center;margin-bottom:20px;">
+                <h3 style="color:var(--primary);margin-bottom:5px;">🏫 ${secData?.section_label || section}</h3>
+                <p style="color:#666;">المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">الطلاب</div><div class="value">${students.length}</div></div>
+                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value">${totalAbsent}</div></div>
+                <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:${rate>=5?'var(--danger)':rate>=2?'var(--accent)':'var(--secondary)'}">${rate}%</div></div>
+                <div class="summary-item"><div class="label">متوسط/طالب</div><div class="value">${students.length > 0 ? (totalAbsent/students.length).toFixed(1) : 0}</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:20px 0 10px;">👥 تفصيل الطلاب</h4>
+            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+                <table><thead><tr><th>الطالب</th><th>الغياب</th><th>الحضور%</th><th>الحالة</th></tr></thead><tbody>
+                    ${students.length ? await Promise.all(students.map(async st => {
+                        try {
+                            const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(st.id)}`);
+                            const d = await r.json();
+                            const stAbsent = (d.data?.history || d.history || []).length;
+                            const stRate = ((20 - stAbsent)/20*100).toFixed(0);
+                            const stSt = stAbsent >= 5 ? {t:'متكرر',c:'var(--danger)'} : stAbsent >= 3 ? {t:'مراقبة',c:'var(--accent)'} : {t:'جيد',c:'var(--secondary)'};
+                            return `<tr><td><strong>${st.name}</strong></td><td style="color:${stAbsent?'var(--danger)':'inherit'}">${stAbsent}</td><td>${stRate}%</td><td style="color:${stSt.c};font-weight:600">${stSt.t}</td></tr>`;
+                        } catch {
+                            return `<tr><td><strong>${st.name}</strong></td><td>-</td><td>-</td><td>-</td></tr>`;
+                        }
+                    })).then(rows => rows.join('')) : '<tr><td colspan="4" style="text-align:center;color:#666">لا توجد بيانات طلاب</td></tr>'}
+                </tbody></table>
+            </div>
+        `;
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+    }
+}
+
+function printReport() {
+    if (!$('customReport').innerHTML.trim()) return alert('❌ لا يوجد تقرير');
+    window.print();
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
