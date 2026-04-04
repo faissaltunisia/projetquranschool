@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; --warning: #f39c12; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
+        header p { color: #666; margin: 5px 0 0; }
+
+        .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; background: var(--light); padding: 15px; border-radius: 12px; }
+        .filters select, .filters input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .filters button:hover { background: #1a252f; }
+        .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+        .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
+        .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
+
+        /* ============================
+           🆕 لوحة الصحة المدرسية
+        ============================ */
+
+        /* الترويسة الجديدة */
+        .dash-header {
+            background: linear-gradient(135deg, #1a2940 0%, #2c3e50 60%, #1a5276 100%);
+            border-radius: 16px;
+            padding: 22px 25px 18px;
+            margin-bottom: 20px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+        .dash-header-title h1 { font-size: 1.4em; margin: 0 0 4px; color: #fff; }
+        .dash-header-title p { font-size: 0.8em; color: rgba(255,255,255,0.6); margin: 0; }
+        .dash-header-badge {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.85);
+            backdrop-filter: blur(4px);
+        }
+
+        /* شريط الفلاتر الأنيق */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 14px 16px;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            flex-wrap: wrap;
+            align-items: center;
+            border: 1px solid #eef0f3;
+        }
+        .filter-bar label {
+            font-size: 0.75em;
+            color: #888;
+            display: block;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+        .filter-bar select, .filter-bar input[type="date"] {
+            padding: 9px 12px;
+            border: 1.5px solid #e2e6ea;
+            border-radius: 9px;
+            font-size: 13px;
+            color: #333;
+            background: #f8f9fb;
+            min-width: 130px;
+            transition: border-color 0.2s;
+        }
+        .filter-bar select:focus, .filter-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .filter-bar .filter-group { display: flex; flex-direction: column; }
+        .filter-bar .filter-group.grow { flex: 1; }
+        .filter-refresh {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 9px;
+            font-weight: 700;
+            font-size: 0.88em;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(44,62,80,0.25);
+            margin-top: auto;
+        }
+        .filter-refresh:hover { background: linear-gradient(135deg, #1a252f, #2c3e50); transform: translateY(-1px); }
+        .filter-refresh:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* ====== الصف الأول: Gauge + مؤشرات سريعة ====== */
+        .dash-row1 {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        /* بطاقة Gauge الدائرية */
+        .gauge-card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 20px 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+            text-align: center;
+            border: 1px solid #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .gauge-card h4 { font-size: 0.85em; color: #666; margin: 0 0 10px; font-weight: 600; }
+        .gauge-wrap { position: relative; width: 160px; height: 90px; margin: 0 auto 10px; overflow: hidden; }
+        .gauge-svg { width: 160px; height: 90px; }
+        .gauge-center-text {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            text-align: center;
+            font-size: 1.6em;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+        .gauge-center-text span { font-size: 0.55em; font-weight: 400; color: #888; display: block; }
+        .gauge-labels { display: flex; justify-content: space-between; width: 160px; font-size: 0.7em; color: #aaa; margin-bottom: 8px; }
+        .gauge-status { font-size: 0.8em; font-weight: 600; padding: 4px 12px; border-radius: 12px; }
+        .gauge-status.good { background: #eafaf1; color: #1e8449; }
+        .gauge-status.warn { background: #fef9e7; color: #d68910; }
+        .gauge-status.bad { background: #fde8e8; color: #c0392b; }
+
+        /* بطاقات الأرقام السريعة */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .qs-card {
+            background: white;
+            border-radius: 14px;
+            padding: 16px 18px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            border: 1px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: transform 0.2s;
+        }
+        .qs-card:hover { transform: translateY(-2px); }
+        .qs-icon {
+            width: 46px; height: 46px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4em;
+            flex-shrink: 0;
+        }
+        .qs-icon.orange { background: #fff3e0; }
+        .qs-icon.red    { background: #fde8e8; }
+        .qs-icon.blue   { background: #e8f4fd; }
+        .qs-icon.purple { background: #f4ecf7; }
+        .qs-body { flex: 1; min-width: 0; }
+        .qs-body .qs-label { font-size: 0.75em; color: #888; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .qs-body .qs-val { font-size: 1.5em; font-weight: 800; color: var(--primary); line-height: 1.1; }
+        .qs-body .qs-sub { font-size: 0.72em; color: #999; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* ====== الصف الثاني: Sparkline + Top 3 ====== */
+        .dash-row2 {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* بطاقة Sparkline */
+        .sparkline-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 22px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            border: 1px solid #f0f2f5;
+        }
+        .sparkline-card h4 { font-size: 0.88em; color: #555; margin: 0 0 14px; display: flex; align-items: center; justify-content: space-between; }
+        .sparkline-card h4 span { font-size: 0.85em; color: #aaa; font-weight: 400; }
+        .spark-wrap { width: 100%; height: 80px; position: relative; }
+        .spark-svg { width: 100%; height: 80px; }
+        .spark-days { display: flex; justify-content: space-between; font-size: 0.68em; color: #bbb; margin-top: 4px; padding: 0 2px; }
+
+        /* بطاقة أعلى 3 طلاب */
+        .top3-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 20px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            border: 1px solid #f0f2f5;
+        }
+        .top3-card h4 { font-size: 0.88em; color: #555; margin: 0 0 14px; }
+        .top3-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .top3-rank {
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.78em; font-weight: 800;
+            flex-shrink: 0;
+        }
+        .top3-rank.r1 { background: #fff3cd; color: #856404; }
+        .top3-rank.r2 { background: #f0f2f5; color: #555; }
+        .top3-rank.r3 { background: #fde8e8; color: #c0392b; }
+        .top3-name { font-size: 0.85em; font-weight: 600; color: #333; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .top3-bar-wrap { flex: 2; }
+        .top3-bar { height: 6px; background: #f0f2f5; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+        .top3-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+        .top3-days { font-size: 0.78em; font-weight: 700; color: var(--danger); white-space: nowrap; }
+        .top3-empty { text-align: center; color: #aaa; font-size: 0.85em; padding: 20px 0; }
+
+        /* ====== رادار الشعب ====== */
+        .radar-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 22px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            border: 1px solid #f0f2f5;
+            margin-bottom: 20px;
+        }
+        .radar-card h4 {
+            font-size: 0.88em; color: #555; margin: 0 0 4px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .radar-card h4 .radar-sub { font-size: 0.82em; color: #aaa; font-weight: 400; }
+        .radar-legend {
+            display: flex; gap: 14px; margin-bottom: 14px; flex-wrap: wrap;
+            font-size: 0.75em; color: #666;
+        }
+        .radar-legend span { display: flex; align-items: center; gap: 4px; }
+        .radar-legend .dot {
+            width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+        }
+        .radar-table { width: 100%; border-collapse: collapse; }
+        .radar-table thead tr { border-bottom: 2px solid #f0f2f5; }
+        .radar-table th {
+            font-size: 0.75em; color: #999; font-weight: 600;
+            padding: 6px 10px; text-align: right;
+        }
+        .radar-table th:last-child { text-align: center; }
+        .radar-table tbody tr {
+            border-bottom: 1px solid #f7f8fa;
+            transition: background 0.15s;
+        }
+        .radar-table tbody tr:hover { background: #fafbfc; }
+        .radar-table td { padding: 10px 10px; vertical-align: middle; }
+        /* اسم الشعبة */
+        .rd-name { font-size: 0.88em; font-weight: 700; color: #2c3e50; }
+        .rd-group { font-size: 0.72em; color: #aaa; font-weight: 400; margin-top: 1px; }
+        /* شريط الغياب */
+        .rd-bar-cell { width: 38%; }
+        .rd-bar-wrap { display: flex; align-items: center; gap: 8px; }
+        .rd-bar-bg { flex: 1; height: 7px; background: #f0f2f5; border-radius: 4px; overflow: hidden; }
+        .rd-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+        .rd-pct { font-size: 0.8em; font-weight: 700; min-width: 36px; text-align: left; }
+        /* الطلاب تحت المراقبة */
+        .rd-risk { font-size: 0.82em; font-weight: 700; text-align: center; }
+        /* الاتجاه */
+        .rd-trend { text-align: center; font-size: 1em; }
+        /* حالة الشعبة */
+        .rd-badge {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 20px; font-size: 0.75em; font-weight: 700;
+            white-space: nowrap;
+        }
+        .rd-badge.safe   { background: #eafaf1; color: #1e8449; }
+        .rd-badge.warn   { background: #fef9e7; color: #d68910; }
+        .rd-badge.danger { background: #fde8e8; color: #c0392b; }
+        .rd-empty { text-align: center; color: #aaa; font-size: 0.85em; padding: 24px 0; }
+
+        /* تنبيهات */
+        #adminAlerts .alert { border-radius: 10px; }
+
+
+
+        /* === جدول المقارنة بين الشعب === */
+        .comparison-table { margin-top: 20px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .comparison-table table { width: 100%; border-collapse: collapse; }
+        .comparison-table th { background: var(--primary); color: white; padding: 12px; text-align: right; }
+        .comparison-table td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        .comparison-table tr:hover { background: #f9f9f9; }
+        .bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--secondary); border-radius: 4px; transition: width 0.3s; }
+
+        #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-act:hover { opacity: 0.9; }
+        .btn-print { background: var(--primary); }
+
+        .alert { padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 0.9em; }
+        .alert-info { background: #e3f2fd; color: #1565c0; border-right: 4px solid #2196f3; }
+        .alert-warning { background: #fff3e0; color: #e65100; border-right: 4px solid #f57c00; }
+
+        @media print {
+            body > * { display: none !important; }
+            #printFrame {
+                position: fixed !important;
+                top: 0 !important; left: 0 !important;
+                width: 100% !important; height: 100% !important;
+                display: block !important;
+                border: none !important;
+                z-index: 99999;
+            }
+        }
+
+        /* ============================================================
+           📱 تصميم الهاتف الاحترافي — max-width: 768px
+        ============================================================ */
+        @media (max-width: 768px) {
+            body { padding: 0; background: #f0f2f8; background-image: none; }
+            .container { border-radius: 0; padding: 0; box-shadow: none; background: #f0f2f8; max-width: 100%; }
+
+            /* ترويسة */
+            .dash-header {
+                border-radius: 0;
+                padding: 16px;
+                position: sticky; top: 0; z-index: 100;
+                box-shadow: 0 3px 12px rgba(0,0,0,0.25);
+                gap: 8px;
+            }
+            .dash-header-title h1 { font-size: 1em; }
+            .dash-header-title p { font-size: 0.72em; }
+            .dash-header-badge { font-size: 0.72em; padding: 4px 10px; }
+
+            /* شريط الفلاتر */
+            .filter-bar {
+                border-radius: 0;
+                flex-direction: column;
+                padding: 12px;
+                gap: 8px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+                margin-bottom: 0;
+            }
+            .filter-bar select, .filter-bar input[type="date"] {
+                width: 100%;
+                padding: 11px 12px;
+                font-size: 14px;
+            }
+            .filter-bar .filter-group { width: 100%; }
+            .filter-refresh {
+                width: 100%;
+                padding: 12px;
+                font-size: 0.95em;
+                border-radius: 10px;
+                margin-top: 4px;
+            }
+
+            /* تنبيهات */
+            #adminAlerts { padding: 0 12px; margin-top: 10px; }
+            .alert { border-radius: 10px; font-size: 0.85em; padding: 11px 13px; margin: 6px 0; }
+
+            /* الصف الأول: gauge فوق، بطاقات تحت */
+            .dash-row1 {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 12px;
+            }
+            .gauge-card { padding: 16px; }
+            .quick-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .qs-card { padding: 12px; gap: 10px; }
+            .qs-icon { width: 38px; height: 38px; font-size: 1.1em; border-radius: 10px; }
+            .qs-body .qs-val { font-size: 1.3em; }
+            .qs-body .qs-label { font-size: 0.7em; }
+            .qs-body .qs-sub { font-size: 0.68em; }
+
+            /* الصف الثاني: عمود واحد */
+            .dash-row2 {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 0 12px;
+            }
+            .sparkline-card, .top3-card { padding: 14px 14px; }
+
+            /* خريطة الحرارة */
+            .heatmap-card { margin: 0 12px 12px; padding: 14px; }
+            .heatmap-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+            .heatmap-cell { padding: 8px 4px; border-radius: 8px; }
+            .heatmap-cell .hm-day { font-size: 0.68em; }
+            .heatmap-cell .hm-val { font-size: 0.95em; }
+
+            /* رادار الشعب */
+            .radar-card { margin: 0 12px 12px; padding: 14px; border-radius: 14px; }
+            .radar-card h4 { font-size: 0.85em; flex-wrap: wrap; gap: 4px; }
+            .radar-legend { font-size: 0.7em; gap: 8px; margin-bottom: 10px; }
+            .radar-table { font-size: 0.78em; }
+            .radar-table th { padding: 5px 6px; font-size: 0.72em; }
+            .radar-table td { padding: 8px 6px; }
+            /* إخفاء عمود الاتجاه على الشاشات الضيقة */
+            .radar-table th:nth-child(4),
+            .radar-table td:nth-child(4) { display: none; }
+            .rd-badge { font-size: 0.7em; padding: 2px 7px; }
+            .rd-name { font-size: 0.82em; }
+            .rd-group { font-size: 0.68em; }
+
+            /* منشئ التقارير */
+            .report-builder {
+                margin: 12px;
+                padding: 16px;
+                border-radius: 16px;
+                background: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+                border: none;
+            }
+            .report-builder h3 { font-size: 0.95em; margin-bottom: 14px; padding-bottom: 10px; }
+            .radio-group {
+                display: grid; grid-template-columns: 1fr 1fr;
+                gap: 8px; margin-bottom: 14px;
+                background: transparent; padding: 0; box-shadow: none;
+            }
+            .radio-label {
+                padding: 12px 8px; border-radius: 10px; font-size: 0.88em;
+                background: #f0f2f8; border: 2px solid transparent;
+                text-align: center; justify-content: center; gap: 6px;
+            }
+            .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+            .radio-label input[type="radio"] { display: none; }
+            .filters {
+                display: flex; flex-direction: column;
+                background: transparent; padding: 0; margin: 0; gap: 0;
+                border: none; box-shadow: none;
+            }
+            .filters select, .filters input { margin-bottom: 8px; padding: 12px 14px; border-radius: 10px; font-size: 14px; background: #f8f9fb; border: 1.5px solid #dde2e8; }
+            .filters button {
+                background: linear-gradient(135deg, #27ae60, #1e8449);
+                width: 100%; padding: 14px; font-size: 1em;
+                border-radius: 12px; color: white; border: none; cursor: pointer; font-weight: 700;
+                box-shadow: 0 4px 12px rgba(39,174,96,0.35); letter-spacing: 0.3px;
+            }
+
+            /* منطقة التقرير */
+            #customReport { margin: 12px; padding: 16px; border-radius: 16px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.07); font-size: 0.88em; }
+            #customReport table { font-size: 0.82em; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+            #customReport th, #customReport td { padding: 9px 10px; white-space: normal; min-width: 80px; }
+            #customReport div[style*="background:#f8f9fa"] { border-radius: 10px; font-size: 0.9em; padding: 12px !important; line-height: 1.8; }
+
+            /* زر الطباعة */
+            #reportActionsBtn { margin: 0 12px 16px !important; }
+            .btn-act { width: 100%; padding: 14px; font-size: 0.95em; border-radius: 12px; justify-content: center; box-shadow: 0 3px 10px rgba(44,62,80,0.25); }
+
+            /* جدول المقارنة */
+            #sectionComparison { margin: 0 12px 12px; border-radius: 14px; }
+            #sectionComparison h4 { font-size: 0.9em; margin: 12px !important; }
+            .comparison-table table { font-size: 0.78em; }
+            .comparison-table th { padding: 9px 8px; font-size: 0.8em; }
+            .comparison-table td { padding: 8px; }
+            .comparison-table th:nth-child(2), .comparison-table td:nth-child(2) { display: none; }
+
+            table { font-size: 0.82em; display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        }
+
+        @media (max-width: 380px) {
+            .dash-header-title h1 { font-size: 0.92em; }
+            .quick-stats { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .qs-card { padding: 10px; gap: 8px; }
+            .qs-body .qs-val { font-size: 1.15em; }
+            .heatmap-grid { grid-template-columns: repeat(3, 1fr); }
+            .radio-group { grid-template-columns: 1fr 1fr; }
+            .radio-label { font-size: 0.82em; padding: 10px 6px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- ترويسة اللوحة -->
+    <div class="dash-header">
+        <div class="dash-header-title">
+            <h1>📊 لوحة مراقبة الغياب</h1>
+            <p>مدرسة تحفيظ القرآن الكريم — نظام التحليل الذكي</p>
+        </div>
+        <div class="dash-header-badge" id="lastUpdated">آخر تحديث: —</div>
+    </div>
+
+    <!-- شريط الفلاتر -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label>المجموعة</label>
+            <select id="filterGroup" onchange="onFilterChange()">
+                <option value="">📁 الكل</option>
+                <option value="أ">المجموعة (أ)</option>
+                <option value="ب">المجموعة (ب)</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>الشعبة</label>
+            <select id="filterSection" onchange="onFilterChange()">
+                <option value="">🏫 الكل</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>الفترة</label>
+            <select id="filterPeriod" onchange="onPeriodChange()">
+                <option value="week">آخر 7 أيام</option>
+                <option value="month" selected>آخر 30 يوم</option>
+                <option value="custom">مخصصة</option>
+            </select>
+        </div>
+        <div class="filter-group" id="dateStartGroup" style="display:none;">
+            <label>من</label>
+            <input type="date" id="filterStart">
+        </div>
+        <div class="filter-group" id="dateEndGroup" style="display:none;">
+            <label>إلى</label>
+            <input type="date" id="filterEnd">
+        </div>
+        <button class="filter-refresh" id="loadBtn" onclick="loadReports()">🔄 تحديث</button>
+    </div>
+
+    <!-- 🚨 تنبيهات إدارية -->
+    <div id="adminAlerts"></div>
+
+    <!-- ====== الصف الأول: Gauge + بطاقات سريعة ====== -->
+    <div class="dash-row1">
+        <!-- مقياس الحضور الدائري -->
+        <div class="gauge-card">
+            <h4>🩺 نبض الحضور العام</h4>
+            <div class="gauge-wrap">
+                <svg class="gauge-svg" viewBox="0 0 160 90" xmlns="http://www.w3.org/2000/svg">
+                    <!-- مسار الخلفية -->
+                    <path d="M 15 85 A 65 65 0 0 1 145 85" fill="none" stroke="#f0f2f5" stroke-width="14" stroke-linecap="round"/>
+                    <!-- مسار القيمة -->
+                    <path id="gaugeFill" d="M 15 85 A 65 65 0 0 1 145 85" fill="none" stroke="#27ae60" stroke-width="14" stroke-linecap="round"
+                          stroke-dasharray="204" stroke-dashoffset="204"/>
+                </svg>
+                <div class="gauge-center-text">
+                    <span id="gaugeVal">—</span>
+                    <span>حضور</span>
+                </div>
+            </div>
+            <div class="gauge-labels"><span>0%</span><span>100%</span></div>
+            <div class="gauge-status good" id="gaugeStatus">جيد جداً</div>
+        </div>
+
+        <!-- بطاقات الأرقام السريعة -->
+        <div class="quick-stats">
+            <div class="qs-card">
+                <div class="qs-icon orange">📅</div>
+                <div class="qs-body">
+                    <div class="qs-label">إجمالي أيام الغياب</div>
+                    <div class="qs-val" id="qsTotalAbsent">—</div>
+                    <div class="qs-sub" id="qsTotalAbsentSub">للفترة المحددة</div>
+                </div>
+            </div>
+            <div class="qs-card">
+                <div class="qs-icon red">⚠️</div>
+                <div class="qs-body">
+                    <div class="qs-label">طلاب تحت المراقبة</div>
+                    <div class="qs-val" id="qsAtRisk">—</div>
+                    <div class="qs-sub">غياب أكثر من 3 أيام</div>
+                </div>
+            </div>
+            <div class="qs-card">
+                <div class="qs-icon blue">👥</div>
+                <div class="qs-body">
+                    <div class="qs-label">إجمالي الطلاب</div>
+                    <div class="qs-val" id="qsTotalStudents">—</div>
+                    <div class="qs-sub" id="qsStudentsSub">المسجلون</div>
+                </div>
+            </div>
+            <div class="qs-card">
+                <div class="qs-icon purple">📊</div>
+                <div class="qs-body">
+                    <div class="qs-label">متوسط الغياب / طالب</div>
+                    <div class="qs-val" id="qsAvg">—</div>
+                    <div class="qs-sub" id="qsAvgSub">يوم في الفترة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== الصف الثاني: Sparkline + أعلى 3 طلاب ====== -->
+    <div class="dash-row2">
+        <!-- نبض الغياب اليومي -->
+        <div class="sparkline-card">
+            <h4>📉 نبض الغياب اليومي <span id="sparkPeriodLabel">آخر 30 يوم</span></h4>
+            <div class="spark-wrap">
+                <svg class="spark-svg" id="sparkSvg" viewBox="0 0 600 80" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <text x="300" y="45" text-anchor="middle" fill="#ccc" font-size="14">لا توجد بيانات</text>
+                </svg>
+            </div>
+            <div class="spark-days" id="sparkDays"></div>
+        </div>
+
+        <!-- أعلى 3 طلاب غياباً -->
+        <div class="top3-card">
+            <h4>🏴 أعلى طلاب غياباً</h4>
+            <div id="top3List"><div class="top3-empty">جاري التحميل...</div></div>
+        </div>
+    </div>
+
+    <!-- ====== رادار الشعب ====== -->
+    <div class="radar-card">
+        <h4>
+            🎯 رادار الشعب — نظرة واحدة على الجميع
+            <span class="radar-sub" id="radarPeriodLabel">آخر 30 يوم</span>
+        </h4>
+        <div class="radar-legend">
+            <span><span class="dot" style="background:#27ae60"></span> منخفض &lt;15%</span>
+            <span><span class="dot" style="background:#f39c12"></span> متوسط 15–30%</span>
+            <span><span class="dot" style="background:#c0392b"></span> مرتفع &gt;30%</span>
+            <span style="margin-right:auto; color:#bbb">⬆️ تصاعد &nbsp; ➡️ مستقر &nbsp; ⬇️ تحسن</span>
+        </div>
+        <table class="radar-table">
+            <thead>
+                <tr>
+                    <th>الشعبة</th>
+                    <th class="rd-bar-cell">نسبة الغياب</th>
+                    <th style="text-align:center">⚠️ مراقبة</th>
+                    <th style="text-align:center">الاتجاه</th>
+                    <th style="text-align:center">الحالة</th>
+                </tr>
+            </thead>
+            <tbody id="radarBody">
+                <tr><td colspan="5" class="rd-empty">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- 📈 جدول مقارنة الشعب (يظهر عند اختيار "كل الشعب") -->
+    <div id="sectionComparison" class="comparison-table" style="display:none;">
+        <h4 style="margin:15px; color:var(--primary)">📊 مقارنة نسب الغياب بين الشعب</h4>
+        <table>
+            <thead>
+                <tr><th>الشعبة</th><th>إجمالي الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr>
+            </thead>
+            <tbody id="comparisonBody"></tbody>
+        </table>
+    </div>
+
+    <!-- 📄 منشئ التقارير المخصصة -->
+    <div class="report-builder">
+        <h3>📄 إنشاء تقرير مفصل</h3>
+        <div class="radio-group">
+            <label class="radio-label active">
+                <input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 
+                👤 تقرير طالب
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 
+                🏫 تقرير شعبة
+            </label>
+        </div>
+        <div class="filters" style="background:transparent; padding:0; margin:0;">
+            <select id="rptGroup" onchange="onReportFilterChange()"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
+            <select id="rptSection" onchange="onReportFilterChange()"><option value="">الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
+            <button onclick="generateCustomReport()">📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <!-- 📋 منطقة عرض التقرير -->
+    <div id="customReport"></div>
+    
+    <!-- 🎯 زر الطباعة فقط -->
+    <div id="reportActionsBtn" style="display:none; margin:10px 0; gap:10px;" class="actions">
+        <button class="btn-act btn-print" onclick="printReport()">🖨️ طباعة</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+let cachedReports = {};
+
+// === 🖨️ طباعة التقرير — تعمل على الهاتف والحاسوب ===
+function printReport() {
+    const reportContent = $('customReport');
+    if (!reportContent || !reportContent.innerHTML.trim()) {
+        alert('❌ لا يوجد تقرير لطباعته. يرجى إنشاء تقرير أولاً.');
+        return;
+    }
+
+    const printContent = buildPrintContent();
+
+    // إزالة أي iframe سابق
+    const oldFrame = document.getElementById('printFrame');
+    if (oldFrame) oldFrame.remove();
+
+    // إنشاء iframe مخفي داخل الصفحة (يعمل على الهاتف بدون popup)
+    const iframe = document.createElement('iframe');
+    iframe.id = 'printFrame';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+
+    const printCSS = `
+        @page { size: A4; margin: 18mm 15mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; color: #1a1a1a; background: #fff; font-size: 13px; }
+        .print-header { text-align: center; padding: 14px 0 12px; border-bottom: 3px double #2c3e50; margin-bottom: 18px; }
+        .print-header .school-logo { font-size: 2.2em; margin-bottom: 5px; }
+        .print-header h1 { font-size: 1.3em; color: #2c3e50; margin-bottom: 3px; }
+        .print-header h2 { font-size: 1em; color: #27ae60; font-weight: 700; margin-bottom: 8px; }
+        .print-header .meta { display: flex; justify-content: center; gap: 15px; font-size: 0.82em; color: #555; flex-wrap: wrap; margin-top: 6px; }
+        .print-header .meta span { background: #f0f4f8; padding: 2px 10px; border-radius: 10px; border: 1px solid #dde; }
+        .summary-box { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+        .summary-item { flex: 1; min-width: 110px; border: 1.5px solid #dde; border-radius: 8px; padding: 9px 12px; text-align: center; background: #f9fafb; }
+        .summary-item .s-label { font-size: 0.76em; color: #666; margin-bottom: 3px; }
+        .summary-item .s-value { font-size: 1.5em; font-weight: bold; color: #2c3e50; }
+        .summary-item.danger .s-value { color: #c0392b; }
+        .summary-item.success .s-value { color: #27ae60; }
+        .summary-item.warning .s-value { color: #e67e22; }
+        .section-title { font-size: 0.97em; font-weight: bold; color: #2c3e50; margin: 16px 0 7px; padding-bottom: 5px; border-bottom: 1.5px solid #bcd; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 0.87em; }
+        thead tr { background: #2c3e50; color: white; }
+        thead th { padding: 8px 10px; text-align: right; font-weight: 600; }
+        tbody tr:nth-child(even) { background: #f5f7fa; }
+        tbody td { padding: 7px 10px; border-bottom: 1px solid #e8eaed; }
+        tbody tr:last-child td { border-bottom: 2px solid #bcd; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: bold; }
+        .badge-red { background: #fde8e8; color: #c0392b; border: 1px solid #e8b4b4; }
+        .badge-yellow { background: #fef9e7; color: #d68910; border: 1px solid #f0d080; }
+        .badge-green { background: #eafaf1; color: #1e8449; border: 1px solid #a9dfbf; }
+        .print-alert { background: #fef9e7; border: 1.5px solid #f0d080; border-radius: 7px; padding: 9px 13px; margin: 10px 0; font-size: 0.88em; color: #7d6608; }
+        .print-alert-danger { background: #fde8e8; border-color: #e8b4b4; color: #922b21; }
+        .no-data { text-align: center; padding: 18px; color: #27ae60; font-size: 0.95em; background: #eafaf1; border-radius: 8px; border: 1px solid #a9dfbf; }
+        .print-footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #ccc; display: flex; justify-content: space-between; align-items: flex-end; font-size: 0.78em; color: #777; }
+        .signature { text-align: center; min-width: 150px; }
+        .signature .sig-line { border-top: 1px solid #999; margin-top: 28px; padding-top: 5px; font-size: 0.9em; color: #444; }
+    `;
+
+    // كتابة المحتوى داخل الـ iframe
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير الغياب</title>
+<style>${printCSS}</style>
+</head>
+<body>${printContent}</body>
+</html>`);
+    doc.close();
+
+    // الانتظار حتى تكتمل الموارد ثم الطباعة
+    iframe.onload = function () {
+        try {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+        } catch (e) {
+            // احتياطي لبعض متصفحات iOS القديمة
+            window.print();
+        }
+        // تنظيف الـ iframe بعد الطباعة
+        setTimeout(() => { if (iframe) iframe.remove(); }, 2000);
+    };
+}
+
+function buildPrintContent() {
+    const rpt = $('customReport');
+    if (!rpt) return '';
+
+    const type = document.querySelector('input[name="reportType"]:checked')?.value || '';
+    const g = $('rptGroup').value;
+    const sec = $('rptSection').value;
+    const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+    const stuName = type === 'student' ? ($('rptStudent').selectedOptions[0]?.text || '') : '';
+    const period = getPeriodLabel();
+    const printDate = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    const reportTitle = type === 'student'
+        ? `تقرير غياب الطالب: ${stuName}`
+        : `تقرير غياب شعبة: ${secLabel}`;
+
+    // بناء رأس التقرير
+    const headerHtml = `
+    <div class="print-header">
+        <div class="school-logo">🕌</div>
+        <h1>مدرسة تحفيظ القرآن الكريم</h1>
+        <h2>${reportTitle}</h2>
+        <div class="meta">
+            <span>📁 المجموعة: ${g || 'الكل'}</span>
+            ${sec ? `<span>🏫 الشعبة: ${secLabel}</span>` : ''}
+            ${stuName ? `<span>👤 ${stuName}</span>` : ''}
+            <span>📅 الفترة: ${period}</span>
+            <span>🖨️ ${printDate}</span>
+        </div>
+    </div>`;
+
+    // ملخص شعبة
+    let summaryBoxHtml = '';
+    if (type === 'section') {
+        const summaryDiv = rpt.querySelector('div[style*="background:#f8f9fa"]');
+        const summaryText = summaryDiv ? summaryDiv.innerText : '';
+        const totalMatch = summaryText.match(/إجمالي الطلاب[^\d]*(\d+)/);
+        const absentMatch = summaryText.match(/أيام الغياب[^\d]*(\d+)/);
+        const rateMatch = summaryText.match(/([\d.]+)%/);
+        const totalStudents = totalMatch ? totalMatch[1] : '-';
+        const totalAbsent = absentMatch ? absentMatch[1] : '-';
+        const rateVal = rateMatch ? parseFloat(rateMatch[1]) : 0;
+        summaryBoxHtml = `
+        <div class="summary-box">
+            <div class="summary-item"><div class="s-label">👥 إجمالي الطلاب</div><div class="s-value">${totalStudents}</div></div>
+            <div class="summary-item danger"><div class="s-label">📉 إجمالي أيام الغياب</div><div class="s-value">${totalAbsent}</div></div>
+            <div class="summary-item ${rateVal > 20 ? 'danger' : 'success'}"><div class="s-label">📊 نسبة الغياب</div><div class="s-value">${rateVal}%</div></div>
+            <div class="summary-item success"><div class="s-label">✅ نسبة الحضور</div><div class="s-value">${rateVal > 0 ? (100 - rateVal).toFixed(1) : 100}%</div></div>
+        </div>`;
+    }
+
+    // ملخص طالب
+    let studentSummaryHtml = '';
+    if (type === 'student') {
+        const totalEl = rpt.querySelector('p[style*="color:var(--danger)"]') || rpt.querySelector('p');
+        const count = totalEl ? (totalEl.textContent.match(/\d+/)?.[0] || '0') : '0';
+        if (parseInt(count) > 0) {
+            studentSummaryHtml = `
+            <div class="summary-box">
+                <div class="summary-item danger"><div class="s-label">📊 إجمالي أيام الغياب</div><div class="s-value">${count}</div></div>
+                <div class="summary-item ${parseInt(count) >= 5 ? 'danger' : 'warning'}"><div class="s-label">📋 الحالة</div>
+                    <div class="s-value" style="font-size:0.9em">${parseInt(count) >= 5 ? 'متكرر' : parseInt(count) >= 3 ? 'مراقبة' : 'عادي'}</div></div>
+            </div>`;
+            if (parseInt(count) >= 5) {
+                studentSummaryHtml += `<div class="print-alert print-alert-danger">⚠️ تنبيه: الطالب تجاوز حد الغياب المسموح — يُرجى التواصل مع ولي الأمر فوراً</div>`;
+            }
+        }
+    }
+
+    // لا يوجد غياب
+    const noDataEl = rpt.querySelector('.alert-info');
+    const noDataHtml = noDataEl ? `<div class="no-data">✅ ${noDataEl.textContent.trim()}</div>` : '';
+
+    // استخراج الجداول
+    const tables = rpt.querySelectorAll('table');
+    const sectionHeaders = Array.from(rpt.querySelectorAll('.section-title, h4'));
+    let tablesHtml = '';
+
+    tables.forEach((tbl, idx) => {
+        const titleText = sectionHeaders[idx]?.innerText?.trim() || (idx === 0 ? '📅 سجل الغياب' : '👥 تفصيل الطلاب');
+        let tblHtml = `<div class="section-title">${titleText}</div><table><thead><tr>`;
+        tbl.querySelectorAll('th').forEach(th => { tblHtml += `<th>${th.textContent.trim()}</th>`; });
+        tblHtml += '</tr></thead><tbody>';
+        tbl.querySelectorAll('tbody tr').forEach(row => {
+            tblHtml += '<tr>';
+            row.querySelectorAll('td').forEach(td => {
+                const text = td.textContent.trim();
+                let cell = text;
+                if (text.includes('متكرر')) cell = `<span class="badge badge-red">متكرر</span>`;
+                else if (text.includes('مراقبة')) cell = `<span class="badge badge-yellow">مراقبة</span>`;
+                else if (text.includes('جيد')) cell = `<span class="badge badge-green">جيد</span>`;
+                tblHtml += `<td>${cell}</td>`;
+            });
+            tblHtml += '</tr>';
+        });
+        tblHtml += '</tbody></table>';
+        tablesHtml += tblHtml;
+    });
+
+    // تذييل
+    const footerHtml = `
+    <div class="print-footer">
+        <span>نظام إدارة الغياب</span>
+        <div class="signature"><div class="sig-line">توقيع المسؤول</div></div>
+        <span>طُبع بتاريخ: ${new Date().toLocaleDateString('ar-EG')}</span>
+    </div>`;
+
+    return headerHtml + summaryBoxHtml + studentSummaryHtml + noDataHtml + tablesHtml + footerHtml;
+}
+
+// ✅ تنظيف البيانات من المسافات الزائدة
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    }
+    return obj;
+}
+
+// ✅ توحيد هيكل البيانات القادمة من API
+function normalizeData(raw, groupLetter) {
+    const clean = deepTrim(raw);
+    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
+    if (clean.section_id) return [{...clean, group: groupLetter}];
+    return [];
+}
+
+// ✅ حساب عدد الطلاب الفعلي من بيانات allSections (ثابت - لا يتأثر بأيام الغياب)
+function countStudents(groupFilter, sectionFilter) {
+    const uniqueStudents = new Set();
+    allSections.forEach(sec => {
+        if ((!groupFilter || sec.group === groupFilter) &&
+            (!sectionFilter || sec.section_id === sectionFilter)) {
+            sec.students?.forEach(st => uniqueStudents.add(st.id));
+        }
+    });
+    return uniqueStudents.size;
+}
+
+// ✅ تحديث قوائم الشعب بناءً على المجموعة المختارة
+function updateDropdowns() {
+    const g = $('filterGroup').value;
+    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
+    
+    ['filterSection', 'rptSection'].forEach(id => {
+        const sel = $(id);
+        const prefix = id === 'filterSection' ? '🏫 كل الشعب' : 'الشعبة';
+        sel.innerHTML = `<option value="">${prefix}</option>` + 
+            filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    });
+    updateRptStudents();
+}
+
+function updateRptStudents() {
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    const stuSel = $('rptStudent');
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    
+    if (type !== 'student') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
+    stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
+    
+    if(!g || !sec) return;
+    const secData = allSections.find(s => s.group === g && s.section_id === sec);
+    if(secData?.students) {
+        secData.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
+        });
+    }
+}
+
+// ✅ عند تغيير الفلاتر الرئيسية
+function onFilterChange() {
+    updateDropdowns();
+    loadReports();
+}
+
+function onPeriodChange() {
+    const isCustom = $('filterPeriod').value === 'custom';
+    $('dateStartGroup').style.display = isCustom ? 'flex' : 'none';
+    $('dateEndGroup').style.display   = isCustom ? 'flex' : 'none';
+    if (!isCustom) loadReports();
+}
+
+function toggleReportFields() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    $('rptStudent').style.display = (type === 'student') ? 'block' : 'none';
+    // تحديث حالة الـ radio labels
+    document.querySelectorAll('.radio-label').forEach(label => {
+        const radio = label.querySelector('input[type="radio"]');
+        label.classList.toggle('active', radio && radio.checked);
+    });
+    updateRptStudents();
+}
+
+function onReportFilterChange() {
+    updateRptStudents();
+}
+
+// === 🚀 تهيئة الصفحة ===
+document.addEventListener('DOMContentLoaded', async () => {
+    // تهيئة حالة radio labels
+    document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.querySelectorAll('.radio-label').forEach(label => {
+                const r = label.querySelector('input[type="radio"]');
+                label.classList.toggle('active', r && r.checked);
+            });
+        });
+    });
+
+    try {
+        const fetchGroup = async (group) => {
+            try {
+                const res = await fetch(`/api/get-section?group=${encodeURIComponent(group)}`);
+                return res.ok ? await res.json() : {};
+            } catch { return {}; }
+        };
+        
+        const [resA, resB] = await Promise.all([fetchGroup('أ'), fetchGroup('ب')]);
+        allSections = [...normalizeData(resA, 'أ'), ...normalizeData(resB, 'ب')];
+        
+        updateDropdowns();
+        loadReports();
+        
+    } catch(e) { 
+        console.warn('⚠️ فشل تحميل البيانات الأولية:', e); 
+        showAdminAlert('تنبيه: قد تكون بعض البيانات غير محدثة', 'warning');
+    }
+});
+
+// === 📊 تحميل التقارير والإحصائيات ===
+async function loadReports() {
+    const btn = $('loadBtn');
+    btn.disabled = true; 
+    btn.textContent = '⏳ جاري التحليل...';
+    
+    const group   = $('filterGroup').value;
+    const section = $('filterSection').value;
+    const period  = $('filterPeriod').value;
+    const startDate = $('filterStart').value;
+    const endDate   = $('filterEnd').value;
+
+    // بناء رابط الطلب — يدعم تصفية الشعبة والفترة الزمنية
+    let url = `/api/get-reports?action=summary&period=${period}`;
+    if (group)     url += `&group=${encodeURIComponent(group)}`;
+    if (section)   url += `&section=${encodeURIComponent(section)}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate)   url += `&endDate=${endDate}`;
+    
+    const cacheKey = `${group}|${section}|${period}|${startDate}|${endDate}`;
+    
+    try {
+        let summary;
+        if (cachedReports[cacheKey]) {
+            summary = cachedReports[cacheKey];
+        } else {
+            const res = await fetch(url);
+            const json = await res.json();
+            if (!json.success) throw new Error(json.error || 'فشل جلب البيانات');
+            summary = json.data || json.summary || {};
+            cachedReports[cacheKey] = summary;
+        }
+        
+        // تحديث الإحصائيات بناءً على الفلاتر المحددة
+        await updateStatsCards(summary, group, section, period, startDate, endDate);
+        
+        // جدول المقارنة: يظهر فقط عند "كل الشعب" و"كل المجموعات"
+        if (!section && !group) {
+            await showSectionComparison(summary);
+        } else {
+            $('sectionComparison').style.display = 'none';
+        }
+        
+        generateAdminAlerts(summary, group, section);
+        
+    } catch(err) { 
+        console.error('❌ خطأ في التقارير:', err); 
+        showAdminAlert(`خطأ: ${err.message}`, 'warning');
+    } finally { 
+        btn.disabled = false; 
+        btn.textContent = '🔄 تحديث البيانات'; 
+    }
+}
+
+// === 🎯 تحديث لوحة الإحصائيات الجديدة ===
+async function updateStatsCards(summary, groupFilter, sectionFilter, period, startDate, endDate) {
+    const studentCount = countStudents(groupFilter, sectionFilter);
+    const totalAbsentDays = summary.totalAbsent || 0;
+    const totalDays = summary.dailyData?.length || 1;
+    const totalPossible = studentCount * totalDays;
+    const attendancePct = totalPossible > 0
+        ? Math.round(((totalPossible - totalAbsentDays) / totalPossible) * 100)
+        : 100;
+
+    // ① Gauge الحضور
+    updateGauge(attendancePct);
+
+    // ② البطاقات السريعة
+    $('qsTotalAbsent').textContent = totalAbsentDays;
+    $('qsTotalAbsentSub').textContent = `خلال ${getPeriodLabel()}`;
+    $('qsTotalStudents').textContent = studentCount;
+    const sectionCount = allSections.filter(s =>
+        (!groupFilter || s.group === groupFilter) &&
+        (!sectionFilter || s.section_id === sectionFilter)
+    ).length;
+    $('qsStudentsSub').textContent = `في ${sectionCount} شعبة`;
+    const avg = studentCount > 0 ? (totalAbsentDays / studentCount).toFixed(1) : '0.0';
+    $('qsAvg').textContent = avg;
+    $('qsAvgSub').textContent = `إجمالي ${totalAbsentDays} يوم ÷ ${studentCount} طالب`;
+
+    // ③ طلاب تحت المراقبة
+    try {
+        const allRecords = await fetchAttendanceFiltered(groupFilter, sectionFilter, period, startDate, endDate);
+        const studentAbsences = buildStudentAbsences(allRecords, groupFilter, sectionFilter);
+        const atRisk = Object.values(studentAbsences).filter(c => c > 3).length;
+        $('qsAtRisk').textContent = atRisk;
+        $('qsAtRisk').style.color = atRisk > 5 ? 'var(--danger)' : (atRisk > 2 ? 'var(--warning)' : 'var(--secondary)');
+
+        // ④ أعلى 3 طلاب غياباً
+        updateTop3(studentAbsences);
+    } catch {
+        $('qsAtRisk').textContent = '—';
+        $('top3List').innerHTML = '<div class="top3-empty">تعذّر التحميل</div>';
+    }
+
+    // ⑤ Sparkline
+    updateSparkline(summary.dailyData || [], getPeriodLabel());
+
+    // ⑥ رادار الشعب
+    updateRadar(groupFilter, sectionFilter, period, startDate, endDate);
+
+    // تحديث وقت آخر تحديث
+    $('lastUpdated').textContent = 'آخر تحديث: ' + new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+}
+
+// بناء مصفوفة غياب الطلاب مع تهيئة الكل بـ 0
+function buildStudentAbsences(records, groupFilter, sectionFilter) {
+    const abs = {};
+    allSections.forEach(sec => {
+        if ((!groupFilter || sec.group === groupFilter) &&
+            (!sectionFilter || sec.section_id === sectionFilter)) {
+            sec.students?.forEach(st => { if (!(st.id in abs)) abs[st.id] = 0; });
+        }
+    });
+    records.forEach(r => {
+        r.absentIds?.forEach(id => { if (id in abs) abs[id]++; });
+    });
+    return abs;
+}
+
+// ===== 🟢 Gauge دائري =====
+function updateGauge(pct) {
+    $('gaugeVal').textContent = pct + '%';
+    const total = 204; // طول نصف الدائرة
+    const offset = total - (pct / 100) * total;
+    const fill = $('gaugeFill');
+    const color = pct >= 90 ? '#27ae60' : pct >= 75 ? '#f39c12' : '#c0392b';
+    fill.setAttribute('stroke', color);
+    fill.setAttribute('stroke-dashoffset', offset);
+    const status = $('gaugeStatus');
+    if (pct >= 90) { status.textContent = '✅ ممتاز'; status.className = 'gauge-status good'; }
+    else if (pct >= 75) { status.textContent = '⚠️ مقبول'; status.className = 'gauge-status warn'; }
+    else { status.textContent = '🔴 يحتاج تدخل'; status.className = 'gauge-status bad'; }
+}
+
+// ===== 🏴 أعلى 3 طلاب غياباً =====
+function updateTop3(studentAbsences) {
+    const sorted = Object.entries(studentAbsences)
+        .filter(([, c]) => c > 0)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+    if (!sorted.length) {
+        $('top3List').innerHTML = '<div class="top3-empty">✅ لا يوجد غياب مسجّل</div>';
+        return;
+    }
+    const maxVal = sorted[0][1];
+    const rankClass = ['r1', 'r2', 'r3'];
+    const barColors = ['#f39c12', '#95a5a6', '#e74c3c'];
+    let html = '';
+    sorted.forEach(([id, count], i) => {
+        const stu = findStudentById(id);
+        const name = stu?.name || id;
+        const pct = Math.round((count / maxVal) * 100);
+        html += `<div class="top3-item">
+            <div class="top3-rank ${rankClass[i]}">${i + 1}</div>
+            <div class="top3-name" title="${name}">${name}</div>
+            <div class="top3-bar-wrap">
+                <div style="font-size:0.7em;color:#aaa;margin-bottom:2px">${stu?.section_label || ''}</div>
+                <div class="top3-bar"><div class="top3-bar-fill" style="width:${pct}%;background:${barColors[i]}"></div></div>
+            </div>
+            <div class="top3-days">${count}د</div>
+        </div>`;
+    });
+    $('top3List').innerHTML = html;
+}
+
+// ===== 📉 Sparkline =====
+function updateSparkline(dailyData, periodLabel) {
+    $('sparkPeriodLabel').textContent = periodLabel;
+    const svg = $('sparkSvg');
+    const daysEl = $('sparkDays');
+
+    if (!dailyData.length) {
+        svg.innerHTML = '<text x="300" y="45" text-anchor="middle" fill="#ccc" font-size="14">لا توجد بيانات</text>';
+        daysEl.innerHTML = '';
+        return;
+    }
+
+    // آخر 14 يوم فقط للوضوح
+    const data = dailyData.slice(-14);
+    const W = 600, H = 80, pad = 10;
+    const vals = data.map(d => d.absent || 0);
+    const maxV = Math.max(...vals, 1);
+    const minV = 0;
+    const xStep = (W - pad * 2) / Math.max(data.length - 1, 1);
+
+    const pts = vals.map((v, i) => {
+        const x = pad + i * xStep;
+        const y = H - pad - ((v - minV) / (maxV - minV)) * (H - pad * 2);
+        return [x, y];
+    });
+
+    // منطقة التعبئة
+    const areaPath = `M${pts[0][0]},${H - pad} ` +
+        pts.map(p => `L${p[0]},${p[1]}`).join(' ') +
+        ` L${pts[pts.length - 1][0]},${H - pad} Z`;
+
+    // الخط
+    const linePath = `M${pts[0][0]},${pts[0][1]} ` +
+        pts.slice(1).map(p => `L${p[0]},${p[1]}`).join(' ');
+
+    // النقاط
+    const circles = pts.map((p, i) =>
+        `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${vals[i] > maxV * 0.6 ? '#c0392b' : '#27ae60'}" stroke="white" stroke-width="1.5"/>`
+    ).join('');
+
+    svg.innerHTML = `
+        <defs>
+            <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#c0392b" stop-opacity="0.15"/>
+                <stop offset="100%" stop-color="#c0392b" stop-opacity="0"/>
+            </linearGradient>
+        </defs>
+        <path d="${areaPath}" fill="url(#sparkGrad)"/>
+        <path d="${linePath}" fill="none" stroke="#c0392b" stroke-width="2" stroke-linejoin="round"/>
+        ${circles}`;
+
+    // تسميات الأيام
+    const show = data.filter((_, i) => i % Math.ceil(data.length / 7) === 0 || i === data.length - 1);
+    daysEl.innerHTML = data.map((d, i) => {
+        const visible = i % Math.ceil(data.length / 7) === 0 || i === data.length - 1;
+        return `<span style="opacity:${visible ? 1 : 0}">${d.date ? d.date.slice(5) : ''}</span>`;
+    }).join('');
+}
+
+// ===== 🎯 رادار الشعب =====
+async function updateRadar(groupFilter, sectionFilter, period, startDate, endDate) {
+    const tbody = $('radarBody');
+    $('radarPeriodLabel').textContent = getPeriodLabel();
+
+    // لا نعرض الرادار إذا تم تصفية شعبة واحدة — ليس له معنى
+    if (sectionFilter) {
+        tbody.innerHTML = '<tr><td colspan="5" class="rd-empty">اختر "كل الشعب" لعرض الرادار المقارن</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = '<tr><td colspan="5" class="rd-empty">⏳ جاري التحليل...</td></tr>';
+
+    // الشعب المستهدفة
+    const targetSections = allSections.filter(s =>
+        !groupFilter || s.group === groupFilter
+    );
+
+    if (!targetSections.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="rd-empty">لا توجد شعب</td></tr>';
+        return;
+    }
+
+    try {
+        // جلب بيانات الفترة الحالية لكل شعبة
+        const results = await Promise.all(targetSections.map(async sec => {
+            try {
+                let url = `/api/get-reports?action=summary&period=${period || 'month'}`;
+                url += `&group=${encodeURIComponent(sec.group)}&section=${encodeURIComponent(sec.section_id)}`;
+                if (startDate) url += `&startDate=${startDate}`;
+                if (endDate)   url += `&endDate=${endDate}`;
+
+                const res  = await fetch(url);
+                const json = await res.json();
+                const data = json.data || json.summary || {};
+
+                // الفترة السابقة لحساب الاتجاه
+                const prevData = await fetchPrevPeriodSummary(sec.group, sec.section_id, period);
+
+                const students  = countStudents(sec.group, sec.section_id);
+                const absent    = data.totalAbsent || 0;
+                const totalDays = data.dailyData?.length || 1;
+                const pct = students > 0
+                    ? Math.round((absent / (students * totalDays)) * 100)
+                    : 0;
+
+                // طلاب تحت المراقبة
+                const records = data.rawRecords || [];
+                const stuAbs  = {};
+                records.forEach(r => r.absentIds?.forEach(id => { stuAbs[id] = (stuAbs[id]||0)+1; }));
+                const atRisk  = Object.values(stuAbs).filter(c => c > 3).length;
+
+                // اتجاه الغياب
+                const prevPct = prevData.pct || 0;
+                const diff    = pct - prevPct;
+                const trend   = Math.abs(diff) < 3 ? '➡️' : diff > 0 ? '⬆️' : '⬇️';
+                const trendColor = diff > 3 ? '#c0392b' : diff < -3 ? '#27ae60' : '#888';
+
+                return { sec, students, absent, pct, atRisk, trend, trendColor };
+            } catch {
+                return { sec, students: 0, absent: 0, pct: 0, atRisk: 0, trend: '➡️', trendColor: '#888' };
+            }
+        }));
+
+        // ترتيب من الأعلى غياباً إلى الأقل
+        results.sort((a, b) => b.pct - a.pct);
+        const maxPct = Math.max(...results.map(r => r.pct), 1);
+
+        tbody.innerHTML = results.map(r => {
+            const barColor  = r.pct >= 30 ? '#c0392b' : r.pct >= 15 ? '#f39c12' : '#27ae60';
+            const barWidth  = Math.round((r.pct / maxPct) * 100);
+            const badgeCls  = r.pct >= 30 ? 'danger' : r.pct >= 15 ? 'warn' : 'safe';
+            const badgeTxt  = r.pct >= 30 ? '🔴 تدخل فوري' : r.pct >= 15 ? '🟡 متابعة' : '🟢 جيد';
+            const riskColor = r.atRisk > 5 ? '#c0392b' : r.atRisk > 2 ? '#f39c12' : '#27ae60';
+            const label     = r.sec.section_label || r.sec.section_id;
+
+            return `<tr>
+                <td>
+                    <div class="rd-name">${label}</div>
+                    <div class="rd-group">مجموعة ${r.sec.group} · ${r.students} طالب</div>
+                </td>
+                <td class="rd-bar-cell">
+                    <div class="rd-bar-wrap">
+                        <div class="rd-bar-bg">
+                            <div class="rd-bar-fill" style="width:${barWidth}%;background:${barColor}"></div>
+                        </div>
+                        <div class="rd-pct" style="color:${barColor}">${r.pct}%</div>
+                    </div>
+                </td>
+                <td class="rd-risk" style="color:${riskColor}">${r.atRisk > 0 ? r.atRisk + ' 👤' : '—'}</td>
+                <td class="rd-trend" style="color:${r.trendColor}" title="مقارنة بالفترة السابقة">${r.trend}</td>
+                <td style="text-align:center"><span class="rd-badge ${badgeCls}">${badgeTxt}</span></td>
+            </tr>`;
+        }).join('');
+
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="rd-empty">تعذّر تحميل البيانات</td></tr>`;
+        console.error(e);
+    }
+}
+
+// جلب ملخص الفترة السابقة لحساب الاتجاه
+async function fetchPrevPeriodSummary(group, section, period) {
+    try {
+        const now   = new Date();
+        let prevStart, prevEnd;
+        if (period === 'week') {
+            prevEnd   = new Date(now - 7  * 86400000);
+            prevStart = new Date(now - 14 * 86400000);
+        } else {
+            prevEnd   = new Date(now - 30 * 86400000);
+            prevStart = new Date(now - 60 * 86400000);
+        }
+        const fmt = d => d.toISOString().slice(0, 10);
+        const url = `/api/get-reports?action=summary&period=custom`
+            + `&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}`
+            + `&startDate=${fmt(prevStart)}&endDate=${fmt(prevEnd)}`;
+        const res  = await fetch(url);
+        const json = await res.json();
+        const data = json.data || json.summary || {};
+        const students  = countStudents(group, section);
+        const absent    = data.totalAbsent || 0;
+        const totalDays = data.dailyData?.length || 1;
+        const pct = students > 0 ? Math.round((absent / (students * totalDays)) * 100) : 0;
+        return { pct };
+    } catch { return { pct: 0 }; }
+}
+
+// === 📈 عرض جدول مقارنة الشعب ===
+async function showSectionComparison(summary) {
+    if(!summary.sectionData?.length) {
+        $('sectionComparison').style.display = 'none';
+        return;
+    }
+    
+    const tbody = $('comparisonBody');
+    tbody.innerHTML = '';
+    
+    const maxRate = Math.max(...summary.sectionData.map(s => s.rate || 0), 1);
+    
+    summary.sectionData.forEach(sec => {
+        // عدد الطلاب من allSections (ثابت) وليس من بيانات الغياب
+        const sectionStudentCount = countStudents('', sec.section_id) || sec.total || 0;
+        const rate = sec.rate || 0;
+        const barWidth = (rate / maxRate) * 100;
+        const status = rate >= 30 ? '🔴 عالي' : (rate >= 15 ? '🟡 متوسط' : '🟢 منخفض');
+        const statusColor = rate >= 30 ? 'var(--danger)' : (rate >= 15 ? 'var(--warning)' : 'var(--secondary)');
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><strong>${sec.section}</strong></td>
+            <td>${sectionStudentCount}</td>
+            <td>${sec.absent || 0}</td>
+            <td>
+                <strong>${rate}%</strong>
+                <div class="bar"><div class="bar-fill" style="width:${barWidth}%; background:${statusColor}"></div></div>
+            </td>
+            <td style="color:${statusColor}; font-weight:600">${status}</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    $('sectionComparison').style.display = 'block';
+}
+
+// === 🚨 توليد تنبيهات إدارية ذكية ===
+function generateAdminAlerts(summary, group, section) {
+    const alerts = [];
+    const studentCount = countStudents(group, section);
+    const absent = summary.totalAbsent || 0;
+    const totalDays = summary.dailyData?.length || 1;
+    const totalPossible = studentCount * totalDays;
+    const rate = totalPossible > 0 ? ((absent / totalPossible) * 100).toFixed(1) : 0;
+
+    const contextLabel = section
+        ? (document.querySelector(`#filterSection option[value="${section}"]`)?.textContent || section)
+        : (group ? `المجموعة (${group})` : 'الكل');
+
+    if (rate > 25)
+        alerts.push({ type: 'warning', msg: `⚠️ نسبة الغياب مرتفعة (${rate}%) في ${contextLabel} خلال ${getPeriodLabel()} — يُوصى باتخاذ إجراء` });
+    if (summary.atRiskStudents?.length > 0)
+        alerts.push({ type: 'info', msg: `🔴 ${summary.atRiskStudents.length} طالب تحت المراقبة (غياب متكرر)` });
+    if (summary.trend === 'increasing')
+        alerts.push({ type: 'warning', msg: '📈 ملاحظة: اتجاه الغياب في تصاعد خلال الفترة الأخيرة' });
+
+    const container = $('adminAlerts');
+    container.innerHTML = '';
+    alerts.forEach(a => showAdminAlert(a.msg, a.type));
+}
+
+function showAdminAlert(message, type = 'info') {
+    const container = $('adminAlerts');
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type}`;
+    alert.textContent = message;
+    container.appendChild(alert);
+    setTimeout(() => alert.remove(), 10000);
+}
+
+function getPeriodLabel() {
+    const p = $('filterPeriod').value;
+    return p === 'week' ? 'أسبوع' : (p === 'month' ? 'شهر' : 'مخصص');
+}
+
+// === 📥 جلب سجلات الغياب مع الفلاتر الكاملة (مجموعة + شعبة + فترة) ===
+async function fetchAttendanceFiltered(group, section, period, startDate, endDate) {
+    let url = `/api/get-reports?action=summary&period=${period || 'month'}`;
+    if (group)     url += `&group=${encodeURIComponent(group)}`;
+    if (section)   url += `&section=${encodeURIComponent(section)}`;
+    if (startDate) url += `&startDate=${startDate}`;
+    if (endDate)   url += `&endDate=${endDate}`;
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        return (json.data?.rawRecords || json.summary?.rawRecords || []);
+    } catch { return []; }
+}
+
+// === 📥 جلب كل سجلات الغياب للتحليل العميق ===
+async function fetchAllAttendance(group, section) {
+    let url = `/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31`;
+    if(group) url += `&group=${encodeURIComponent(group)}`;
+    if(section) url += `&section=${encodeURIComponent(section)}`;
+    
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        return (json.data?.rawRecords || json.summary?.rawRecords || []);
+    } catch { return []; }
+}
+
+// === 🔍 البحث عن طالب في البيانات المحلية ===
+function findStudentById(id) {
+    for(const sec of allSections) {
+        const stu = sec.students?.find(s => s.id === id);
+        if(stu) return {...stu, section_label: sec.section_label, group: sec.group};
+    }
+    return null;
+}
+
+// === 📄 إنشاء التقرير المخصص ===
+async function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    
+    if(!g || !sec) return alert('❌ يرجى اختيار المجموعة والشعبة أولاً');
+    
+    const rpt = $('customReport');
+    const btns = $('reportActionsBtn');
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:30px;">⏳ جاري إعداد التقرير...</div>';
+    rpt.classList.add('show');
+    btns.style.display = 'none';
+
+    try {
+        let html = '';
+        
+        if(type === 'student') {
+            // === تقرير طالب ===
+            const stuId = $('rptStudent').value;
+            if(!stuId) return alert('❌ يرجى اختيار الطالب');
+            
+            const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stuId)}`);
+            const json = await res.json();
+            const history = json.data?.history || json.history || [];
+            const stuName = $('rptStudent').selectedOptions[0]?.text || stuId;
+            
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📋 تقرير غياب طالب: ${stuName}</h3>
+                <p style="color:#666">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            
+            if(!history.length) {
+                html += `<div class="alert alert-info">✅ ممتاز! لا توجد سجلات غياب لهذا الطالب</div>`;
+            } else {
+                html += `<table><thead><tr><th>📅 التاريخ</th><th>🏫 الشعبة</th><th>📝 ملاحظات</th></tr></thead><tbody>`;
+                history.forEach(h => {
+                    html += `<tr><td>${h.date}</td><td>${h.section}</td><td>${h.note || '-'}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                html += `<p style="margin-top:15px;font-weight:bold;color:var(--danger)">📊 إجمالي أيام الغياب: <span style="font-size:1.2em">${history.length}</span></p>`;
+                
+                if(history.length >= 5) {
+                    html += `<div class="alert alert-warning">⚠️ توصية: يُرجى التواصل مع ولي الأمر - الطالب تجاوز حد الغياب المسموح</div>`;
+                }
+            }
+            
+        } else if(type === 'section') {
+            // === تقرير شعبة ===
+            const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+            
+            // عدد الطلاب الفعلي من allSections (ثابت)
+            const sectionStudentCount = countStudents(g, sec);
+            const totalAbsentDays = summary.totalAbsent || 0;
+            const totalDays = summary.dailyData?.length || 1;
+            const totalPossible = sectionStudentCount * totalDays;
+            const rate = totalPossible > 0 ? ((totalAbsentDays / totalPossible) * 100).toFixed(1) : 0;
+            
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📊 تقرير شعبة: ${secLabel} - المجموعة (${g})</h3>
+                <p style="color:#666">الفترة: جميع التواريخ | تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            
+            html += `<div style="background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:20px;">
+                <strong>📈 الملخص:</strong> إجمالي الطلاب: <strong>${sectionStudentCount}</strong> | أيام الغياب: <strong>${totalAbsentDays}</strong> | نسبة الغياب: <span style="color:${rate>20?'var(--danger)':'var(--secondary)'}">${rate}%</span>
+            </div>`;
+            
+            if(summary.dailyData?.length) {
+                html += `<h4>📅 سجل الغياب اليومي</h4><table><thead><tr><th>التاريخ</th><th>الحضور</th><th>الغياب</th><th>النسبة</th></tr></thead><tbody>`;
+                summary.dailyData.slice(-14).forEach(d => {
+                    // الحضور = عدد الطلاب الكلي - الغياب (عدد الطلاب ثابت)
+                    const presentCount = sectionStudentCount - (d.absent || 0);
+                    const r = sectionStudentCount > 0 ? ((d.absent / sectionStudentCount) * 100).toFixed(1) : 0;
+                    html += `<tr><td>${d.date}</td><td>${presentCount}</td><td style="color:${r>30?'var(--danger)':'inherit'}">${d.absent}</td><td>${r}%</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+
+            const secData = allSections.find(s => s.group === g && s.section_id === sec);
+            if(secData?.students?.length) {
+                html += `<div class="section-title">👥 تفصيل طلاب الشعبة</div><table><thead><tr><th>الطالب</th><th>تواريخ الغياب</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>`;
+                
+                const studentsData = await Promise.all(secData.students.map(async stu => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stu.id)}`);
+                        const d = await r.json();
+                        const dates = (d.data?.history || d.history || []).map(h => h.date);
+                        return { name: stu.name, dates, count: dates.length };
+                    } catch { return { name: stu.name, dates: [], count: 0 }; }
+                }));
+
+                studentsData.sort((a,b) => b.count - a.count).forEach(s => {
+                    const daysStr = s.dates.length > 0 ? s.dates.slice(0,5).join('، ') + (s.dates.length>5?'...':'') : '-';
+                    const status = s.count >= 5 ? '🔴 متكرر' : (s.count >= 3 ? '🟡 مراقبة' : '🟢 جيد');
+                    const color = s.count >= 5 ? 'var(--danger)' : (s.count >= 3 ? 'var(--warning)' : 'var(--secondary)');
+                    html += `<tr>
+                        <td><strong>${s.name}</strong></td>
+                        <td style="font-size:0.85em;color:#555">${daysStr}</td>
+                        <td style="font-weight:bold">${s.count}</td>
+                        <td style="color:${color}">${status}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+        }
+        
+        rpt.innerHTML = html;
+        btns.style.display = 'flex';
+        // التمرير التلقائي لمنطقة التقرير على الهاتف
+        if (window.innerWidth <= 768) {
+            setTimeout(() => rpt.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        }
+        
+    } catch(e) {
+        console.error(e);
+        rpt.innerHTML = `<div class="alert alert-warning">❌ حدث خطأ أثناء إنشاء التقرير: ${e.message}</div>`;
+    }
+}
+</script>
+</body>
+</html>
