@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>منصة إدارة الغياب - سلطنة عمان</title>
     <style>
-        /* ================= المتغيرات الأساسية ================= */
         :root {
             --primary: #1a3a5c; --primary-light: #e8f0f8; --secondary: #27ae60; --secondary-light: #eafaf1;
             --accent: #e67e22; --accent-light: #fef5ec; --danger: #c0392b; --danger-light: #fdedec;
@@ -21,20 +20,20 @@
         }
         @keyframes gradientBG { 0% {background-position:0% 50%;} 50% {background-position:100% 50%;} 100% {background-position:0% 50%;} }
 
-        /* ================= صفحة الترحيب ================= */
+        /* صفحة الترحيب */
         #welcome-screen {
             position: fixed; inset: 0; z-index: 9999;
             display: flex; align-items: center; justify-content: center;
-            padding: 20px; background: linear-gradient(135deg, rgba(26,58,92,0.95), rgba(41,128,185,0.95));
-            animation: fadeIn 0.6s ease;
+            padding: 20px; background: linear-gradient(135deg, rgba(26,58,92,0.97), rgba(41,128,185,0.97));
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .welcome-card {
-            background: rgba(255,255,255,0.97); border-radius: 24px;
+            background: rgba(255,255,255,0.98); border-radius: 24px;
             padding: 45px 35px; max-width: 550px; width: 100%;
             text-align: center; box-shadow: 0 25px 80px rgba(0,0,0,0.4);
             border: 3px solid var(--accent); position: relative; overflow: hidden;
+            animation: fadeIn 0.6s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         .welcome-card::before {
             content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
             background: linear-gradient(90deg, var(--secondary), var(--accent), var(--primary));
@@ -51,18 +50,15 @@
             color: white; padding: 18px 55px; border: none; border-radius: 55px;
             font-size: 1.2em; font-weight: 700; cursor: pointer;
             transition: all 0.35s ease; box-shadow: 0 6px 20px rgba(39,174,96,0.45);
-            font-family: inherit; display: inline-flex; align-items: center; gap: 12px; text-decoration: none; position: relative; overflow: hidden;
+            font-family: inherit; display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
         }
-        .btn-enter::after { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent); transition:left 0.5s ease; }
-        .btn-enter:hover::after { left:100%; }
         .btn-enter:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(39,174,96,0.65); }
         .btn-enter:active { transform: translateY(-1px); }
         .welcome-footer { margin-top: 30px; padding-top: 18px; border-top: 1px dashed var(--border); font-size: 0.83em; color: var(--text-muted); }
         .welcome-footer strong { color: var(--primary); font-weight: 600; }
 
-        /* ================= المحتوى الرئيسي (لوحة التحكم) ================= */
-        #main-content { display: none; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        /* المحتوى الرئيسي */
+        #main-content { display: none; }
         .container { max-width: 1000px; margin: 0 auto; background: var(--surface); border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         header { text-align: center; margin-bottom: 28px; padding-bottom: 18px; border-bottom: 2px solid var(--light); }
         header h1 { color: var(--primary); font-size: 1.5em; font-weight: 700; }
@@ -72,16 +68,14 @@
         .filters select, .filters button { width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: white; color: var(--text); transition: border-color 0.2s; }
         .filters select:focus { border-color: var(--primary); outline: none; }
         .filters button { background: var(--primary); color: white; border-color: var(--primary); cursor: pointer; font-weight: 600; }
-        .filters button:hover { background: #0f2840; }
-        .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .filters button:hover { background: #0f2840; } .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .comparison-section { margin-bottom: 30px; }
         .comparison-section h3 { color: var(--primary); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--light); font-size: 1.15em; }
         .comparison-table { width: 100%; border-collapse: collapse; border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
         .comparison-table th { background: var(--primary); color: white; padding: 13px 15px; text-align: right; font-weight: 600; font-size: 0.88em; }
         .comparison-table td { padding: 13px 15px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
-        .comparison-table tr:hover td { background: #f8fafd; }
-        .comparison-table tr:last-child td { border-bottom: none; }
+        .comparison-table tr:hover td { background: #f8fafd; } .comparison-table tr:last-child td { border-bottom: none; }
         .comparison-table td:nth-child(3), .comparison-table td:nth-child(4), .comparison-table td:nth-child(5), .comparison-table td:nth-child(6) { text-align: center !important; font-variant-numeric: tabular-nums; }
         .comparison-table td:nth-child(1) { min-width: 110px; } .comparison-table td:nth-child(5) { min-width: 140px; }
 
@@ -119,7 +113,6 @@
         .btn-print { background: var(--primary); color: white; padding: 13px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px; transition: all 0.2s; width: 100%; font-family: inherit; }
         .btn-print:hover { background: #0f2840; transform: translateY(-1px); }
 
-        /* نافذة الطباعة */
         #printOverlay { display: none; position: fixed; inset: 0; background: rgba(10,25,45,0.78); z-index: 8888; overflow-y: auto; padding: 30px 16px; }
         #printOverlay.active { display: block; }
         #printWindow { background: white; max-width: 780px; margin: 0 auto; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4); }
@@ -199,7 +192,7 @@
 </head>
 <body>
 
-    <!-- ================= صفحة الترحيب ================= -->
+    <!-- صفحة الترحيب -->
     <div id="welcome-screen">
         <div class="welcome-card">
             <div class="welcome-logo">🇴🇲</div>
@@ -209,8 +202,8 @@
             <h2 class="platform-name">منصة إدارة الغياب</h2>
             <p class="welcome-desc">نظام إلكتروني متكامل لمتابعة حضور وغياب الطلاب<br><strong>دقيق • آمن • سهل الاستخدام</strong></p>
             
-            <!-- ✨ زر الدخول -->
-            <button class="btn-enter" onclick="enterPlatform()" aria-label="دخول المنصة">
+            <!-- ✅ تم إضافة type="button" لضمان عدم إرسال النموذج افتراضياً -->
+            <button type="button" id="enterBtn" class="btn-enter" aria-label="دخول المنصة">
                 <span>🚀</span>
                 <span>دخول المنصة</span>
             </button>
@@ -219,7 +212,7 @@
         </div>
     </div>
 
-    <!-- ================= المحتوى الرئيسي (لوحة التحكم) ================= -->
+    <!-- المحتوى الرئيسي -->
     <div id="main-content">
         <div class="container">
             <header>
@@ -238,7 +231,7 @@
                 <div style="overflow-x:auto;">
                     <table class="comparison-table">
                         <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
-                        <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:22px;color:#7a8fa6;">⏳ اضغط دخول المنصة لتحميل البيانات</td></tr></tbody>
+                        <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:22px;color:#7a8fa6;">⏳ جاري تحميل البيانات...</td></tr></tbody>
                     </table>
                 </div>
             </div>
@@ -263,7 +256,6 @@
             </div>
         </div>
 
-        <!-- نافذة الطباعة -->
         <div id="printOverlay">
             <div id="printWindow">
                 <div class="print-toolbar">
@@ -279,29 +271,50 @@
     </div>
 
     <script>
-        const $ = id => document.getElementById(id);
+        // ✅ تعريف الدوال في النطاق العام لتجنب مشاكل النطاق
+        const el = id => document.getElementById(id);
         let allSections = [], dataLoaded = false, currentPrintHTML = '';
 
-        // ✨ دالة الدخول للمنصة
-        function enterPlatform() {
-            // تأثير بصري قبل الانتقال
-            const btn = document.querySelector('.btn-enter');
-            btn.style.transform = 'scale(0.95)'; btn.style.opacity = '0.8';
-            
-            setTimeout(() => {
-                // إخفاء الترحيب وإظهار لوحة التحكم
-                $('#welcome-screen').style.display = 'none';
-                $('#main-content').style.display = 'block';
-                
-                // تحميل البيانات فور الدخول
-                loadData();
-            }, 250);
-            
-            /* 
-               💡 ملاحظة: إذا كنت تريد توجيه المستخدم لصفحة خارجية reports.html بدلاً من العرض الداخلي،
-               احذف الكود أعلاه واستبدله بـ: window.location.href = 'reports.html';
-            */
-        }
+        // ✅ دالة الدخول الموثوقة
+        window.enterPlatform = function() {
+            try {
+                const welcome = el('welcome-screen');
+                const main = el('main-content');
+                const btn = el('enterBtn');
+
+                if (!welcome || !main) {
+                    alert('خطأ: عناصر الصفحة غير موجودة. يرجى تحديث الصفحة.');
+                    return;
+                }
+
+                // تأثير بصري سلس
+                if (btn) { btn.style.transform = 'scale(0.95)'; btn.style.opacity = '0.8'; }
+                welcome.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+                welcome.style.opacity = '0';
+                welcome.style.transform = 'scale(0.98)';
+                welcome.style.pointerEvents = 'none';
+
+                // الانتقال بعد التأثير
+                setTimeout(() => {
+                    welcome.style.display = 'none';
+                    main.style.display = 'block';
+                    // تأخير بسيط لضمان رسم العنصر قبل استدعاء البيانات
+                    requestAnimationFrame(() => {
+                        if (typeof loadData === 'function') loadData();
+                    });
+                }, 350);
+
+            } catch (err) {
+                console.error('فشل دخول المنصة:', err);
+                alert('حدث خطأ تقني: ' + err.message);
+            }
+        };
+
+        // ربط الزر بالدالة بشكل مباشر وآمن
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = el('enterBtn');
+            if (btn) btn.addEventListener('click', window.enterPlatform);
+        });
 
         function escapeHtml(text) { if (text == null) return '—'; return String(text).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' })[m]); }
         function deepTrim(obj) { if (typeof obj === 'string') return obj.trim(); if (Array.isArray(obj)) return obj.map(deepTrim); if (obj !== null && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k,v]) => [k.trim(), deepTrim(v)])); return obj; }
@@ -322,17 +335,17 @@
                 };
                 allSections = [...parse(rA,'أ'), ...parse(rB,'ب')];
                 if (!allSections.length) throw new Error('لا توجد بيانات شعب');
-                ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn'].forEach(id => $(id).disabled = false);
-                $('filterGroup').innerHTML = `<option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
-                $('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+                ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn'].forEach(id => el(id).disabled = false);
+                el('filterGroup').innerHTML = `<option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+                el('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
                 updateSectionsDropdown(); onReportGroupChange(); loadComparisonTable(); dataLoaded = true;
             } catch(e) {
-                $('comparisonBody').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#c0392b;">❌ ${e.message}</td></tr>`;
+                el('comparisonBody').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#c0392b;">❌ ${e.message}</td></tr>`;
             }
         }
 
         function updateSectionsDropdown() {
-            const g = $('filterGroup').value, sel = $('filterSection'), cur = sel.value;
+            const g = el('filterGroup').value, sel = el('filterSection'), cur = sel.value;
             sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
             (g ? allSections.filter(s => s.group===g) : allSections).forEach(s => {
                 const o = document.createElement('option'); o.value = s.section_id; o.textContent = s.section_label||s.section_id; sel.appendChild(o);
@@ -344,7 +357,7 @@
 
         async function loadComparisonTable() {
             if (!dataLoaded) return;
-            const g = $('filterGroup').value, sec = $('filterSection').value, tbody = $('comparisonBody');
+            const g = el('filterGroup').value, sec = el('filterSection').value, tbody = el('comparisonBody');
             let data = allSections.filter(s => (!g || s.group === g) && (!sec || s.section_id === sec));
             if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a8fa6;">⚠️ لا توجد بيانات لعرضها</td></tr>'; return; }
             
@@ -381,13 +394,13 @@
 
         function toggleReportFields() {
             const t = document.querySelector('input[name="reportType"]:checked').value;
-            $('rptStudent').style.display = t==='student' ? 'block' : 'none';
+            el('rptStudent').style.display = t==='student' ? 'block' : 'none';
             document.querySelectorAll('.radio-label').forEach(l => l.classList.toggle('active', l.querySelector('input').checked));
-            if (t==='student' && $('rptSection').value) updateStudentsDropdown();
+            if (t==='student' && el('rptSection').value) updateStudentsDropdown();
         }
 
         function onReportGroupChange() {
-            const g = $('rptGroup').value, ss = $('rptSection'), st = $('rptStudent');
+            const g = el('rptGroup').value, ss = el('rptSection'), st = el('rptStudent');
             ss.disabled = !g; ss.innerHTML = '<option value="">✦ اختر الشعبة</option>';
             st.innerHTML = '<option value="">✦ اختر الطالب</option>'; st.style.display = 'none';
             if (!g) return;
@@ -396,25 +409,25 @@
 
         function onReportSectionChange() {
             const t = document.querySelector('input[name="reportType"]:checked').value;
-            if (t==='student' && $('rptSection').value) { updateStudentsDropdown(); $('rptStudent').style.display='block'; }
-            else $('rptStudent').style.display='none';
+            if (t==='student' && el('rptSection').value) { updateStudentsDropdown(); el('rptStudent').style.display='block'; }
+            else el('rptStudent').style.display='none';
         }
 
         function updateStudentsDropdown() {
-            const sec = $('rptSection').value, sel = $('rptStudent');
+            const sec = el('rptSection').value, sel = el('rptStudent');
             sel.innerHTML = '<option value="">✦ اختر الطالب</option>';
             allSections.find(s => s.section_id===sec)?.students?.forEach(st => { const o=document.createElement('option'); o.value=st.id; o.textContent=st.name; sel.appendChild(o); });
         }
 
         function generateCustomReport() {
             const type = document.querySelector('input[name="reportType"]:checked').value;
-            const g = $('rptGroup').value, sec = $('rptSection').value;
+            const g = el('rptGroup').value, sec = el('rptSection').value;
             if (!g||!sec) return alert('❌ اختر المجموعة والشعبة');
-            if (type==='student' && !$('rptStudent').value) return alert('❌ اختر الطالب');
-            const rpt = $('customReport');
+            if (type==='student' && !el('rptStudent').value) return alert('❌ اختر الطالب');
+            const rpt = el('customReport');
             rpt.innerHTML = '<div style="text-align:center;padding:30px;color:#7a8fa6;">⏳ جاري إنشاء التقرير...</div>';
-            rpt.classList.add('show'); $('reportActions').style.display='none'; currentPrintHTML='';
-            setTimeout(() => { type==='student' ? generateStudentReport(g, sec, $('rptStudent').value, rpt) : generateSectionReport(g, sec, rpt); }, 300);
+            rpt.classList.add('show'); el('reportActions').style.display='none'; currentPrintHTML='';
+            setTimeout(() => { type==='student' ? generateStudentReport(g, sec, el('rptStudent').value, rpt) : generateSectionReport(g, sec, rpt); }, 300);
         }
 
         function dateStr() { return new Date().toLocaleDateString('ar-SA', {year:'numeric', month:'long', day:'numeric', weekday:'long'}); }
@@ -446,7 +459,7 @@
                 const tableRows = history.length ? history.map((h,i) => `<tr><td>${i+1}</td><td>${escapeHtml(h.date)}</td><td class="td-ab">غائب</td><td>${escapeHtml(h.section||'—')}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:14px;">لا توجد سجلات غياب</td></tr>';
                 const alertHTML = history.length>=5 ? `<div class="pr-alert ad">⚠️ تجاوز الحد الأقصى للغيابات — يستوجب التواصل الفوري.</div>` : history.length>=3 ? `<div class="pr-alert aw">⚠️ تجاوز الحد المسموح به — يُرجى التواصل مع ولي الأمر.</div>` : '';
                 currentPrintHTML = `<div class="pr-page">${printHeader('تقرير غياب طالب')}${printIdCard([{k:'اسم الطالب',v:student.name},{k:'الشعبة',v:secData.section_label||section},{k:'المجموعة',v:`(${group})`},{k:'الحالة',v:stLabel}])}${printStats([{l:'أيام الغياب', v:history.length, t:scType},{l:'نسبة الغياب', v:abRate+'%', t:scType}])}<div class="pr-sec-bar">📋 سجل الغياب التفصيلي</div><table class="pr-tbl"><thead><tr><th>#</th><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>${tableRows}</tbody></table>${alertHTML}${printFooter('إجمالي الغيابات: ' + history.length + ' يوم')}</div>`;
-                $('reportActions').style.display = 'block';
+                el('reportActions').style.display = 'block';
             } catch(e) { container.innerHTML = `<div class="alert alert-error">❌ خطأ: ${e.message}</div>`; }
         }
 
@@ -471,17 +484,14 @@
                 const rt = abRate>=5?'d':abRate>=2?'w':'s';
                 const tRows = rows.map((s,i) => `<tr><td>${i+1}</td><td><strong>${escapeHtml(s.name)}</strong></td><td class="${s.ab>0?'td-ab':'td-ok'}">${s.ab}</td><td>${s.at}%</td><td><span class="pr-badge b${s.sc}">${s.sl}</span></td></tr>`).join('');
                 currentPrintHTML = `<div class="pr-page">${printHeader('تقرير غياب شعبة')}${printIdCard([{k:'الشعبة',v:secData?.section_label||section},{k:'المجموعة',v:`(${group})`},{k:'عدد الطلاب',v:students.length+' طالب'}])}${printStats([{l:'عدد الطلاب',v:students.length,t:'n'},{l:'إجمالي الغياب',v:totalAb,t:rt},{l:'نسبة الغياب',v:abRate+'%',t:rt},{l:'متوسط / طالب',v:avg,t:'i'}])}<div class="pr-sec-bar">📋 تفصيل بيانات الطلاب</div><table class="pr-tbl"><thead><tr><th>#</th><th>اسم الطالب</th><th>أيام الغياب</th><th>نسبة الحضور</th><th>الحالة</th></tr></thead><tbody>${tRows}</tbody></table>${printFooter('الشعبة: ' + (secData?.section_label||section) + ' • المجموعة ('+group+')')}</div>`;
-                $('reportActions').style.display = 'block';
+                el('reportActions').style.display = 'block';
             } catch(e) { container.innerHTML = `<div class="alert alert-error">❌ خطأ: ${e.message}</div>`; }
         }
 
-        function openPrintPreview() { if (!currentPrintHTML) return alert('❌ لا يوجد تقرير'); $('printContent').innerHTML = currentPrintHTML; $('printOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
-        function closePrint() { $('printOverlay').classList.remove('active'); document.body.style.overflow = ''; }
-        $('printOverlay').addEventListener('click', e => { if (e.target === $('printOverlay')) closePrint(); });
+        function openPrintPreview() { if (!currentPrintHTML) return alert('❌ لا يوجد تقرير'); el('printContent').innerHTML = currentPrintHTML; el('printOverlay').classList.add('active'); document.body.style.overflow = 'hidden'; }
+        function closePrint() { el('printOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+        el('printOverlay').addEventListener('click', e => { if (e.target === el('printOverlay')) closePrint(); });
         document.addEventListener('keydown', e => { if (e.key==='Escape') closePrint(); });
-        
-        // دعم لوحة المفاتيح للدخول السريع
-        document.addEventListener('keydown', e => { if (e.key === 'Enter' && $('#welcome-screen').style.display !== 'none') enterPlatform(); });
     </script>
 </body>
 </html>
