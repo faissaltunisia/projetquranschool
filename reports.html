@@ -59,10 +59,8 @@
         th { background: var(--light); color: var(--primary); font-weight: 600; }
         tr:hover { background: #f9f9f9; }
 
-        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-act:hover { opacity: 0.9; }
-        .btn-print { background: var(--primary); }
+        .btn-print { padding: 10px 18px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-print:hover { background: #1a252f; }
 
         @media (max-width: 600px) {
             .stats-cards { grid-template-columns: 1fr 1fr; }
@@ -75,79 +73,34 @@
            ========================================== */
         @page { margin: 15mm; }
         @media print {
-            /* إخفاء كل عناصر الصفحة */
             body, body * { visibility: hidden !important; background: #fff !important; color: #000 !important; }
-            
-            /* إظهار التقرير فقط وتنسيقه */
             #customReport, #customReport * { 
-                visibility: visible !important; 
-                position: absolute; 
-                left: 0; top: 0; 
-                width: 100%; 
-                margin: 0; padding: 20px;
-                background: #fff; 
-                color: #000;
-                box-shadow: none; border: none;
-                animation: none !important;
+                visibility: visible !important; position: absolute; left: 0; top: 0; width: 100%; 
+                margin: 0; padding: 20px; background: #fff; color: #000; box-shadow: none; border: none; animation: none !important;
             }
-
-            /* تنسيق الهيدر الخاص بالتقرير */
-            .report-header { 
-                display: block !important; 
-                border-bottom: 3px double #000; 
-                padding-bottom: 15px; margin-bottom: 20px;
-                text-align: center;
-            }
+            .report-header { display: block !important; border-bottom: 3px double #000; padding-bottom: 15px; margin-bottom: 20px; text-align: center; }
             .report-header h2 { margin: 0 0 5px; font-size: 18pt; color: #000 !important; }
             .report-header h3 { margin: 0 0 8px; font-size: 14pt; color: #333 !important; }
             .report-header p { margin: 0; font-size: 10pt; color: #555 !important; }
-
-            /* تنسيق الجداول للطباعة */
-            #customReport table {
-                width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt;
-                border: 2px solid #000;
-            }
-            #customReport th, #customReport td {
-                border: 1px solid #000; padding: 8px 10px; text-align: right; color: #000 !important;
-                background: #fff !important;
-            }
+            #customReport table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11pt; border: 2px solid #000; }
+            #customReport th, #customReport td { border: 1px solid #000; padding: 8px 10px; text-align: right; color: #000 !important; background: #fff !important; }
             #customReport th { background: #f2f2f2 !important; font-weight: bold; }
-
-            /* إخفاء العناصر غير المرغوبة صراحةً */
-            .filters, .stats-cards, .comparison-table, .report-builder, #reportActionsBtn, .no-print {
-                display: none !important; visibility: hidden !important;
-            }
+            .filters, .stats-cards, .comparison-table, .report-builder, #reportActionsBtn, .no-print { display: none !important; visibility: hidden !important; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <header>
-        <h1>📊 لوحة تقارير الغياب</h1>
-        <p>نظام متابعة الحضور والغياب - مدرسة القرآن الكريم</p>
-    </header>
+    <header><h1>📊 لوحة تقارير الغياب</h1><p>نظام متابعة الحضور والغياب - مدرسة القرآن الكريم</p></header>
 
-    <!-- 🔍 فلاتر التقارير العامة -->
     <div class="filters">
-        <select id="filterGroup" onchange="onFilterChange()">
-            <option value="">📁 كل المجموعات</option>
-            <option value="أ">المجموعة (أ)</option>
-            <option value="ب">المجموعة (ب)</option>
-        </select>
-        <select id="filterSection" onchange="onFilterChange()">
-            <option value="">🏫 كل الشعب</option>
-        </select>
-        <select id="filterPeriod" onchange="onPeriodChange()">
-            <option value="week">آخر 7 أيام</option>
-            <option value="month" selected>آخر 30 يوم</option>
-            <option value="custom">فترة مخصصة</option>
-        </select>
-        <input type="date" id="filterStart" style="display:none;">
-        <input type="date" id="filterEnd" style="display:none;">
+        <select id="filterGroup" onchange="onFilterChange()"><option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+        <select id="filterSection" onchange="onFilterChange()"><option value="">🏫 كل الشعب</option></select>
+        <select id="filterPeriod" onchange="onPeriodChange()"><option value="week">آخر 7 أيام</option><option value="month" selected>آخر 30 يوم</option><option value="custom">فترة مخصصة</option></select>
+        <input type="date" id="filterStart" style="display:none;"><input type="date" id="filterEnd" style="display:none;">
         <button id="loadBtn" onclick="loadReports()">🔄 تحديث البيانات</button>
     </div>
 
-    <!-- 📊 بطاقات الإحصائيات -->
     <div class="stats-cards">
         <div class="stat-card gold"><h4>🏆 أعلى شعبة في الغياب</h4><div class="value" id="topSection">-</div><div class="detail" id="topSectionDetail">-</div></div>
         <div class="stat-card red"><h4>⚠️ الطالب الأكثر غياباً</h4><div class="value" id="topStudent">-</div><div class="detail" id="topStudentDetail">-</div></div>
@@ -156,22 +109,16 @@
         <div class="stat-card"><h4>📊 متوسط الغياب/طالب</h4><div class="value" id="avgAbsent">-</div><div class="detail" id="avgDetail">-</div></div>
     </div>
 
-    <!-- 📈 جدول مقارنة الشعب -->
     <div id="sectionComparison" class="comparison-table" style="display:none;">
         <h4 style="margin:15px; color:var(--primary)">📊 مقارنة نسب الغياب بين الشعب</h4>
         <table><thead><tr><th>الشعبة</th><th>إجمالي الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead><tbody id="comparisonBody"></tbody></table>
     </div>
 
-    <!-- 📄 منشئ التقارير المخصصة -->
     <div class="report-builder">
         <h3>📄 إنشاء تقرير مفصل</h3>
         <div class="radio-group">
-            <label class="radio-label active">
-                <input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب
-            </label>
-            <label class="radio-label">
-                <input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة
-            </label>
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
         </div>
         <div class="filters" style="background:transparent; padding:0; margin:0;">
             <select id="rptGroup" onchange="onReportFilterChange()"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
@@ -181,13 +128,8 @@
         </div>
     </div>
 
-    <!-- 📋 منطقة عرض التقرير -->
     <div id="customReport"></div>
-    
-    <!-- 🖨️ زر الطباعة فقط -->
-    <div id="reportActionsBtn" style="display:none; margin:10px 0;">
-        <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة التقرير</button>
-    </div>
+    <div id="reportActionsBtn" style="display:none; margin:10px 0;"><button class="btn-print" onclick="window.print()">🖨️ طباعة التقرير</button></div>
 </div>
 
 <script>
@@ -195,34 +137,16 @@ const $ = id => document.getElementById(id);
 let allSections = [];
 let cachedReports = {};
 
-// ✅ تنظيف البيانات
-function deepTrim(obj) {
-    if (typeof obj === 'string') return obj.trim();
-    if (Array.isArray(obj)) return obj.map(deepTrim);
-    if (obj !== null && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
-    return obj;
+// ✅ دالة موحدة لتحديث قائمة الشعب بناءً على المجموعة المختارة
+function syncSectionDropdown(groupValue, targetSelectId) {
+    const filtered = groupValue ? allSections.filter(s => s.group === groupValue) : allSections;
+    const sel = $(targetSelectId);
+    const prefix = targetSelectId === 'filterSection' ? '🏫 كل الشعب' : 'الشعبة';
+    sel.innerHTML = `<option value="">${prefix}</option>` + 
+        filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
 }
 
-// ✅ توحيد هيكل البيانات
-function normalizeData(raw, groupLetter) {
-    const clean = deepTrim(raw);
-    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
-    if (clean.section_id) return [{...clean, group: groupLetter}];
-    return [];
-}
-
-// ✅ تحديث القوائم
-function updateDropdowns() {
-    const g = $('filterGroup').value;
-    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
-    ['filterSection', 'rptSection'].forEach(id => {
-        const sel = $(id);
-        const prefix = id === 'filterSection' ? '🏫 كل الشعب' : 'الشعبة';
-        sel.innerHTML = `<option value="">${prefix}</option>` + filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
-    });
-    updateRptStudents();
-}
-
+// ✅ تحديث قائمة الطلاب
 function updateRptStudents() {
     const g = $('rptGroup').value, sec = $('rptSection').value;
     const stuSel = $('rptStudent');
@@ -232,13 +156,18 @@ function updateRptStudents() {
     stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
     if(!g || !sec) return;
     const secData = allSections.find(s => s.group === g && s.section_id === sec);
-    if(secData?.students) secData.students.forEach(st => {
-        const opt = document.createElement('option');
-        opt.value = st.id; opt.textContent = st.name; stuSel.appendChild(opt);
-    });
+    if(secData?.students) {
+        secData.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
+        });
+    }
 }
 
-function onFilterChange() { updateDropdowns(); loadReports(); }
+// ✅ أحداث القوائم والفلاتر
+function onFilterChange() { syncSectionDropdown($('filterGroup').value, 'filterSection'); loadReports(); }
+function onReportFilterChange() { syncSectionDropdown($('rptGroup').value, 'rptSection'); updateRptStudents(); }
 function onPeriodChange() {
     const isCustom = $('filterPeriod').value === 'custom';
     $('filterStart').style.display = isCustom ? 'inline-block' : 'none';
@@ -251,7 +180,20 @@ function toggleReportFields() {
     $('rptStudent').style.display = (document.querySelector('input[name="reportType"]:checked').value === 'student') ? 'block' : 'none';
     updateRptStudents();
 }
-function onReportFilterChange() { updateRptStudents(); }
+
+// ✅ تنظيف ومواءمة البيانات
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    return obj;
+}
+function normalizeData(raw, groupLetter) {
+    const clean = deepTrim(raw);
+    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
+    if (clean.section_id) return [{...clean, group: groupLetter}];
+    return [];
+}
 
 // === 🚀 تهيئة الصفحة ===
 document.addEventListener('DOMContentLoaded', async () => {
@@ -259,7 +201,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fetchGroup = async (g) => { try { const r = await fetch(`/api/get-section?group=${encodeURIComponent(g)}`); return r.ok ? await r.json() : {}; } catch { return {}; } };
         const [resA, resB] = await Promise.all([fetchGroup('أ'), fetchGroup('ب')]);
         allSections = [...normalizeData(resA, 'أ'), ...normalizeData(resB, 'ب')];
-        updateDropdowns(); loadReports();
+        
+        // تعبئة القوائم افتراضياً
+        syncSectionDropdown('', 'filterSection');
+        syncSectionDropdown('', 'rptSection');
+        loadReports();
     } catch(e) { console.warn('⚠️ فشل تحميل البيانات:', e); }
 });
 
