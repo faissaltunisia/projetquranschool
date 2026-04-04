@@ -16,6 +16,69 @@
             background: linear-gradient(135deg, #1a3a5c 0%, #2980b9 100%);
             padding: 20px; min-height: 100vh; -webkit-font-smoothing: antialiased;
         }
+        
+        /* ✨ أنماط صفحة الترحيب */
+        #welcomeScreen {
+            position: fixed; inset: 0; z-index: 10000;
+            background: linear-gradient(135deg, #1a3a5c 0%, #2c5f8d 50%, #1a3a5c 100%);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .welcome-card {
+            background: rgba(255,255,255,0.95); border-radius: 20px;
+            padding: 40px 30px; max-width: 520px; width: 100%;
+            text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 3px solid var(--accent); position: relative; overflow: hidden;
+        }
+        .welcome-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent), var(--primary));
+        }
+        .welcome-logo {
+            font-size: 3.5em; margin-bottom: 15px; color: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+        
+        .welcome-title {
+            color: var(--primary); font-size: 1.4em; font-weight: 800;
+            margin: 10px 0 5px; line-height: 1.4;
+        }
+        .welcome-subtitle {
+            color: var(--accent); font-size: 1.1em; font-weight: 700;
+            margin: 5px 0 20px; letter-spacing: 1px;
+        }
+        .welcome-divider {
+            height: 2px; background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 20px 0; border-radius: 2px;
+        }
+        .welcome-desc {
+            color: var(--text-muted); font-size: 0.95em; margin-bottom: 25px; line-height: 1.6;
+        }
+        .btn-enter {
+            background: linear-gradient(135deg, var(--secondary), #1e8449);
+            color: white; padding: 16px 45px; border: none; border-radius: 50px;
+            font-size: 1.15em; font-weight: 700; cursor: pointer;
+            transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(39,174,96,0.4);
+            font-family: inherit; display: inline-flex; align-items: center; gap: 10px;
+        }
+        .btn-enter:hover {
+            transform: translateY(-3px); box-shadow: 0 8px 25px rgba(39,174,96,0.6);
+            background: linear-gradient(135deg, #1e8449, var(--secondary));
+        }
+        .btn-enter:active { transform: translateY(-1px); }
+        .welcome-footer {
+            margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border);
+            font-size: 0.82em; color: var(--text-muted);
+        }
+        
+        /* إخفاء المحتوى الرئيسي حتى دخول المنصة */
+        #mainContent { display: none; }
+        #mainContent.visible { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
         .container {
             max-width: 1000px; margin: 0 auto; background: var(--surface);
             border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -44,7 +107,11 @@
         .comparison-table td { padding: 13px 15px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
         .comparison-table tr:hover td { background: #f8fafd; }
         .comparison-table tr:last-child td { border-bottom: none; }
-        .comparison-table td:nth-child(3), .comparison-table td:nth-child(4), .comparison-table td:nth-child(5), .comparison-table td:nth-child(6) { text-align: center !important; font-variant-numeric: tabular-nums; }
+        
+        .comparison-table td:nth-child(3), .comparison-table td:nth-child(4), 
+        .comparison-table td:nth-child(5), .comparison-table td:nth-child(6) { 
+            text-align: center !important; font-variant-numeric: tabular-nums; 
+        }
         .comparison-table td:nth-child(1) { min-width: 110px; }
         .comparison-table td:nth-child(5) { min-width: 140px; }
 
@@ -76,7 +143,10 @@
         .builder-filters button:hover { background: #1e8449; }
         .builder-filters button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        #customReport { display: none; margin-top: 20px; padding: 24px; background: white; border: 2px solid var(--primary); border-radius: var(--r); box-shadow: 0 4px 20px rgba(26,58,92,0.1); }
+        #customReport {
+            display: none; margin-top: 20px; padding: 24px; background: white;
+            border: 2px solid var(--primary); border-radius: var(--r); box-shadow: 0 4px 20px rgba(26,58,92,0.1);
+        }
         #customReport.show { display: block; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .web-report-header { text-align: center; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 2px dashed var(--border); }
@@ -93,25 +163,39 @@
         .alert { padding: 12px 16px; border-radius: 8px; margin: 12px 0; font-size: 0.9em; border-right: 4px solid; }
         .alert-error { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
         .alert-warning { background: var(--accent-light); color: #b7600e; border-color: var(--accent); }
-        .btn-print { background: var(--primary); color: white; padding: 13px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px; transition: all 0.2s; width: 100%; font-family: inherit; }
+        .btn-print {
+            background: var(--primary); color: white; padding: 13px 24px; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 700; font-size: 15px; transition: all 0.2s; width: 100%; font-family: inherit;
+        }
         .btn-print:hover { background: #0f2840; transform: translateY(-1px); }
 
         /* نافذة الطباعة */
-        #printOverlay { display: none; position: fixed; inset: 0; background: rgba(10,25,45,0.78); z-index: 9999; overflow-y: auto; padding: 30px 16px; }
+        #printOverlay {
+            display: none; position: fixed; inset: 0; background: rgba(10,25,45,0.78); z-index: 9999; overflow-y: auto; padding: 30px 16px;
+        }
         #printOverlay.active { display: block; }
-        #printWindow { background: white; max-width: 780px; margin: 0 auto; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4); }
-        .print-toolbar { background: #1a3a5c; padding: 13px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        #printWindow {
+            background: white; max-width: 780px; margin: 0 auto; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+        .print-toolbar {
+            background: #1a3a5c; padding: 13px 22px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
         .print-toolbar-label { color: #8ab4cc; font-size: 0.85em; font-weight: 500; }
         .print-toolbar-actions { display: flex; gap: 10px; }
         .pt-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
-        .pt-btn-print { background: #27ae60; color: white; } .pt-btn-print:hover { background: #1e8449; }
-        .pt-btn-close { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); } .pt-btn-close:hover { background: rgba(255,255,255,0.2); }
+        .pt-btn-print { background: #27ae60; color: white; }
+        .pt-btn-print:hover { background: #1e8449; }
+        .pt-btn-close { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .pt-btn-close:hover { background: rgba(255,255,255,0.2); }
 
         /* تصميم صفحة التقرير المطبوع */
         .pr-page { padding: 32px 36px; font-family: inherit; color: #1a2533; direction: rtl; line-height: 1.55; background: white; }
         .pr-header { display: flex; border-radius: 12px; overflow: hidden; box-shadow: 0 3px 14px rgba(26,58,92,0.18); margin-bottom: 22px; }
         .pr-header-accent { width: 8px; background: #e67e22; flex-shrink: 0; }
-        .pr-header-main { flex: 1; background: linear-gradient(130deg, #1a3a5c 0%, #1d608e 100%); padding: 20px 26px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; }
+        .pr-header-main {
+            flex: 1; background: linear-gradient(130deg, #1a3a5c 0%, #1d608e 100%);
+            padding: 20px 26px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+        }
         .pr-school-name { font-size: 1.22em; font-weight: 800; color: #fff; margin-bottom: 3px; letter-spacing: 0.2px; }
         .pr-report-subtitle { font-size: 0.86em; color: #8cc0e0; font-weight: 500; margin-bottom: 8px; }
         .pr-date-pill { display: inline-block; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.28); color: #c5dff2; font-size: 0.79em; padding: 4px 14px; border-radius: 20px; }
@@ -123,63 +207,50 @@
         .pr-id-div { width: 1px; height: 18px; background: #bccfe0; }
         .pr-stats { display: flex; gap: 11px; margin-bottom: 20px; flex-wrap: wrap; }
         .pr-sc { flex: 1; min-width: 85px; border-radius: 10px; padding: 14px 10px; text-align: center; border: 1.5px solid; }
-        .pr-sc.n { background: #f0f4fa; border-color: #c0cfe4; } .pr-sc.s { background: #eafaf1; border-color: #a2d9b1; }
-        .pr-sc.d { background: #fdedec; border-color: #f0a09a; } .pr-sc.w { background: #fef5ec; border-color: #f0cc8a; }
+        .pr-sc.n { background: #f0f4fa; border-color: #c0cfe4; }
+        .pr-sc.s { background: #eafaf1; border-color: #a2d9b1; }
+        .pr-sc.d { background: #fdedec; border-color: #f0a09a; }
+        .pr-sc.w { background: #fef5ec; border-color: #f0cc8a; }
         .pr-sc.i { background: #eaf4fb; border-color: #85c0e4; }
         .pr-sc-num { font-size: 1.9em; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
-        .pr-sc.n .pr-sc-num { color: #1a3a5c; } .pr-sc.s .pr-sc-num { color: #1a7a41; } .pr-sc.d .pr-sc-num { color: #a93226; } .pr-sc.w .pr-sc-num { color: #b7600e; } .pr-sc.i .pr-sc-num { color: #1a5f8a; }
+        .pr-sc.n .pr-sc-num { color: #1a3a5c; } .pr-sc.s .pr-sc-num { color: #1a7a41; }
+        .pr-sc.d .pr-sc-num { color: #a93226; } .pr-sc.w .pr-sc-num { color: #b7600e; } .pr-sc.i .pr-sc-num { color: #1a5f8a; }
         .pr-sc-lbl { font-size: 0.73em; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
-        .pr-sc.n .pr-sc-lbl { color: #4a6880; } .pr-sc.s .pr-sc-lbl { color: #1e8449; } .pr-sc.d .pr-sc-lbl { color: #c0392b; } .pr-sc.w .pr-sc-lbl { color: #c07010; } .pr-sc.i .pr-sc-lbl { color: #2471a3; }
+        .pr-sc.n .pr-sc-lbl { color: #4a6880; } .pr-sc.s .pr-sc-lbl { color: #1e8449; }
+        .pr-sc.d .pr-sc-lbl { color: #c0392b; } .pr-sc.w .pr-sc-lbl { color: #c07010; } .pr-sc.i .pr-sc-lbl { color: #2471a3; }
         .pr-sec-bar { display: flex; align-items: center; gap: 10px; background: #1a3a5c; color: white; padding: 9px 16px; border-radius: 8px; margin-bottom: 13px; font-size: 0.91em; font-weight: 700; }
         .pr-tbl { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; border: 1.5px solid #cdd6e6; font-size: 0.88em; }
         .pr-tbl thead tr { background: #1a3a5c; }
         .pr-tbl th { padding: 10px 14px; text-align: right; color: white; font-weight: 700; font-size: 0.85em; letter-spacing: 0.2px; }
-        .pr-tbl tbody tr:nth-child(even) td { background: #f2f6fb; } .pr-tbl tbody tr:nth-child(odd) td { background: white; }
+        .pr-tbl tbody tr:nth-child(even) td { background: #f2f6fb; }
+        .pr-tbl tbody tr:nth-child(odd) td { background: white; }
         .pr-tbl td { padding: 10px 14px; border-bottom: 1px solid #e0e8f3; color: #1a2533; vertical-align: middle; }
         .pr-tbl tbody tr:last-child td { border-bottom: none; }
         .td-ab { color: #a93226; font-weight: 700; } .td-ok { color: #1a7a41; font-weight: 600; }
         .pr-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 0.8em; font-weight: 700; }
-        .bd { background: #fdedec; color: #a93226; border: 1px solid #f0a09a; } .bw { background: #fef5ec; color: #b7600e; border: 1px solid #f0cc8a; } .bs { background: #eafaf1; color: #1a7a41; border: 1px solid #a2d9b1; }
+        .bd { background: #fdedec; color: #a93226; border: 1px solid #f0a09a; }
+        .bw { background: #fef5ec; color: #b7600e; border: 1px solid #f0cc8a; }
+        .bs { background: #eafaf1; color: #1a7a41; border: 1px solid #a2d9b1; }
         .pr-alert { border-radius: 8px; padding: 12px 16px; font-size: 0.88em; font-weight: 600; margin-top: 16px; border-right: 5px solid; display: flex; align-items: center; gap: 10px; }
-        .pr-alert.aw { background: #fef5ec; color: #9c5c00; border-color: #e67e22; } .pr-alert.ad { background: #fdedec; color: #922b21; border-color: #c0392b; }
+        .pr-alert.aw { background: #fef5ec; color: #9c5c00; border-color: #e67e22; }
+        .pr-alert.ad { background: #fdedec; color: #922b21; border-color: #c0392b; }
         .pr-footer { margin-top: 26px; padding-top: 14px; border-top: 1.5px solid #d8e2ef; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .pf-school { font-size: 0.83em; font-weight: 700; color: #1a3a5c; } .pf-sub { font-size: 0.74em; color: #8a9bb5; margin-top: 2px; }
-        .pf-date { font-size: 0.78em; color: #8a9bb5; } .pf-stamp { display: inline-block; border: 1.5px solid #c5d3e8; border-radius: 6px; padding: 4px 14px; font-size: 0.75em; color: #4a6580; margin-top: 4px; }
+        .pf-school { font-size: 0.83em; font-weight: 700; color: #1a3a5c; }
+        .pf-sub { font-size: 0.74em; color: #8a9bb5; margin-top: 2px; }
+        .pf-date { font-size: 0.78em; color: #8a9bb5; }
+        .pf-stamp { display: inline-block; border: 1.5px solid #c5d3e8; border-radius: 6px; padding: 4px 14px; font-size: 0.75em; color: #4a6580; margin-top: 4px; }
 
-        /* ==============================
-           🔹 CSS Print - ضبط لصفحة واحدة A4
-        ============================== */
         @media print {
             * { visibility: hidden !important; }
             #printOverlay, #printOverlay * { visibility: visible !important; }
-            #printOverlay { display: block !important; position: fixed !important; inset: 0 !important; background: white !important; padding: 0 !important; overflow: hidden !important; }
-            #printWindow { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; height: 297mm !important; overflow: hidden !important; }
+            #printOverlay { display: block !important; position: fixed !important; inset: 0 !important; background: white !important; padding: 0 !important; overflow: visible !important; }
+            #printWindow { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
             .print-toolbar { display: none !important; }
-            
-            .pr-page {
-                padding: 6mm 8mm !important;
-                max-height: 297mm !important;
-                line-height: 1.25 !important;
-                font-size: 13px !important;
-                box-sizing: border-box !important;
-                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            }
-            /* ضغط المسافات والهوامش للطباعة */
-            .pr-header { margin-bottom: 8px !important; }
-            .pr-header-main { padding: 12px 16px !important; }
-            .pr-school-name { font-size: 1.1em !important; }
-            .pr-id-card { padding: 8px 12px !important; margin-bottom: 10px !important; }
-            .pr-stats { gap: 5px !important; margin-bottom: 8px !important; }
-            .pr-sc { padding: 8px 5px !important; min-width: auto !important; }
-            .pr-sc-num { font-size: 1.4em !important; margin-bottom: 2px !important; }
-            .pr-sec-bar { padding: 5px 10px !important; margin-bottom: 6px !important; font-size: 0.85em !important; }
-            .pr-tbl { font-size: 0.82em !important; }
-            .pr-tbl th, .pr-tbl td { padding: 4px 6px !important; }
+            .pr-page { padding: 12mm 14mm !important; }
+            .pr-header, .pr-header-main, .pr-header-accent { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .pr-sc, .pr-sec-bar, .pr-tbl thead tr, .pr-tbl tbody tr:nth-child(even) td, .pr-alert, .pr-badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .pr-tbl thead { display: table-header-group !important; }
             .pr-tbl tr { page-break-inside: avoid !important; }
-            .pr-alert { padding: 6px 10px !important; margin-top: 6px !important; font-size: 0.85em !important; }
-            .pr-footer { margin-top: 8px !important; padding-top: 5px !important; }
-            
             @page { size: A4; margin: 0; }
             body { background: white !important; }
         }
@@ -192,7 +263,8 @@
             .comparison-table { display: block; overflow-x: auto; }
             .comparison-table thead, .comparison-table tbody { display: table; width: 100%; }
             .comparison-table th, .comparison-table td { white-space: nowrap; padding: 11px 10px; font-size: 0.88em; }
-            .radio-group { flex-direction: column; } .radio-label { min-height: 48px; }
+            .radio-group { flex-direction: column; }
+            .radio-label { min-height: 48px; }
             .builder-filters { grid-template-columns: 1fr; }
             .builder-filters select, .builder-filters button { padding: 13px 15px; font-size: 15px; min-height: 48px; }
             #customReport { padding: 16px; }
@@ -205,72 +277,124 @@
             .pr-page { padding: 18px 15px; }
             .pr-header-main { padding: 15px 18px; }
             .pr-stats { flex-wrap: wrap; }
-            .pr-sc { min-width: 70px; padding: 11px 8px; } .pr-sc-num { font-size: 1.55em; }
+            .pr-sc { min-width: 70px; padding: 11px 8px; }
+            .pr-sc-num { font-size: 1.55em; }
             input, select, textarea, button { font-size: 16px !important; }
             select { -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; }
+            
+            /* تحسين صفحة الترحيب للجوال */
+            .welcome-card { padding: 30px 20px; }
+            .welcome-logo { font-size: 2.8em; }
+            .welcome-title { font-size: 1.2em; }
+            .welcome-subtitle { font-size: 1em; }
+            .btn-enter { padding: 14px 35px; font-size: 1.05em; width: 100%; justify-content: center; }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <header>
-        <h1>📊 تقارير الغياب المدرسية</h1>
-        <p>مقارنة الشعب • إنشاء تقارير مفصلة</p>
-    </header>
 
-    <div class="filters">
-        <select id="filterGroup" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
-        <select id="filterSection" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
-        <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث</button>
-    </div>
-
-    <div class="comparison-section">
-        <h3>📈 مقارنة نسب الغياب بين الشعب</h3>
-        <div style="overflow-x:auto;">
-            <table class="comparison-table">
-                <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
-                <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:22px;color:#7a8fa6;">⏳ جاري تحميل البيانات...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="report-builder">
-        <h3>📋 إنشاء تقرير مفصل</h3>
-        <div class="radio-group">
-            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
-            <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
-        </div>
-        <div class="builder-filters">
-            <select id="rptGroup" onchange="onReportGroupChange()" disabled><option value="">✦ اختر المجموعة</option></select>
-            <select id="rptSection" onchange="onReportSectionChange()" disabled><option value="">✦ اختر الشعبة</option></select>
-            <select id="rptStudent" style="display:none;"><option value="">✦ اختر الطالب</option></select>
-            <button onclick="generateCustomReport()" id="genBtn" disabled>📊 عرض التقرير</button>
-        </div>
-    </div>
-
-    <div id="customReport"></div>
-    <div id="reportActions" style="display:none;margin-top:14px;">
-        <button class="btn-print" onclick="openPrintPreview()">🖨️ طباعة التقرير</button>
-    </div>
-</div>
-
-<!-- نافذة الطباعة -->
-<div id="printOverlay">
-    <div id="printWindow">
-        <div class="print-toolbar">
-            <span class="print-toolbar-label">🖨️ معاينة التقرير قبل الطباعة</span>
-            <div class="print-toolbar-actions">
-                <button class="pt-btn pt-btn-print" onclick="window.print()">طباعة</button>
-                <button class="pt-btn pt-btn-close" onclick="closePrint()">✕ إغلاق</button>
+    <!-- ✨ صفحة الترحيب -->
+    <div id="welcomeScreen">
+        <div class="welcome-card">
+            <div class="welcome-logo">🇴🇲</div>
+            <h1 class="welcome-title">سلطنة عمان</h1>
+            <div class="welcome-subtitle">محافظة ظفار</div>
+            <div class="welcome-divider"></div>
+            <h2 style="color:var(--primary);font-size:1.3em;margin:15px 0;">منصة إدارة الغياب</h2>
+            <p class="welcome-desc">نظام إلكتروني متكامل لمتابعة حضور وغياب الطلاب • دقيق • آمن • سهل الاستخدام</p>
+            <button class="btn-enter" onclick="enterPlatform()">
+                🚀 دخول المنصة
+            </button>
+            <div class="welcome-footer">
+                © 2026 مدرسة تحفيظ القرآن الكريم • جميع الحقوق محفوظة
             </div>
         </div>
-        <div id="printContent"></div>
     </div>
-</div>
+
+    <!-- المحتوى الرئيسي (مخفي حتى الدخول) -->
+    <div id="mainContent">
+        <div class="container">
+            <header>
+                <h1>📊 تقارير الغياب المدرسية</h1>
+                <p>مقارنة الشعب • إنشاء تقارير مفصلة</p>
+            </header>
+
+            <div class="filters">
+                <select id="filterGroup" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+                <select id="filterSection" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+                <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث</button>
+            </div>
+
+            <div class="comparison-section">
+                <h3>📈 مقارنة نسب الغياب بين الشعب</h3>
+                <div style="overflow-x:auto;">
+                    <table class="comparison-table">
+                        <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
+                        <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:22px;color:#7a8fa6;">⏳ جاري تحميل البيانات...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="report-builder">
+                <h3>📋 إنشاء تقرير مفصل</h3>
+                <div class="radio-group">
+                    <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
+                    <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
+                </div>
+                <div class="builder-filters">
+                    <select id="rptGroup" onchange="onReportGroupChange()" disabled><option value="">✦ اختر المجموعة</option></select>
+                    <select id="rptSection" onchange="onReportSectionChange()" disabled><option value="">✦ اختر الشعبة</option></select>
+                    <select id="rptStudent" style="display:none;"><option value="">✦ اختر الطالب</option></select>
+                    <button onclick="generateCustomReport()" id="genBtn" disabled>📊 عرض التقرير</button>
+                </div>
+            </div>
+
+            <div id="customReport"></div>
+            <div id="reportActions" style="display:none;margin-top:14px;">
+                <button class="btn-print" onclick="openPrintPreview()">🖨️ طباعة التقرير</button>
+            </div>
+        </div>
+
+        <!-- نافذة الطباعة -->
+        <div id="printOverlay">
+            <div id="printWindow">
+                <div class="print-toolbar">
+                    <span class="print-toolbar-label">🖨️ معاينة التقرير قبل الطباعة</span>
+                    <div class="print-toolbar-actions">
+                        <button class="pt-btn pt-btn-print" onclick="window.print()">طباعة</button>
+                        <button class="pt-btn pt-btn-close" onclick="closePrint()">✕ إغلاق</button>
+                    </div>
+                </div>
+                <div id="printContent"></div>
+            </div>
+        </div>
+    </div>
 
 <script>
 const $ = id => document.getElementById(id);
 let allSections = [], dataLoaded = false, currentPrintHTML = '';
+
+// ✨ دالة دخول المنصة
+function enterPlatform() {
+    const welcome = $('#welcomeScreen');
+    const main = $('#mainContent');
+    
+    // تأثير خروج الصفحة الترحيبية
+    welcome.style.animation = 'fadeOut 0.4s ease forwards';
+    welcome.style.opacity = '0';
+    
+    setTimeout(() => {
+        welcome.style.display = 'none';
+        main.classList.add('visible');
+        // تحميل البيانات بعد الدخول
+        loadData();
+    }, 400);
+}
+
+// إضافة تأثير الخروج للترحيب
+const style = document.createElement('style');
+style.textContent = `@keyframes fadeOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.95); } }`;
+document.head.appendChild(style);
 
 function escapeHtml(text) {
     if (text == null) return '—';
@@ -325,7 +449,10 @@ async function loadComparisonTable() {
     if (!dataLoaded) return;
     const g = $('filterGroup').value, sec = $('filterSection').value, tbody = $('comparisonBody');
     let data = allSections.filter(s => (!g || s.group === g) && (!sec || s.section_id === sec));
-    if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a8fa6;">⚠️ لا توجد بيانات لعرضها</td></tr>'; return; }
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a8fa6;">⚠️ لا توجد بيانات لعرضها</td></tr>';
+        return;
+    }
     const results = await Promise.all(data.map(async s => {
         const sc = s.students?.length || 0;
         try {
@@ -334,7 +461,9 @@ async function loadComparisonTable() {
             const ab = sum.totalAbsent || 0, td = sum.totalDays || 1;
             const rate = sc > 0 && td > 0 ? parseFloat(((ab / (sc * td)) * 100).toFixed(1)) : 0;
             return { section: s.section_label || s.section_id || '—', group: s.group || '—', students: sc, absent: ab, rate, days: td };
-        } catch { return { section: s.section_label || s.section_id || '—', group: s.group || '—', students: sc, absent: 0, rate: 0, days: 1 }; }
+        } catch {
+            return { section: s.section_label || s.section_id || '—', group: s.group || '—', students: sc, absent: 0, rate: 0, days: 1 };
+        }
     }));
     const mx = Math.max(...results.map(r => r.rate), 1);
     tbody.innerHTML = results.map(s => {
@@ -347,7 +476,10 @@ async function loadComparisonTable() {
             <td style="text-align:center;font-weight:600">${escapeHtml(s.group)}</td>
             <td style="text-align:center;font-weight:600;color:var(--primary)">${s.students}</td>
             <td style="text-align:center;font-weight:600;color:var(--danger)">${s.absent}</td>
-            <td style="text-align:center"><strong style="color:${st.color};font-size:1.05em">${s.rate}%</strong><div class="bar" title="نسبة الغياب: ${s.rate}%"><div class="bar-fill" style="width:${bw}%"></div></div></td>
+            <td style="text-align:center">
+                <strong style="color:${st.color};font-size:1.05em">${s.rate}%</strong>
+                <div class="bar" title="نسبة الغياب: ${s.rate}%"><div class="bar-fill" style="width:${bw}%"></div></div>
+            </td>
             <td style="text-align:center"><span class="status ${st.c}">${st.t}</span></td>
         </tr>`;
     }).join('');
@@ -505,7 +637,9 @@ function openPrintPreview() { if (!currentPrintHTML) return alert('❌ لا يو
 function closePrint() { $('printOverlay').classList.remove('active'); document.body.style.overflow = ''; }
 $('printOverlay').addEventListener('click', e => { if (e.target === $('printOverlay')) closePrint(); });
 document.addEventListener('keydown', e => { if (e.key==='Escape') closePrint(); });
-document.addEventListener('DOMContentLoaded', loadData);
+
+// ✨ تحميل البيانات فقط بعد الدخول للمنصة (تم تعديل هذا السطر)
+// document.addEventListener('DOMContentLoaded', loadData); 
 </script>
 </body>
 </html>
