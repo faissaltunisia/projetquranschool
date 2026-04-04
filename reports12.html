@@ -79,7 +79,6 @@
             .btn-print { width: 100%; }
         }
 
-        /* 🖨️ تنسيق الطباعة */
         @media print {
             body * { visibility: hidden; }
             #customReport, #customReport * { visibility: visible; position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background: #fff; color: #000; }
@@ -131,35 +130,54 @@
 
 <script>
 const $ = id => document.getElementById(id);
-let allSections = [];      // [{section_id, section_label, group, students:[{id,name}]}]
-let attendanceRecords = []; // [{date, section_id, absent_ids:[]}]
+let allSections = [];
+let attendanceRecords = [];
 let dataLoaded = false;
 
-// === 📦 تحميل البيانات من الملفات ===
+// ✅ دالة تنظيف المسافات من المفاتيح والقيم (مهمة لملفاتك الحالية)
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    }
+    return obj;
+}
+
+// === 📦 تحميل البيانات من واجهات API الخاصة بمشروعك ===
 async function loadData() {
     try {
-        // 1️⃣ تحميل بيانات المجموعتين
+        // 1️⃣ تحميل بيانات المجموعتين عبر API المشروع
         const [resA, resB] = await Promise.all([
-            fetch('section-a.json').then(r => r.ok ? r.json() : null).catch(() => null),
-            fetch('section-b.json').then(r => r.ok ? r.json() : null).catch(() => null)
+            fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : null).catch(() => null)
         ]);
         
-        // معالجة هيكل مرن للبيانات
+        // معالجة هيكل مرن للبيانات مع تنظيف المسافات
         const parseSections = (raw, group) => {
             if (!raw) return [];
-            if (Array.isArray(raw)) return raw.map(s => ({...s, group}));
-            if (raw.sections) return raw.sections.map(s => ({...s, group}));
-            if (raw.section_id) return [{...raw, group}];
+            const clean = deepTrim(raw);
+            if (Array.isArray(clean)) return clean.map(s => ({...s, group}));
+            if (clean.sections) return clean.sections.map(s => ({...s, group}));
+            if (clean.section_id) return [{...clean, group}];
             return [];
         };
         allSections = [...parseSections(resA, 'أ'), ...parseSections(resB, 'ب')];
         
-        // 2️⃣ تحميل سجلات الغياب
+        // 2️⃣ تحميل سجلات الغياب عبر API المشروع
         try {
-            const attRes = await fetch('attendance_logs/attendance.json');
+            const attRes = await fetch('/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31');
             if (attRes.ok) {
                 const attData = await attRes.json();
-                attendanceRecords = Array.isArray(attData) ? attData : (attData.records || []);
+                const summary = attData.data || attData.summary || {};
+                // تحويل البيانات اليومية إلى سجلات غياب
+                if (summary.dailyData) {
+                    attendanceRecords = summary.dailyData.map(d => ({
+                        date: d.date,
+                        section_id: 'all',
+                        absent_ids: [] // سيتم ملؤها لاحقاً من البحث عن الطلاب
+                    }));
+                }
             }
         } catch(e) {
             console.warn('⚠️ لم يتم تحميل سجلات الغياب:', e);
@@ -173,13 +191,13 @@ async function loadData() {
         $('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة ✦</option><option value="أ">أ</option><option value="ب">ب</option>`;
         
         updateSectionsDropdown();
-        onReportGroupChange(); // تهيئة القوائم السفلية
+        onReportGroupChange();
         loadComparisonTable();
         dataLoaded = true;
         
     } catch(err) {
         console.error('❌ فشل تحميل البيانات:', err);
-        $('comparisonBody').innerHTML = `<tr><td colspan="6" class="alert alert-error">❌ خطأ: ${err.message}<br><small>تأكد من وجود ملفات: section-a.json, section-b.json, attendance_logs/attendance.json</small></td></tr>`;
+        $('comparisonBody').innerHTML = `<tr><td colspan="6" class="alert alert-error">❌ خطأ: ${err.message}<br><small>تأكد من تشغيل المشروع على Vercel وأن ملفات API تعمل</small></td></tr>`;
         ['loadBtn','genBtn'].forEach(btn => $(btn).disabled = true);
     }
 }
@@ -207,7 +225,7 @@ function onFilterChange() {
 }
 
 // === 📊 تحميل جدول المقارنة ===
-function loadComparisonTable() {
+async function loadComparisonTable() {
     if (!dataLoaded) return;
     const group = $('filterGroup').value;
     const section = $('filterSection').value;
@@ -220,16 +238,22 @@ function loadComparisonTable() {
         return;
     }
     
-    // حساب الإحصائيات لكل شعبة
-    const results = data.map(sec => {
+    // حساب الإحصائيات لكل شعبة عبر API
+    const results = await Promise.all(data.map(async sec => {
         const studentCount = sec.students?.length || 0;
-        const totalDays = 20; // أيام دراسية افتراضية
-        const absentDays = attendanceRecords
-            .filter(r => r.section_id === sec.section_id)
-            .reduce((sum, r) => sum + (r.absent_ids?.length || 0), 0);
-        const rate = studentCount > 0 ? ((absentDays / (studentCount * totalDays)) * 100).toFixed(1) : 0;
-        return {...sec, studentCount, absentDays, rate: parseFloat(rate)};
-    });
+        try {
+            // جلب إحصائيات الشعبة من API
+            const res = await fetch(`/api/get-reports?action=summary&group=${sec.group}&section=${sec.section_id}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            const absentDays = summary.totalAbsent || 0;
+            const totalDays = summary.totalDays || 1;
+            const rate = studentCount > 0 && totalDays > 0 ? ((absentDays / (studentCount * totalDays)) * 100).toFixed(1) : 0;
+            return {...sec, studentCount, absentDays, rate: parseFloat(rate)};
+        } catch {
+            return {...sec, studentCount, absentDays: 0, rate: 0};
+        }
+    }));
     
     const maxRate = Math.max(...results.map(r => r.rate), 1);
     
@@ -314,76 +338,94 @@ function generateCustomReport() {
     }, 300);
 }
 
-function generateStudentReport(group, section, studentId, container) {
+async function generateStudentReport(group, section, studentId, container) {
     const secData = allSections.find(s => s.section_id === section);
     const student = secData?.students?.find(st => st.id === studentId);
     if (!student) return container.innerHTML = '<div class="alert alert-error">❌ لم يُعثر على الطالب</div>';
     
-    // حساب أيام الغياب
-    const absentDays = attendanceRecords
-        .filter(r => r.section_id === section && r.absent_ids?.includes(studentId))
-        .map(r => r.date);
-    const totalDays = 20;
-    const rate = ((totalDays - absentDays.length) / totalDays * 100).toFixed(0);
-    const status = absentDays.length >= 5 ? {t:'🔴 متكرر',c:'var(--danger)'} : absentDays.length >= 3 ? {t:'🟡 مراقبة',c:'var(--accent)'} : {t:'🟢 جيد',c:'var(--secondary)'};
-    
-    container.innerHTML = `
-        <div class="report-header">
-            <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
-            <p>تقرير غياب طالب • ${new Date().toLocaleDateString('ar-EG')}</p>
-        </div>
-        <div style="text-align:center;margin-bottom:20px;">
-            <h3 style="color:var(--primary);margin-bottom:5px;">👤 ${student.name}</h3>
-            <p style="color:#666;">${secData.section_label} • المجموعة (${group})</p>
-        </div>
-        <div class="summary-box">
-            <div class="summary-item"><div class="label">أيام الغياب</div><div class="value" style="color:${status.c}">${absentDays.length}</div></div>
-            <div class="summary-item"><div class="label">الحالة</div><div class="value" style="font-size:1.1em;color:${status.c}">${status.t}</div></div>
-            <div class="summary-item"><div class="label">نسبة الحضور</div><div class="value">${rate}%</div></div>
-        </div>
-        <h4 style="color:var(--primary);margin:20px 0 10px;">📅 سجل الغياب</h4>
-        <table><thead><tr><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>
-            ${absentDays.length ? absentDays.map(d => `<tr><td>${d}</td><td style="color:var(--danger);font-weight:600">❌ غائب</td><td>-</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب</td></tr>'}
-        </tbody></table>
-        ${absentDays.length >= 3 ? `<div class="alert" style="background:#fff3e0;color:#e65100;margin-top:15px;">⚠️ تنبيه: يُرجى التواصل مع ولي الأمر</div>` : ''}
-    `;
+    try {
+        // جلب سجل غياب الطالب من API
+        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(studentId)}`);
+        const json = await res.json();
+        const history = json.data?.history || json.history || [];
+        
+        const totalDays = 20;
+        const rate = ((totalDays - history.length) / totalDays * 100).toFixed(0);
+        const status = history.length >= 5 ? {t:'🔴 متكرر',c:'var(--danger)'} : history.length >= 3 ? {t:'🟡 مراقبة',c:'var(--accent)'} : {t:'🟢 جيد',c:'var(--secondary)'};
+        
+        container.innerHTML = `
+            <div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <p>تقرير غياب طالب • ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>
+            <div style="text-align:center;margin-bottom:20px;">
+                <h3 style="color:var(--primary);margin-bottom:5px;">👤 ${student.name}</h3>
+                <p style="color:#666;">${secData.section_label} • المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value" style="color:${status.c}">${history.length}</div></div>
+                <div class="summary-item"><div class="label">الحالة</div><div class="value" style="font-size:1.1em;color:${status.c}">${status.t}</div></div>
+                <div class="summary-item"><div class="label">نسبة الحضور</div><div class="value">${rate}%</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:20px 0 10px;">📅 سجل الغياب</h4>
+            <table><thead><tr><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>
+                ${history.length ? history.map(h => `<tr><td>${h.date}</td><td style="color:var(--danger);font-weight:600">❌ غائب</td><td>${h.section || '-'}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب</td></tr>'}
+            </tbody></table>
+            ${history.length >= 3 ? `<div class="alert" style="background:#fff3e0;color:#e65100;margin-top:15px;">⚠️ تنبيه: يُرجى التواصل مع ولي الأمر</div>` : ''}
+        `;
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+    }
 }
 
-function generateSectionReport(group, section, container) {
+async function generateSectionReport(group, section, container) {
     const secData = allSections.find(s => s.section_id === section);
     const students = secData?.students || [];
-    const totalDays = 20;
     
-    // إحصائيات الشعبة
-    const sectionRecords = attendanceRecords.filter(r => r.section_id === section);
-    const totalAbsent = sectionRecords.reduce((sum, r) => sum + (r.absent_ids?.length || 0), 0);
-    const rate = students.length > 0 ? ((totalAbsent / (students.length * totalDays)) * 100).toFixed(1) : 0;
-    
-    container.innerHTML = `
-        <div class="report-header">
-            <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
-            <p>تقرير شعبة • ${new Date().toLocaleDateString('ar-EG')}</p>
-        </div>
-        <div style="text-align:center;margin-bottom:20px;">
-            <h3 style="color:var(--primary);margin-bottom:5px;">🏫 ${secData?.section_label || section}</h3>
-            <p style="color:#666;">المجموعة (${group})</p>
-        </div>
-        <div class="summary-box">
-            <div class="summary-item"><div class="label">الطلاب</div><div class="value">${students.length}</div></div>
-            <div class="summary-item"><div class="label">أيام الغياب</div><div class="value">${totalAbsent}</div></div>
-            <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:${rate>=5?'var(--danger)':rate>=2?'var(--accent)':'var(--secondary)'}">${rate}%</div></div>
-            <div class="summary-item"><div class="label">متوسط/طالب</div><div class="value">${(totalAbsent/students.length).toFixed(1)}</div></div>
-        </div>
-        <h4 style="color:var(--primary);margin:20px 0 10px;">👥 تفصيل الطلاب</h4>
-        <table><thead><tr><th>الطالب</th><th>الغياب</th><th>الحضور%</th><th>الحالة</th></tr></thead><tbody>
-            ${students.map(st => {
-                const stAbsent = attendanceRecords.filter(r => r.section_id === section && r.absent_ids?.includes(st.id)).length;
-                const stRate = ((totalDays - stAbsent)/totalDays*100).toFixed(0);
-                const stSt = stAbsent >= 5 ? {t:'متكرر',c:'var(--danger)'} : stAbsent >= 3 ? {t:'مراقبة',c:'var(--accent)'} : {t:'جيد',c:'var(--secondary)'};
-                return `<tr><td><strong>${st.name}</strong></td><td style="color:${stAbsent?'var(--danger)':'inherit'}">${stAbsent}</td><td>${stRate}%</td><td style="color:${stSt.c};font-weight:600">${stSt.t}</td></tr>`;
-            }).join('')}
-        </tbody></table>
-    `;
+    try {
+        // جلب إحصائيات الشعبة من API
+        const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+        const json = await res.json();
+        const summary = json.data || json.summary || {};
+        
+        const totalAbsent = summary.totalAbsent || 0;
+        const totalDays = summary.totalDays || 1;
+        const rate = students.length > 0 && totalDays > 0 ? ((totalAbsent / (students.length * totalDays)) * 100).toFixed(1) : 0;
+        
+        container.innerHTML = `
+            <div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <p>تقرير شعبة • ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>
+            <div style="text-align:center;margin-bottom:20px;">
+                <h3 style="color:var(--primary);margin-bottom:5px;">🏫 ${secData?.section_label || section}</h3>
+                <p style="color:#666;">المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">الطلاب</div><div class="value">${students.length}</div></div>
+                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value">${totalAbsent}</div></div>
+                <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:${rate>=5?'var(--danger)':rate>=2?'var(--accent)':'var(--secondary)'}">${rate}%</div></div>
+                <div class="summary-item"><div class="label">متوسط/طالب</div><div class="value">${students.length > 0 ? (totalAbsent/students.length).toFixed(1) : 0}</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:20px 0 10px;">👥 تفصيل الطلاب</h4>
+            <table><thead><tr><th>الطالب</th><th>الغياب</th><th>الحضور%</th><th>الحالة</th></tr></thead><tbody>
+                ${students.length ? await Promise.all(students.map(async st => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(st.id)}`);
+                        const d = await r.json();
+                        const stAbsent = (d.data?.history || d.history || []).length;
+                        const stRate = ((20 - stAbsent)/20*100).toFixed(0);
+                        const stSt = stAbsent >= 5 ? {t:'متكرر',c:'var(--danger)'} : stAbsent >= 3 ? {t:'مراقبة',c:'var(--accent)'} : {t:'جيد',c:'var(--secondary)'};
+                        return `<tr><td><strong>${st.name}</strong></td><td style="color:${stAbsent?'var(--danger)':'inherit'}">${stAbsent}</td><td>${stRate}%</td><td style="color:${stSt.c};font-weight:600">${stSt.t}</td></tr>`;
+                    } catch {
+                        return `<tr><td><strong>${st.name}</strong></td><td>-</td><td>-</td><td>-</td></tr>`;
+                    }
+                })).then(rows => rows.join('')) : '<tr><td colspan="4" style="text-align:center;color:#666">لا توجد بيانات طلاب</td></tr>'}
+            </tbody></table>
+        `;
+    } catch(e) {
+        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+    }
 }
 
 // === 🖨️ طباعة التقرير ===
