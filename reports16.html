@@ -30,35 +30,13 @@
             font-size: 15px;
         }
         
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: var(--shadow);
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            padding-bottom: 18px;
-            border-bottom: 3px solid var(--primary);
-        }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 16px; padding: 28px; box-shadow: var(--shadow); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 18px; border-bottom: 3px solid var(--primary); }
         header h1 { color: var(--primary); font-size: 1.5em; font-weight: 700; margin-bottom: 6px; }
         header p { color: var(--text-muted); font-size: 0.95em; }
 
         /* === الفلاتر === */
-        .filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
-            background: var(--light);
-            padding: 16px;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-        }
+        .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; background: var(--light); padding: 16px; border-radius: 10px; border: 1px solid var(--border); }
         .filters select { padding: 10px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 14px; background: #fff; font-family: inherit; }
         .filters select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(30,58,138,0.1); }
         .filters button { background: var(--primary); color: #fff; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; font-family: inherit; transition: 0.2s; }
@@ -93,7 +71,7 @@
         .builder-filters button { background: var(--secondary); color: #fff; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: 0.2s; font-family: inherit; }
         .builder-filters button:hover { background: #065f46; transform: translateY(-1px); }
 
-        /* === 📄 معاينة التقرير الاحترافية (شاشة + طباعة) === */
+        /* === 📄 معاينة التقرير الاحترافية === */
         #customReport { display: none; margin: 20px auto 30px; }
         #customReport.show { display: block; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -102,74 +80,47 @@
             background: #fff;
             max-width: 210mm;
             margin: 0 auto;
-            padding: 18mm;
+            padding: 16mm 14mm;
             box-shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,0.15);
-            border-radius: 4px;
+            border-radius: 6px;
             position: relative;
         }
         
-        .report-header {
-            text-align: center;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-            border-bottom: 3px double var(--primary);
-        }
-        .report-header .school-name { font-size: 1.4em; font-weight: 800; color: var(--primary); margin-bottom: 4px; letter-spacing: 0.5px; }
+        .report-header { text-align: center; padding-bottom: 12px; margin-bottom: 16px; border-bottom: 3px double var(--primary); }
+        .report-header .school-name { font-size: 1.4em; font-weight: 800; color: #1e3a8a; margin-bottom: 4px; }
         .report-header .report-title { font-size: 1.1em; font-weight: 600; color: #334155; margin-bottom: 8px; }
         .report-header .report-meta { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; font-size: 0.85em; color: #475569; }
         .report-header .report-meta span { display: flex; align-items: center; gap: 6px; }
         
-        .report-subject {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px 24px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-        }
+        .report-subject { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 24px; padding: 14px 16px; margin-bottom: 16px; background: #f8fafc; border: 1px solid var(--border); border-radius: 6px; }
         .subject-item { display: flex; gap: 8px; align-items: baseline; }
-        .subject-item .label { font-weight: 700; color: var(--primary); min-width: 75px; font-size: 0.95em; }
+        .subject-item .label { font-weight: 700; color: #1e3a8a; min-width: 75px; font-size: 0.95em; }
         .subject-item .value { color: var(--text); font-weight: 500; flex: 1; }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-bottom: 18px;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
         .stat-card { text-align: center; padding: 12px 8px; background: #fff; border: 1px solid var(--border); border-radius: 6px; }
-        .stat-card .stat-value { font-size: 1.6em; font-weight: 800; color: var(--primary); line-height: 1.1; margin-bottom: 4px; }
+        .stat-card .stat-value { font-size: 1.6em; font-weight: 800; color: #1e3a8a; line-height: 1.1; margin-bottom: 4px; }
         .stat-card .stat-label { font-size: 0.8em; color: var(--text-muted); font-weight: 500; }
-        .stat-card.danger .stat-value { color: var(--danger); }
-        .stat-card.warning .stat-value { color: var(--accent); }
-        .stat-card.success .stat-value { color: var(--secondary); }
+        .stat-card.danger .stat-value { color: #b91c1c; }
+        .stat-card.warning .stat-value { color: #b45309; }
+        .stat-card.success .stat-value { color: #047857; }
         
-        .section-title { font-size: 1.05em; font-weight: 700; color: var(--primary); margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
-        .section-title::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; }
+        .section-title { font-size: 1.05em; font-weight: 700; color: #1e3a8a; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); display: flex; align-items: center; gap: 8px; }
+        .section-title::before { content: ''; width: 4px; height: 16px; background: #b45309; border-radius: 2px; }
         
         .data-table { width: 100%; border-collapse: collapse; font-size: 0.9em; margin-bottom: 12px; }
         .data-table th { background: #f1f5f9; padding: 10px 12px; text-align: right; font-weight: 700; border: 1px solid var(--border); color: #334155; }
         .data-table td { padding: 10px 12px; border: 1px solid var(--border); vertical-align: middle; }
         .data-table tbody tr:hover { background: #f8fafc; }
         .data-table .text-center { text-align: center; }
-        .data-table .text-danger { color: var(--danger); font-weight: 600; }
-        .data-table .text-success { color: var(--secondary); font-weight: 600; }
+        .data-table .text-danger { color: #b91c1c; font-weight: 600; }
+        .data-table .text-success { color: #047857; font-weight: 600; }
         
         .alert { margin: 14px 0; padding: 12px 16px; border-radius: 6px; border-right: 4px solid; display: flex; align-items: flex-start; gap: 10px; font-size: 0.95em; }
         .alert-warning { background: #fffbeb; color: #92400e; border-color: #f59e0b; }
         .alert-info { background: #eff6ff; color: #1e40af; border-color: #3b82f6; }
         
-        .report-footer {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 2px dashed var(--border);
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            text-align: center;
-        }
+        .report-footer { margin-top: 25px; padding-top: 15px; border-top: 2px dashed var(--border); display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; text-align: center; }
         .footer-item { display: flex; flex-direction: column; align-items: center; }
         .footer-item .title { font-weight: 700; margin-bottom: 20px; color: #334155; }
         .footer-item .line { width: 80%; height: 2px; background: #333; margin-bottom: 5px; }
@@ -183,7 +134,7 @@
         @media (max-width: 768px) {
             body { padding: 12px; }
             .container { padding: 18px; border-radius: 12px; }
-            .report-page { padding: 12mm; max-width: 100%; box-shadow: none; border-radius: 8px; }
+            .report-page { padding: 10mm 8mm; max-width: 100%; box-shadow: none; border-radius: 8px; }
             .report-subject { grid-template-columns: 1fr; gap: 12px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .report-footer { grid-template-columns: 1fr; gap: 20px; }
@@ -193,76 +144,75 @@
             .btn-print { width: 100%; justify-content: center; }
         }
 
-        /* === 🖨️ تنسيق الطباعة الرسمي === */
+        /* === 🖨️ تنسيق الطباعة - مطابق تماماً للمعاينة === */
         @media print {
-            @page { size: A4; margin: 12mm; }
-            body { background: #fff !important; color: #000 !important; padding: 0 !important; margin: 0 !important; font-size: 11pt !important; line-height: 1.5 !important; }
-            .container, header, .filters, .comparison-section, .report-builder, .btn-print { display: none !important; height: 0 !important; overflow: hidden !important; }
+            @page { size: A4; margin: 10mm; }
+            html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
             
-            #customReport { display: block !important; margin: 0 !important; }
-            .report-page { 
-                width: 100% !important; 
-                max-width: 100% !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                box-shadow: none !important; 
-                border: none !important; 
+            /* إخفاء واجهة التطبيق بالكامل */
+            .container > header, .filters, .comparison-section, .report-builder, #reportActions, .btn-print { display: none !important; }
+            
+            /* إظهار التقرير فقط */
+            #customReport { display: block !important; margin: 0 !important; padding: 0 !important; }
+            
+            /* إزالة الزخارف الخاصة بالشاشة فقط */
+            .report-page {
+                box-shadow: none !important;
+                border: none !important;
                 border-radius: 0 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
                 background: #fff !important;
             }
             
-            .report-header { border-bottom-color: #000 !important; margin-bottom: 14pt !important; }
-            .report-header .school-name { font-size: 16pt !important; color: #000 !important; }
-            .report-header .report-title { font-size: 13pt !important; color: #000 !important; }
-            .report-header .report-meta { font-size: 9pt !important; color: #333 !important; gap: 15pt !important; }
+            /* 🎨 إجبار المتصفح على طباعة الألوان والخلفيات كما هي */
+            *, *::before, *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
             
-            .report-subject { border-color: #000 !important; background: #fff !important; padding: 10pt !important; margin-bottom: 14pt !important; }
-            .subject-item .label { color: #000 !important; min-width: 70pt !important; }
-            .subject-item .value { color: #000 !important; }
+            /* 🔹 ثبات التخطيط والشبكات مطابق للشاشة */
+            .report-subject { grid-template-columns: repeat(2, 1fr) !important; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+            .report-footer { grid-template-columns: repeat(3, 1fr) !important; }
             
-            .stats-grid { gap: 8pt !important; margin-bottom: 14pt !important; }
-            .stat-card { border: 1pt solid #000 !important; background: #fff !important; padding: 10pt 6pt !important; }
-            .stat-card .stat-value { color: #000 !important; font-size: 14pt !important; }
-            .stat-card .stat-label { color: #333 !important; font-size: 8pt !important; }
-            .stat-card.danger .stat-value, .stat-card.warning .stat-value, .stat-card.success .stat-value { color: #000 !important; }
+            /* 🎨 ثبات الألوان والخطوط */
+            .report-header .school-name { color: #1e3a8a !important; }
+            .report-header .report-title { color: #334155 !important; }
+            .report-header .report-meta { color: #475569 !important; }
+            .section-title { color: #1e3a8a !important; border-bottom-color: #cbd5e1 !important; }
+            .subject-item .label { color: #1e3a8a !important; }
+            .subject-item .value { color: #0f172a !important; }
+            .stat-card .stat-value { color: #1e3a8a !important; }
+            .stat-card.danger .stat-value { color: #b91c1c !important; }
+            .stat-card.warning .stat-value { color: #b45309 !important; }
+            .stat-card.success .stat-value { color: #047857 !important; }
+            .stat-card .stat-label { color: #64748b !important; }
+            .data-table th { background: #f1f5f9 !important; color: #334155 !important; }
+            .data-table td { color: #0f172a !important; }
+            .alert-warning { background: #fffbeb !important; color: #92400e !important; border-color: #f59e0b !important; }
+            .alert-info { background: #eff6ff !important; color: #1e40af !important; border-color: #3b82f6 !important; }
+            .footer-item .title { color: #334155 !important; }
+            .footer-item .note { color: #64748b !important; }
             
-            .section-title { border-bottom-color: #000 !important; color: #000 !important; font-size: 11pt !important; margin: 14pt 0 8pt !important; }
-            .section-title::before { background: #000 !important; }
-            
-            .data-table { font-size: 9pt !important; border: 1pt solid #000 !important; page-break-inside: auto !important; }
-            .data-table th { background: #f5f5f5 !important; color: #000 !important; border: 1pt solid #000 !important; padding: 7pt 10pt !important; }
-            .data-table td { border: 1pt solid #000 !important; padding: 6pt 10pt !important; color: #000 !important; }
-            .data-table .text-danger, .data-table .text-success { color: #000 !important; font-weight: bold !important; }
-            
-            .alert { border-color: #000 !important; background: #fff !important; color: #000 !important; margin: 10pt 0 !important; padding: 8pt 12pt !important; border-right-width: 3pt !important; }
-            
-            .report-footer { border-top-color: #000 !important; margin-top: 20pt !important; padding-top: 12pt !important; }
-            .footer-item .title { color: #000 !important; margin-bottom: 25pt !important; }
-            .footer-item .line { background: #000 !important; }
-            .footer-item .note { color: #333 !important; }
+            /* 📄 منع قص العناصر المهمة بين الصفحات */
+            .report-subject, .stats-grid, .alert, .report-footer { page-break-inside: avoid !important; }
+            .data-table thead { display: table-header-group !important; }
+            .data-table tr { page-break-inside: avoid !important; page-break-after: auto !important; }
         }
 
         @media print and (max-width: 480px) {
-            @page { margin: 8mm 5mm; }
+            @page { margin: 6mm 4mm; }
             .report-page { padding: 0 !important; }
             .report-subject { grid-template-columns: 1fr !important; }
             .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-            .data-table { font-size: 8pt !important; }
-            .data-table th, .data-table td { padding: 5pt 6pt !important; }
         }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-        
-        @media (prefers-color-scheme: dark) {
-            :root { --light: #1e293b; --text: #e2e8f0; --text-muted: #94a3b8; --border: #334155; }
-            body { background: #0f172a; }
-            .container, .report-builder { background: #1e293b; color: #e2e8f0; border-color: #334155; }
-            .filters select, .builder-filters select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
-            .comparison-table, .data-table { background: #0f172a; }
-            .comparison-table td, .data-table td { border-color: #334155; color: #e2e8f0; }
-            .radio-label { background: #0f172a; color: #e2e8f0; border-color: #334155; }
         }
     </style>
 </head>
@@ -524,7 +474,8 @@ function getDay(d) { return d ? ['الأحد','الإثنين','الثلاثاء
 function printReport() {
     if (!$('customReport').innerHTML.trim()) return alert('⚠️ لا يوجد تقرير');
     $('customReport').classList.add('show');
-    setTimeout(() => window.print(), 100);
+    // تأخير بسيط لضمان اكتمال عرض DOM قبل فتح نافذة الطباعة
+    setTimeout(() => window.print(), 50);
 }
 
 document.addEventListener('DOMContentLoaded', loadData);
