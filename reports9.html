@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; --warning: #f39c12; --info: #3498db; --purple: #9b59b6; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
+        header p { color: #666; margin: 5px 0 0; }
+
+        /* === الفلاتر الأساسية === */
+        .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 15px; background: var(--light); padding: 15px; border-radius: 12px; }
+        .filters select, .filters input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        .filters button { background: var(--primary); color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .filters button:hover { background: #1a252f; }
+
+        /* === 🎯 لوحة التنبؤ الذكي الجديدة === */
+        .smart-dashboard { display: grid; gap: 20px; margin-bottom: 25px; }
+        
+        /* بطاقات المخاطر */
+        .risk-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+        .risk-card { background: white; padding: 15px; border-radius: 12px; border-right: 4px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.08); text-align: center; }
+        .risk-card.low { border-color: var(--secondary); background: linear-gradient(135deg, #f0fff4, #fff); }
+        .risk-card.medium { border-color: var(--warning); background: linear-gradient(135deg, #fff9e6, #fff); }
+        .risk-card.high { border-color: var(--danger); background: linear-gradient(135deg, #fff5f5, #fff); }
+        .risk-card.critical { border-color: #8e44ad; background: linear-gradient(135deg, #f4ecf7, #fff); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 3px 10px rgba(0,0,0,0.08); } 50% { box-shadow: 0 5px 20px rgba(142,68,173,0.3); } }
+        .risk-card .icon { font-size: 1.8em; margin-bottom: 5px; }
+        .risk-card .count { font-size: 1.5em; font-weight: bold; color: var(--primary); }
+        .risk-card .label { font-size: 0.85em; color: #666; }
+
+        /* خريطة الحرارة */
+        .heatmap-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .heatmap-card h4 { margin: 0 0 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .heatmap-day { text-align: center; padding: 8px 4px; border-radius: 6px; font-size: 0.75em; cursor: pointer; transition: 0.2s; }
+        .heatmap-day:hover { transform: scale(1.05); }
+        .heatmap-day.header { font-weight: bold; color: var(--primary); background: var(--light); }
+        .heatmap-day.level-0 { background: #e8f5e9; color: #2e7d32; }
+        .heatmap-day.level-1 { background: #c8e6c9; color: #1b5e20; }
+        .heatmap-day.level-2 { background: #fff9c4; color: #f57f17; }
+        .heatmap-day.level-3 { background: #ffccbc; color: #bf360c; }
+        .heatmap-day.level-4 { background: #ffcdd2; color: #b71c1c; }
+        .heatmap-legend { display: flex; justify-content: center; gap: 8px; margin-top: 12px; font-size: 0.75em; }
+        .legend-item { display: flex; align-items: center; gap: 4px; }
+        .legend-box { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* اقتراحات التدخل */
+        .interventions-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .interventions-card h4 { margin: 0 0 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .intervention-item { display: flex; gap: 12px; padding: 12px; border-radius: 10px; margin-bottom: 10px; background: #f8f9fa; border-right: 3px solid var(--info); }
+        .intervention-item.urgent { border-color: var(--danger); background: #fff5f5; }
+        .intervention-item .priority { min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7em; font-weight: bold; color: white; }
+        .priority.high { background: var(--danger); }
+        .priority.medium { background: var(--warning); color: #333; }
+        .priority.low { background: var(--secondary); }
+        .intervention-content { flex: 1; }
+        .intervention-content strong { display: block; margin-bottom: 4px; color: var(--primary); }
+        .intervention-content p { margin: 0; font-size: 0.9em; color: #555; }
+        .intervention-action { display: flex; align-items: center; gap: 5px; margin-top: 8px; }
+        .btn-sm { padding: 5px 12px; border: none; border-radius: 6px; font-size: 0.8em; cursor: pointer; color: white; background: var(--primary); transition: 0.2s; }
+        .btn-sm:hover { opacity: 0.9; }
+        .btn-sm.success { background: var(--secondary); }
+
+        /* متابعة التواصل */
+        .communication-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .communication-card h4 { margin: 0 0 15px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .comm-list { max-height: 200px; overflow-y: auto; }
+        .comm-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9em; }
+        .comm-item:last-child { border-bottom: none; }
+        .comm-status { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: 600; }
+        .status-pending { background: #fff3e0; color: #e65100; }
+        .status-done { background: #e8f5e9; color: #2e7d32; }
+        .status-urgent { background: #ffebee; color: #c62828; }
+
+        /* جدار التميز */
+        .excellence-card { background: linear-gradient(135deg, #fff9e6, #fff); padding: 20px; border-radius: 15px; border: 2px solid #f1c40f; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .excellence-card h4 { margin: 0 0 15px; color: #d4ac0d; display: flex; align-items: center; gap: 8px; }
+        .excellence-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .excellence-item { background: white; padding: 10px 15px; border-radius: 10px; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .excellence-item .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #f1c40f, #f39c12); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8em; }
+
+        /* === منشئ التقارير (محفوظ كما طلبت) === */
+        .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+        .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
+        .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
+
+        #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-act:hover { opacity: 0.9; }
+        .btn-print { background: var(--primary); }
+
+        .alert { padding: 12px; border-radius: 8px; margin: 10px 0; font-size: 0.9em; }
+        .alert-info { background: #e3f2fd; color: #1565c0; border-right: 4px solid #2196f3; }
+        .alert-warning { background: #fff3e0; color: #e65100; border-right: 4px solid #f57c00; }
+
+        @media print {
+            body > * { display: none !important; }
+            #printFrame { position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block !important; border: none !important; z-index: 99999; }
+        }
+
+        /* ============================================================ 📱 تصميم الهاتف === */
+        @media (max-width: 768px) {
+            body { padding: 0; background: #f0f2f8; }
+            .container { border-radius: 0; padding: 0; box-shadow: none; background: #f0f2f8; max-width: 100%; }
+            header { background: linear-gradient(135deg, #2c3e50 0%, #3d5a73 50%, #27ae60 100%); color: white; padding: 20px 16px 18px; margin-bottom: 0; border-bottom: none; border-radius: 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 3px 12px rgba(0,0,0,0.25); }
+            header h1 { color: white; font-size: 1.1em; margin-bottom: 3px; }
+            header p { color: rgba(255,255,255,0.75); font-size: 0.75em; margin: 0; }
+            .filters { display: flex; flex-direction: column; gap: 0; background: white; padding: 14px 14px 6px; border-radius: 0; margin-bottom: 0; border-bottom: 1px solid #e8eaed; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+            .filters select, .filters input { width: 100%; padding: 12px 14px; border: 1.5px solid #dde2e8; border-radius: 10px; font-size: 14px; background: #f8f9fb; margin-bottom: 8px; }
+            #loadBtn { width: 100%; padding: 13px; border-radius: 10px; font-size: 0.95em; background: linear-gradient(135deg, #2c3e50, #3d6b8a); margin-bottom: 8px; }
+            
+            .risk-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 12px; }
+            .risk-card { padding: 12px 10px; border-radius: 12px; border-right-width: 3px; min-height: 85px; }
+            .risk-card .icon { font-size: 1.4em; }
+            .risk-card .count { font-size: 1.3em; }
+            .risk-card .label { font-size: 0.75em; }
+            
+            .heatmap-grid { grid-template-columns: repeat(7, 1fr); gap: 2px; }
+            .heatmap-day { padding: 6px 2px; font-size: 0.65em; border-radius: 4px; }
+            .heatmap-day.header { font-size: 0.7em; }
+            
+            .intervention-item { flex-direction: column; gap: 8px; padding: 10px; }
+            .intervention-action { width: 100%; }
+            .btn-sm { width: 100%; padding: 8px; }
+            
+            .excellence-list { gap: 6px; }
+            .excellence-item { padding: 8px 12px; font-size: 0.85em; }
+            .excellence-item .avatar { width: 28px; height: 28px; font-size: 0.7em; }
+            
+            .report-builder, #customReport { margin: 12px; padding: 16px; border-radius: 16px; }
+            .radio-group { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .radio-label { font-size: 0.88em; padding: 12px 8px; }
+            .radio-label input[type="radio"] { display: none; }
+            
+            #customReport table { display: block; overflow-x: auto; font-size: 0.82em; }
+            #customReport th, #customReport td { padding: 9px 10px; min-width: 80px; }
+            
+            .btn-act { width: 100%; padding: 14px; font-size: 0.95em; border-radius: 12px; justify-content: center; }
+        }
+        @media (max-width: 380px) {
+            .risk-cards { grid-template-columns: 1fr 1fr; }
+            .heatmap-grid { gap: 1px; }
+            .heatmap-day { padding: 4px 1px; font-size: 0.6em; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>🎯 لوحة التنبؤ الذكي للغياب</h1>
+        <p>نظام استباقي للتدخل المبكر - البيانات من <code>attendance_logs/</code></p>
+    </header>
+
+    <!-- 🔍 فلاتر أساسية -->
+    <div class="filters">
+        <select id="filterGroup" onchange="onFilterChange()">
+            <option value="">📁 كل المجموعات</option>
+            <option value="أ">المجموعة (أ)</option>
+            <option value="ب">المجموعة (ب)</option>
+        </select>
+        <select id="filterSection" onchange="onFilterChange()">
+            <option value="">🏫 كل الشعب</option>
+        </select>
+        <button id="loadBtn" onclick="loadDashboard()">🔄 تحديث اللوحة</button>
+    </div>
+
+    <!-- 🎯 لوحة التنبؤ الذكي الجديدة -->
+    <div class="smart-dashboard">
+        
+        <!-- بطاقات تصنيف المخاطر -->
+        <div class="risk-cards">
+            <div class="risk-card low">
+                <div class="icon">🟢</div>
+                <div class="count" id="riskLow">0</div>
+                <div class="label">مستقر</div>
+            </div>
+            <div class="risk-card medium">
+                <div class="icon">🟡</div>
+                <div class="count" id="riskMedium">0</div>
+                <div class="label">مراقبة</div>
+            </div>
+            <div class="risk-card high">
+                <div class="icon">🔴</div>
+                <div class="count" id="riskHigh">0</div>
+                <div class="label">مرتفع</div>
+            </div>
+            <div class="risk-card critical">
+                <div class="icon">🚨</div>
+                <div class="count" id="riskCritical">0</div>
+                <div class="label">حرج - تدخل فوري</div>
+            </div>
+        </div>
+
+        <!-- خريطة الحرارة الأسبوعية -->
+        <div class="heatmap-card">
+            <h4>📅 نمط الغياب الأسبوعي</h4>
+            <div class="heatmap-grid" id="heatmapGrid">
+                <div class="heatmap-day header">أحد</div>
+                <div class="heatmap-day header">إثنين</div>
+                <div class="heatmap-day header">ثلاثاء</div>
+                <div class="heatmap-day header">أربعاء</div>
+                <div class="heatmap-day header">خميس</div>
+                <div class="heatmap-day header">جمعة</div>
+                <div class="heatmap-day header">سبت</div>
+            </div>
+            <div class="heatmap-legend">
+                <div class="legend-item"><div class="legend-box" style="background:#e8f5e9"></div> منخفض</div>
+                <div class="legend-item"><div class="legend-box" style="background:#fff9c4"></div> متوسط</div>
+                <div class="legend-item"><div class="legend-box" style="background:#ffcdd2"></div> مرتفع</div>
+            </div>
+        </div>
+
+        <!-- اقتراحات التدخل الآلي -->
+        <div class="interventions-card">
+            <h4>🔔 اقتراحات التدخل الذكية</h4>
+            <div id="interventionsList">
+                <!-- سيتم ملؤها ديناميكياً -->
+            </div>
+        </div>
+
+        <!-- متابعة التواصل مع أولياء الأمور -->
+        <div class="communication-card">
+            <h4>📞 متابعة التواصل مع أولياء الأمور</h4>
+            <div class="comm-list" id="commList">
+                <div class="comm-item">
+                    <span>جاري تحميل البيانات...</span>
+                    <span class="comm-status status-pending">قيد الانتظار</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدار التميز للحضور -->
+        <div class="excellence-card">
+            <h4>🏆 جدار التميز - طلاب الحضور المثالي</h4>
+            <div class="excellence-list" id="excellenceList">
+                <div style="color:#666;font-size:0.9em">جاري تحليل بيانات الحضور...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 📄 منشئ التقارير المخصصة (محفوظ كما طلبت) -->
+    <div class="report-builder">
+        <h3>📄 إنشاء تقرير مفصل</h3>
+        <div class="radio-group">
+            <label class="radio-label active">
+                <input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 
+                👤 تقرير طالب
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 
+                🏫 تقرير شعبة
+            </label>
+        </div>
+        <div class="filters" style="background:transparent; padding:0; margin:0;">
+            <select id="rptGroup" onchange="onReportFilterChange()"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
+            <select id="rptSection" onchange="onReportFilterChange()"><option value="">الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
+            <button onclick="generateCustomReport()">📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <!-- 📋 منطقة عرض التقرير -->
+    <div id="customReport"></div>
+    
+    <!-- 🎯 زر الطباعة -->
+    <div id="reportActionsBtn" style="display:none; margin:10px 0; gap:10px;" class="actions">
+        <button class="btn-act btn-print" onclick="printReport()">🖨️ طباعة</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+let attendanceData = [];
+
+// === 🎯 تحميل لوحة التنبؤ الذكي ===
+async function loadDashboard() {
+    const btn = $('loadBtn');
+    btn.disabled = true; btn.textContent = '⏳ جاري التحليل...';
+    
+    const group = $('filterGroup').value;
+    const section = $('filterSection').value;
+    
+    try {
+        // جلب البيانات
+        await fetchAttendanceData(group, section);
+        
+        // تحديث جميع مكونات اللوحة
+        updateRiskCards();
+        updateHeatmap();
+        generateInterventions();
+        updateCommunicationList();
+        updateExcellenceWall();
+        
+    } catch(e) {
+        console.error('❌ خطأ:', e);
+        alert('حدث خطأ أثناء تحميل البيانات');
+    } finally {
+        btn.disabled = false; btn.textContent = '🔄 تحديث اللوحة';
+    }
+}
+
+// === 📥 جلب بيانات الغياب ===
+async function fetchAttendanceData(group, section) {
+    // محاكاة بيانات للعرض (استبدلها بـ API الفعلي)
+    attendanceData = [];
+    const today = new Date();
+    
+    // توليد بيانات تجريبية للأسابيع الأربعة الماضية
+    for(let i=28; i>=0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        const dayIndex = date.getDay();
+        // محاكاة: زيادة الغياب في أيام معينة
+        const baseAbsent = [2,3,1,4,2,0,0][dayIndex] || 1;
+        const randomFactor = Math.floor(Math.random() * 3);
+        attendanceData.push({
+            date: date.toISOString().split('T')[0],
+            dayIndex: dayIndex,
+            absent: baseAbsent + randomFactor,
+            absentIds: [] // سيتم ملؤها لاحقاً
+        });
+    }
+    
+    // تحديث قوائم الشعب
+    updateDropdowns();
+}
+
+// === 🎯 تحديث بطاقات المخاطر ===
+function updateRiskCards() {
+    // حساب توزيع الطلاب حسب مستوى الخطورة (محاكاة)
+    const totalStudents = 120; // من API الفعلي
+    const distribution = {
+        low: Math.floor(totalStudents * 0.65),
+        medium: Math.floor(totalStudents * 0.20),
+        high: Math.floor(totalStudents * 0.10),
+        critical: Math.floor(totalStudents * 0.05)
+    };
+    
+    $('riskLow').textContent = distribution.low;
+    $('riskMedium').textContent = distribution.medium;
+    $('riskHigh').textContent = distribution.high;
+    $('riskCritical').textContent = distribution.critical;
+    
+    // تأثير بصري عند وجود حالات حرجة
+    if(distribution.critical > 0) {
+        $('riskCritical').parentElement.style.animation = 'pulse 1.5s infinite';
+    }
+}
+
+// === 📅 تحديث خريطة الحرارة ===
+function updateHeatmap() {
+    const grid = $('heatmapGrid');
+    // إعادة بناء الشبكة (العناوين + 7 أيام)
+    const days = ['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+    let html = '';
+    
+    days.forEach(day => {
+        html += `<div class="heatmap-day header">${day}</div>`;
+    });
+    
+    // حساب مستوى الغياب لكل يوم (0-4)
+    for(let i=0; i<7; i++) {
+        const dayData = attendanceData.filter(d => d.dayIndex === i);
+        const avgAbsent = dayData.length > 0 
+            ? dayData.reduce((a,b) => a + b.absent, 0) / dayData.length 
+            : 0;
+        
+        // تحديد المستوى اللوني
+        let level = 0;
+        if(avgAbsent >= 1) level = 1;
+        if(avgAbsent >= 3) level = 2;
+        if(avgAbsent >= 5) level = 3;
+        if(avgAbsent >= 7) level = 4;
+        
+        html += `<div class="heatmap-day level-${level}" title="متوسط الغياب: ${avgAbsent.toFixed(1)}">${Math.round(avgAbsent)}</div>`;
+    }
+    
+    grid.innerHTML = html;
+}
+
+// === 🔔 توليد اقتراحات التدخل الذكية ===
+function generateInterventions() {
+    const list = $('interventionsList');
+    const critical = parseInt($('riskCritical').textContent);
+    const high = parseInt($('riskHigh').textContent);
+    
+    let interventions = [];
+    
+    if(critical > 0) {
+        interventions.push({
+            priority: 'high',
+            title: `🚨 ${critical} طالب في حالة حرجة`,
+            desc: 'يتطلب اتصال فوري بأولياء الأمور واجتماع طارئ',
+            action: 'بدء الاتصال',
+            actionClass: 'success'
+        });
+    }
+    if(high > 0) {
+        interventions.push({
+            priority: 'medium',
+            title: `📋 ${high} طالب يحتاجون متابعة`,
+            desc: 'إرسال تنبيهات نصية وتوثيق أسباب الغياب',
+            action: 'إرسال تنبيهات',
+            actionClass: ''
+        });
+    }
+    
+    // اقتراحات عامة ذكية
+    const thursdayData = attendanceData.filter(d => d.dayIndex === 4);
+    const avgThursday = thursdayData.reduce((a,b) => a + b.absent, 0) / (thursdayData.length || 1);
+    if(avgThursday > 4) {
+        interventions.push({
+            priority: 'low',
+            title: '📊 ملاحظة: ارتفاع الغياب يوم الخميس',
+            desc: 'اقتراح: مراجعة جدول الحصص أو أنشطة ما بعد الدوام',
+            action: 'عرض التحليل',
+            actionClass: ''
+        });
+    }
+    
+    if(interventions.length === 0) {
+        interventions.push({
+            priority: 'low',
+            title: '✅ الوضع مستقر',
+            desc: 'لا توجد إجراءات عاجلة مطلوبة حالياً',
+            action: 'عرض التقرير الأسبوعي',
+            actionClass: ''
+        });
+    }
+    
+    // عرض الاقتراحات
+    list.innerHTML = interventions.map(item => `
+        <div class="intervention-item ${item.priority === 'high' ? 'urgent' : ''}">
+            <div class="priority ${item.priority}">${item.priority === 'high' ? '!' : item.priority === 'medium' ? '•' : '✓'}</div>
+            <div class="intervention-content">
+                <strong>${item.title}</strong>
+                <p>${item.desc}</p>
+                ${item.action ? `<div class="intervention-action">
+                    <button class="btn-sm ${item.actionClass}" onclick="handleIntervention('${item.action}')">${item.action}</button>
+                </div>` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function handleIntervention(action) {
+    alert(`✅ تنفيذ: ${action}\n\n(في النظام الفعلي: سيتم فتح نافذة الاتصال/الرسائل)`);
+}
+
+// === 👥 تحديث قائمة متابعة التواصل ===
+function updateCommunicationList() {
+    const list = $('commList');
+    // بيانات محاكاة
+    const communications = [
+        { name: 'أحمد محمد - ولي أمر: خالد', status: 'urgent', label: 'لم يرد على 3 مكالمات' },
+        { name: 'فاطمة علي - ولي أمر: سارة', status: 'pending', label: 'تم الإرسال - في الانتظار' },
+        { name: 'محمد حسن - ولي أمر: يوسف', status: 'done', label: 'تم التواصل ✓' },
+        { name: 'نورة سعيد - ولي أمر: مريم', status: 'done', label: 'وعدت بالمتابعة ✓' }
+    ];
+    
+    list.innerHTML = communications.map(c => `
+        <div class="comm-item">
+            <span>${c.name}</span>
+            <span class="comm-status status-${c.status}">${c.label}</span>
+        </div>
+    `).join('');
+}
+
+// === 🏆 تحديث جدار التميز ===
+function updateExcellenceWall() {
+    const list = $('excellenceList');
+    // طلاب مثاليون في الحضور (محاكاة)
+    const excellent = [
+        { name: 'عبدالله السالم', initial: 'ع' },
+        { name: 'منى القحطاني', initial: 'م' },
+        { name: 'يوسف الأحمد', initial: 'ي' },
+        { name: 'ليان العمري', initial: 'ل' }
+    ];
+    
+    if(excellent.length > 0) {
+        list.innerHTML = excellent.map(s => `
+            <div class="excellence-item">
+                <div class="avatar">${s.initial}</div>
+                <span>${s.name}</span>
+            </div>
+        `).join('');
+    } else {
+        list.innerHTML = '<div style="color:#666;font-size:0.9em">لا يوجد طلاب بحضور مثالي هذا الأسبوع</div>';
+    }
+}
+
+// === 📋 دوال مساعدة (محفوظة من الكود الأصلي) ===
+function updateDropdowns() {
+    const sections = ['شعبة أ-1', 'شعبة أ-2', 'شعبة ب-1', 'شعبة ب-2'];
+    ['filterSection', 'rptSection'].forEach(id => {
+        const sel = $(id);
+        const prefix = id === 'filterSection' ? '🏫 كل الشعب' : 'الشعبة';
+        sel.innerHTML = `<option value="">${prefix}</option>` + 
+            sections.map(s => `<option value="${s}">${s}</option>`).join('');
+    });
+    updateRptStudents();
+}
+
+function updateRptStudents() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const stuSel = $('rptStudent');
+    if(type !== 'student') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
+    stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>' +
+        ['أحمد خالد', 'سارة محمد', 'يوسف علي', 'مريم حسن'].map(n => 
+            `<option value="${n}">${n}</option>`).join('');
+}
+
+function onFilterChange() { updateDropdowns(); loadDashboard(); }
+function onReportFilterChange() { updateRptStudents(); }
+
+function toggleReportFields() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    $('rptStudent').style.display = (type === 'student') ? 'block' : 'none';
+    document.querySelectorAll('.radio-label').forEach(label => {
+        const radio = label.querySelector('input[type="radio"]');
+        label.classList.toggle('active', radio && radio.checked);
+    });
+    updateRptStudents();
+}
+
+// === 📄 دوال التقرير المخصص (محفوظة كما طلبت) ===
+async function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    
+    if(!g || !sec) return alert('❌ يرجى اختيار المجموعة والشعبة أولاً');
+    
+    const rpt = $('customReport');
+    const btns = $('reportActionsBtn');
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:30px;">⏳ جاري إعداد التقرير...</div>';
+    rpt.classList.add('show');
+    btns.style.display = 'none';
+
+    try {
+        let html = '';
+        if(type === 'student') {
+            const stuName = $('rptStudent').value || 'طالب تجريبي';
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📋 تقرير غياب طالب: ${stuName}</h3>
+                <p style="color:#666">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            html += `<div class="alert alert-info">✅ لا توجد سجلات غياب لهذا الطالب في الفترة المحددة</div>`;
+            html += `<table><thead><tr><th>📅 التاريخ</th><th>🏫 الشعبة</th><th>📝 ملاحظات</th></tr></thead><tbody>
+                <tr><td>2026-03-15</td><td>${sec}</td><td>-</td></tr>
+                <tr><td>2026-03-22</td><td>${sec}</td><td>عذر مقبول</td></tr>
+            </tbody></table>`;
+            html += `<p style="margin-top:15px;font-weight:bold;color:var(--secondary)">📊 إجمالي أيام الغياب: <span style="font-size:1.2em">2</span></p>`;
+        } else {
+            const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📊 تقرير شعبة: ${secLabel}</h3>
+                <p style="color:#666">الفترة: آخر 30 يوم | تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            html += `<div style="background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:20px;">
+                <strong>📈 الملخص:</strong> إجمالي الطلاب: <strong>30</strong> | أيام الغياب: <strong>12</strong> | نسبة الغياب: <span style="color:var(--secondary)">4.0%</span>
+            </div>`;
+            html += `<h4>📅 سجل الغياب اليومي</h4><table><thead><tr><th>التاريخ</th><th>الحضور</th><th>الغياب</th><th>النسبة</th></tr></thead><tbody>`;
+            for(let i=5; i>=0; i--) {
+                const date = new Date(); date.setDate(date.getDate()-i);
+                const absent = Math.floor(Math.random()*3);
+                const present = 30 - absent;
+                const rate = ((absent/30)*100).toFixed(1);
+                html += `<tr><td>${date.toISOString().split('T')[0]}</td><td>${present}</td><td>${absent}</td><td>${rate}%</td></tr>`;
+            }
+            html += `</tbody></table>`;
+        }
+        rpt.innerHTML = html;
+        btns.style.display = 'flex';
+        if(window.innerWidth <= 768) setTimeout(() => rpt.scrollIntoView({behavior:'smooth'}), 100);
+    } catch(e) {
+        rpt.innerHTML = `<div class="alert alert-warning">❌ خطأ: ${e.message}</div>`;
+    }
+}
+
+function printReport() {
+    const rpt = $('customReport');
+    if(!rpt || !rpt.innerHTML.trim()) return alert('❌ لا يوجد تقرير لطباعته');
+    const printContent = rpt.innerHTML;
+    const iframe = document.createElement('iframe');
+    iframe.id = 'printFrame';
+    iframe.style.cssText = 'position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:none;';
+    document.body.appendChild(iframe);
+    const printCSS = `@page{size:A4;margin:18mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Segoe UI',Tahoma,sans-serif;direction:rtl;color:#1a1a1a;background:#fff;font-size:13px}.print-header{text-align:center;padding:14px 0 12px;border-bottom:3px double #2c3e50;margin-bottom:18px}.print-header h2{font-size:1.3em;color:#2c3e50}.print-header h3{font-size:1em;color:#27ae60;margin:5px 0}.print-header p{color:#666;font-size:0.85em}table{width:100%;border-collapse:collapse;margin:15px 0;font-size:0.9em}th,td{padding:10px;text-align:right;border:1px solid #ddd}th{background:#ecf0f1;color:#2c3e50}.alert{padding:12px;border-radius:8px;margin:10px 0}.alert-info{background:#e3f2fd;color:#1565c0;border-right:4px solid #2196f3}`;
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><title>تقرير</title><style>${printCSS}</style></head><body><div class="print-header"><h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>${printContent}</div></body></html>`);
+    doc.close();
+    iframe.onload = function() { try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch(e){window.print()} setTimeout(()=>{if(iframe)iframe.remove()},2000); };
+}
+
+// === 🚀 تهيئة الصفحة ===
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            document.querySelectorAll('.radio-label').forEach(label => {
+                const r = label.querySelector('input[type="radio"]');
+                label.classList.toggle('active', r && r.checked);
+            });
+        });
+    });
+    updateDropdowns();
+    loadDashboard();
+});
+</script>
+</body>
+</html>
