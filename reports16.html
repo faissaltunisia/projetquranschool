@@ -6,563 +6,1055 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>تقارير الغياب - مدرسة القرآن الكريم</title>
     <style>
-        :root { 
-            --primary: #2c3e50; 
-            --secondary: #27ae60; 
-            --accent: #e67e22; 
-            --light: #ecf0f1; 
-            --danger: #c0392b;
+        :root {
+            --primary: #1a365d;
+            --secondary: #2f855a;
+            --accent: #dd6b20;
+            --light: #f7fafc;
+            --danger: #c53030;
             --surface: #ffffff;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
+            --border: #e2e8f0;
+            --text: #2d3748;
+            --text-muted: #718096;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            padding: 20px; 
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
             min-height: 100vh;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
+            line-height: 1.6;
+            color: var(--text);
+            font-size: 15px;
         }
-        .container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            background: var(--surface); 
-            border-radius: var(--radius-lg); 
-            padding: 25px; 
-            box-shadow: var(--shadow-lg); 
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         }
-        header { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            padding-bottom: 15px; 
-            border-bottom: 2px solid var(--light); 
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary);
         }
-        header h1 { color: var(--primary); font-size: 1.5em; font-weight: 700; }
-        header p { color: #666; font-size: 0.9em; margin-top: 5px; }
+        
+        header h1 {
+            color: var(--primary);
+            font-size: 1.6em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95em;
+        }
 
         /* === الفلاتر === */
-        .filters { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 12px; 
-            margin-bottom: 20px; 
-            background: var(--light); 
-            padding: 15px; 
-            border-radius: var(--radius-md); 
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
-        .filters select { 
-            width: 100%; 
-            padding: 12px 15px; 
-            border: 2px solid #ddd; 
-            border-radius: var(--radius-sm); 
-            font-size: 14px; 
+        
+        .filters select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
             background: white;
             transition: border-color 0.2s;
+            font-family: inherit;
         }
-        .filters select:focus { 
-            border-color: var(--primary); 
-            outline: none; 
-            box-shadow: 0 0 0 3px rgba(44,62,80,0.1);
+        
+        .filters select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26,54,93,0.1);
         }
-        .filters button { 
-            background: var(--primary); 
-            color: white; 
-            padding: 12px; 
-            border: none; 
-            border-radius: var(--radius-sm); 
-            cursor: pointer; 
-            font-weight: 600; 
+        
+        .filters button {
+            background: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
             transition: all 0.2s;
             font-size: 14px;
+            font-family: inherit;
         }
-        .filters button:hover { background: #1a252f; transform: translateY(-1px); }
-        .filters button:active { transform: translateY(0); }
-        .filters button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .filters button:hover { background: #152a47; transform: translateY(-1px); }
+        .filters button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
         /* === جدول المقارنة === */
-        .comparison-section { margin-bottom: 30px; }
-        .comparison-section h3 { 
-            color: var(--primary); 
-            margin-bottom: 15px; 
-            padding-bottom: 10px; 
+        .comparison-section { margin-bottom: 35px; }
+        .comparison-section h3 {
+            color: var(--primary);
+            margin-bottom: 18px;
+            padding-bottom: 12px;
             border-bottom: 2px solid var(--light);
-            font-size: 1.2em;
-        }
-        .comparison-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            background: white; 
-            border-radius: var(--radius-md); 
-            overflow: hidden; 
-            box-shadow: var(--shadow-md); 
-        }
-        .comparison-table th { 
-            background: var(--primary); 
-            color: white; 
-            padding: 14px 15px; 
-            text-align: right; 
+            font-size: 1.25em;
             font-weight: 600;
-            font-size: 0.9em;
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.95em;
+        }
+        
+        .comparison-table th {
+            background: var(--primary);
+            color: white;
+            padding: 14px 16px;
+            text-align: right;
+            font-weight: 600;
             position: sticky;
             top: 0;
             z-index: 10;
+            white-space: nowrap;
         }
-        .comparison-table td { 
-            padding: 14px 15px; 
-            border-bottom: 1px solid #eee;
-            font-size: 0.95em;
+        
+        .comparison-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
         }
-        .comparison-table tr:hover { background: #f9f9f9; }
+        
+        .comparison-table tr:hover { background: #f8fafc; }
         .comparison-table tr:last-child td { border-bottom: none; }
         
-        .bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-top: 5px; }
-        .bar-fill { height: 100%; background: var(--secondary); border-radius: 4px; transition: width 0.4s ease; }
+        .progress-bar {
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
         
-        .status { padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: 600; display: inline-block; }
-        .status-good { background: #e8f5e9; color: #2e7d32; }
-        .status-warning { background: #fff3e0; color: #e65100; }
-        .status-danger { background: #ffebee; color: #c62828; }
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 5px;
+            transition: width 0.4s ease;
+        }
+        
+        .badge {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .badge-success { background: #c6f6d5; color: #22543d; }
+        .badge-warning { background: #feebc8; color: #9c4221; }
+        .badge-danger { background: #fed7d7; color: #822727; }
 
         /* === منشئ التقارير === */
-        .report-builder { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            border-radius: var(--radius-md); 
-            border: 1px solid #e0e0e0;
+        .report-builder {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 25px;
+        }
+        
+        .report-builder h3 {
+            color: var(--primary);
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed var(--border);
+            font-size: 1.15em;
+            font-weight: 600;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        .report-builder h3 { 
-            color: var(--primary); 
-            margin-bottom: 15px; 
-            padding-bottom: 10px; 
-            border-bottom: 1px dashed #ccc;
-            font-size: 1.1em;
-        }
-        .radio-group { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
-        .radio-label { 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            background: white; 
-            padding: 10px 15px; 
-            border-radius: var(--radius-sm); 
-            border: 2px solid transparent; 
+        
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 2px solid var(--border);
             transition: all 0.2s;
             font-size: 0.95em;
             flex: 1;
-            min-width: 140px;
+            min-width: 150px;
             justify-content: center;
+            font-family: inherit;
         }
-        .radio-label:hover { border-color: var(--primary); background: #f8f9fa; }
-        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        
+        .radio-label:hover { border-color: var(--primary); background: #edf2f7; }
+        .radio-label.active {
+            background: #ebf4ff;
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
         .radio-label input { margin: 0; transform: scale(1.2); }
         
-        .builder-filters { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-            gap: 10px; 
+        .builder-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
         }
-        .builder-filters select { 
-            padding: 12px 15px; 
-            border: 2px solid #ddd; 
-            border-radius: var(--radius-sm); 
-            font-size: 14px; 
+        
+        .builder-filters select {
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
             background: white;
-            transition: border-color 0.2s;
+            font-family: inherit;
         }
+        
         .builder-filters select:focus { border-color: var(--secondary); outline: none; }
-        .builder-filters button { 
-            background: var(--secondary); 
-            color: white; 
-            padding: 12px; 
-            border: none; 
-            border-radius: var(--radius-sm); 
-            cursor: pointer; 
+        
+        .builder-filters button {
+            background: var(--secondary);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: 600;
             font-size: 14px;
             transition: all 0.2s;
+            font-family: inherit;
         }
-        .builder-filters button:hover { background: #1e8449; transform: translateY(-1px); }
-        .builder-filters button:active { transform: translateY(0); }
+        
+        .builder-filters button:hover { background: #276749; transform: translateY(-1px); }
 
-        /* === التقرير المخصص === */
-        #customReport { 
-            display: none; 
-            margin-top: 20px; 
-            padding: 20px; 
-            background: white; 
-            border: 2px solid var(--primary); 
-            border-radius: var(--radius-md); 
-            box-shadow: var(--shadow-md);
-        }
-        #customReport.show { display: block; animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .report-header { 
-            text-align: center; 
-            margin-bottom: 20px; 
-            padding-bottom: 15px; 
-            border-bottom: 2px dashed #ccc; 
-        }
-        .report-header h2 { color: var(--primary); margin-bottom: 5px; font-size: 1.3em; }
-        .report-header p { color: #666; font-size: 0.85em; }
-        
-        .summary-box { 
-            background: #f8f9fa; 
-            padding: 15px; 
-            border-radius: var(--radius-sm); 
-            margin-bottom: 20px; 
-            display: flex; 
-            gap: 15px; 
-            flex-wrap: wrap; 
-        }
-        .summary-item { 
-            text-align: center; 
-            min-width: 90px; 
-            flex: 1;
-            padding: 10px;
+        /* === التقرير المخصص - تصميم احترافي === */
+        #customReport {
+            display: none;
+            margin-top: 25px;
             background: white;
-            border-radius: var(--radius-sm);
-            box-shadow: var(--shadow-sm);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
-        .summary-item .label { font-size: 0.8em; color: #666; margin-bottom: 5px; }
-        .summary-item .value { font-size: 1.3em; font-weight: 700; color: var(--primary); }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
-        th, td { padding: 12px 15px; text-align: right; border: 1px solid #ddd; }
-        th { background: var(--light); color: var(--primary); font-weight: 600; }
-        tr:hover { background: #f9f9f9; }
+        #customReport.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
         
-        .actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .btn-print { 
-            background: var(--primary); 
-            color: white; 
-            padding: 12px 20px; 
-            border: none; 
-            border-radius: var(--radius-sm); 
-            cursor: pointer; 
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-            flex: 1;
-            min-width: 120px;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* رأس التقرير - تصميم رسمي */
+        .report-header {
             text-align: center;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
+            padding: 25px 30px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, #2c5282 100%);
+            color: white;
+            border-bottom: 4px solid var(--accent);
         }
-        .btn-print:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-print:active { transform: translateY(0); }
         
-        .alert { 
-            padding: 12px 15px; 
-            border-radius: var(--radius-sm); 
-            margin: 10px 0; 
-            font-size: 0.9em;
-            border-right: 4px solid;
+        .report-header .school-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
         }
-        .alert-info { background: #e3f2fd; color: #1565c0; border-color: #2196f3; }
-        .alert-error { background: #ffebee; color: #c62828; border-color: var(--danger); }
+        
+        .report-header .report-title {
+            font-size: 1.1em;
+            opacity: 0.95;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        
+        .report-header .report-meta {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .report-header .report-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* معلومات الطالب/الشعبة */
+        .report-subject {
+            padding: 20px 30px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px 30px;
+        }
+        
+        .subject-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .subject-item .label {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 80px;
+            font-size: 0.95em;
+        }
+        
+        .subject-item .value {
+            color: var(--text);
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        /* صندوق الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 18px 12px;
+            background: var(--light);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover { transform: translateY(-2px); }
+        
+        .stat-card .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+        
+        .stat-card .stat-label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        
+        .stat-card.danger .stat-value { color: var(--danger); }
+        .stat-card.warning .stat-value { color: var(--accent); }
+        .stat-card.success .stat-value { color: var(--secondary); }
+        
+        /* عنوان القسم */
+        .section-title {
+            padding: 15px 30px 10px;
+            color: var(--primary);
+            font-size: 1.1em;
+            font-weight: 600;
+            border-bottom: 2px solid var(--light);
+            margin: 0 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 18px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        /* الجداول الاحترافية */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.95em;
+        }
+        
+        .data-table thead {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .data-table th {
+            padding: 14px 18px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        
+        .data-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .data-table .text-center { text-align: center; }
+        .data-table .text-danger { color: var(--danger); font-weight: 600; }
+        .data-table .text-success { color: var(--secondary); font-weight: 600; }
+        
+        .table-container {
+            padding: 0 30px 20px;
+            overflow-x: auto;
+        }
+        
+        /* التنبيهات */
+        .alert {
+            margin: 15px 30px 25px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            border-right: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .alert-icon {
+            font-size: 1.3em;
+            margin-top: 2px;
+        }
+        
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-color: #f59e0b;
+        }
+        
+        .alert-info {
+            background: #eff6ff;
+            color: #1e40af;
+            border-color: #3b82f6;
+        }
+        
+        /* زر الطباعة */
+        .actions {
+            padding: 20px 30px 30px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--border);
+            background: #f8fafc;
+        }
+        
+        .btn-print {
+            background: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+            box-shadow: 0 2px 8px rgba(26,54,93,0.2);
+        }
+        
+        .btn-print:hover {
+            background: #152a47;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(26,54,93,0.3);
+        }
+        
+        .btn-print:active { transform: translateY(0); }
 
-        /* === تحسينات الهاتف الاحترافية === */
+        /* === تحسينات الهاتف === */
         @media (max-width: 768px) {
-            body { padding: 12px; font-size: 15px; -webkit-text-size-adjust: 100%; }
-            .container { border-radius: var(--radius-md); padding: 16px; margin: 0; width: 100%; max-width: 100%; }
-            header h1 { font-size: 1.3em; }
-            header p { font-size: 0.85em; }
-            .filters { grid-template-columns: 1fr; gap: 10px; padding: 12px; }
-            .filters select, .filters button { padding: 14px 16px; font-size: 15px; min-height: 48px; }
-            .comparison-section h3 { font-size: 1.1em; margin-bottom: 12px; }
-            .comparison-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-sm); }
-            .comparison-table thead, .comparison-table tbody { display: table; width: 100%; table-layout: fixed; }
-            .comparison-table th, .comparison-table td { padding: 12px 10px; font-size: 0.9em; white-space: nowrap; }
-            .comparison-table th { position: sticky; top: 0; background: var(--primary); z-index: 20; font-size: 0.85em; }
-            .bar { height: 6px; }
-            .status { padding: 4px 10px; font-size: 0.75em; }
-            .report-builder { padding: 16px; }
-            .report-builder h3 { font-size: 1em; margin-bottom: 12px; }
-            .radio-group { flex-direction: column; gap: 8px; }
-            .radio-label { padding: 12px 15px; font-size: 1em; min-height: 48px; justify-content: flex-start; }
+            body { padding: 12px; font-size: 14px; }
+            .container { border-radius: 12px; padding: 20px; margin: 0; width: 100%; }
+            
+            header h1 { font-size: 1.4em; }
+            header p { font-size: 0.9em; }
+            
+            .filters { grid-template-columns: 1fr; gap: 12px; padding: 16px; }
+            .filters select, .filters button {
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 48px;
+            }
+            
+            .comparison-section h3 { font-size: 1.15em; margin-bottom: 15px; }
+            .comparison-table th, .comparison-table td { padding: 12px 14px; font-size: 0.9em; }
+            
+            .report-builder { padding: 20px; }
+            .report-builder h3 { font-size: 1.1em; }
+            .radio-group { flex-direction: column; gap: 10px; }
+            .radio-label { padding: 14px 18px; font-size: 1em; min-height: 50px; justify-content: flex-start; }
             .radio-label input { transform: scale(1.3); margin-left: 8px; }
-            .builder-filters { grid-template-columns: 1fr; gap: 12px; }
-            .builder-filters select, .builder-filters button { padding: 14px 16px; font-size: 15px; min-height: 48px; }
-            #customReport { padding: 16px; margin-top: 16px; }
-            .report-header h2 { font-size: 1.2em; }
-            .report-header p { font-size: 0.8em; }
-            .summary-box { flex-direction: column; gap: 10px; padding: 12px; }
-            .summary-item { min-width: 100%; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-            .summary-item .label { margin: 0; font-size: 0.9em; color: #555; }
-            .summary-item .value { font-size: 1.2em; }
-            #customReport table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; font-size: 0.85em; }
-            #customReport th, #customReport td { padding: 10px 12px; font-size: 0.9em; }
-            .btn-print { padding: 14px 20px; font-size: 15px; min-height: 48px; width: 100%; }
-            .alert { padding: 12px 15px; font-size: 0.9em; margin: 8px 0; }
-            select, button, input { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+            
+            .builder-filters { grid-template-columns: 1fr; gap: 14px; }
+            .builder-filters select, .builder-filters button {
+                padding: 14px 16px;
+                font-size: 15px;
+                min-height: 48px;
+            }
+            
+            #customReport { margin-top: 20px; border-radius: 10px; }
+            .report-header { padding: 20px 20px 16px; }
+            .report-header .school-name { font-size: 1.3em; }
+            .report-header .report-title { font-size: 1em; }
+            .report-header .report-meta { gap: 15px; font-size: 0.85em; }
+            
+            .report-subject {
+                padding: 16px 20px;
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .stats-grid {
+                padding: 16px 20px;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .stat-card { padding: 16px 10px; }
+            .stat-card .stat-value { font-size: 1.6em; }
+            
+            .section-title {
+                padding: 12px 20px 8px;
+                font-size: 1em;
+                margin: 0 20px;
+            }
+            
+            .table-container { padding: 0 20px 16px; }
+            .data-table th, .data-table td { padding: 10px 14px; font-size: 0.9em; }
+            
+            .alert { margin: 12px 20px 20px; padding: 12px 16px; font-size: 0.9em; }
+            
+            .actions {
+                padding: 16px 20px 24px;
+                flex-direction: column;
+            }
+            
+            .btn-print {
+                padding: 14px 24px;
+                font-size: 15px;
+                min-height: 50px;
+                width: 100%;
+                justify-content: center;
+            }
+            
+            select, button, input { -webkit-appearance: none; appearance: none; }
             select {
                 background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
                 background-repeat: no-repeat;
                 background-position: left 12px center;
-                padding-right: 30px;
+                padding-right: 35px;
             }
             input, select, textarea, button { font-size: 16px !important; }
-            ::-webkit-scrollbar { width: 6px; height: 6px; }
-            ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 3px; }
-            ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
-            ::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
         }
 
         @media (max-width: 400px) {
-            body { padding: 8px; font-size: 14px; }
-            .container { padding: 12px; border-radius: var(--radius-sm); }
-            .filters, .builder-filters { padding: 10px; }
-            .comparison-table th, .comparison-table td { padding: 10px 8px; font-size: 0.85em; }
-            .summary-item { padding: 10px; }
-            .summary-item .value { font-size: 1.1em; }
+            body { padding: 8px; font-size: 13px; }
+            .container { padding: 16px; border-radius: 10px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .comparison-table th, .comparison-table td { padding: 10px 12px; font-size: 0.85em; }
+            .data-table th, .data-table td { padding: 9px 12px; font-size: 0.85em; }
         }
 
-        /* === 🖨️ تنسيق الطباعة المحسن - للهاتف والكمبيوتر === */
+        /* === 🖨️ تنسيق الطباعة الاحترافي === */
         @media print {
-            /* إخفاء كل العناصر افتراضياً */
-            body * { visibility: hidden; position: static !important; }
-            
-            /* إظهار التقرير فقط */
-            #customReport, #customReport * { 
-                visibility: visible !important; 
-                position: static !important;
-                display: block !important;
+            /* إعدادات الصفحة */
+            @page {
+                size: A4;
+                margin: 15mm 12mm;
             }
             
-            /* تنسيق حاوية التقرير للطباعة */
-            #customReport {
-                width: 100% !important;
-                max-width: 100% !important;
+            /* إعادة تعيين الجسم */
+            body {
                 margin: 0 !important;
-                padding: 10mm !important;
+                padding: 0 !important;
                 background: #fff !important;
                 color: #000 !important;
-                border: none !important;
-                box-shadow: none !important;
                 font-size: 11pt !important;
-                line-height: 1.4 !important;
-                box-sizing: border-box !important;
+                line-height: 1.5 !important;
+                font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', Arial, sans-serif !important;
             }
             
-            /* تنسيق رأس التقرير */
-            .report-header {
-                text-align: center !important;
-                border-bottom: 2px solid #000 !important;
-                padding: 0 0 10px 0 !important;
-                margin: 0 0 15px 0 !important;
-                page-break-after: avoid !important;
-            }
-            .report-header h2 {
-                font-size: 14pt !important;
-                font-weight: bold !important;
-                color: #000 !important;
-                margin: 0 0 5px 0 !important;
-            }
-            .report-header p {
-                font-size: 9pt !important;
-                color: #333 !important;
-                margin: 0 !important;
-            }
-            
-            /* تنسيق معلومات الطالب/الشعبة */
-            #customReport > div[style*="text-align:center"] {
-                text-align: center !important;
-                margin: 10px 0 15px 0 !important;
-                page-break-after: avoid !important;
-            }
-            #customReport h3 {
-                font-size: 12pt !important;
-                color: #000 !important;
-                margin: 0 0 3px 0 !important;
-            }
-            #customReport > div[style*="text-align:center"] p {
-                font-size: 9pt !important;
-                color: #444 !important;
-                margin: 0 !important;
-            }
-            
-            /* تنسيق صندوق الملخص */
-            .summary-box {
-                display: flex !important;
-                flex-wrap: wrap !important;
-                gap: 8px !important;
-                border: 1px solid #000 !important;
-                padding: 10px !important;
-                margin: 0 0 15px 0 !important;
-                background: #fff !important;
-                page-break-inside: avoid !important;
-            }
-            .summary-item {
-                flex: 1 1 30% !important;
-                min-width: 80px !important;
-                text-align: center !important;
-                padding: 8px 5px !important;
-                border: 1px solid #ddd !important;
-                background: #fafafa !important;
-                box-shadow: none !important;
-            }
-            .summary-item .label {
-                font-size: 8pt !important;
-                color: #555 !important;
-                margin: 0 0 3px 0 !important;
-                display: block !important;
-            }
-            .summary-item .value {
-                font-size: 12pt !important;
-                font-weight: bold !important;
-                color: #000 !important;
-            }
-            
-            /* تنسيق العناوين الفرعية */
-            #customReport h4 {
-                font-size: 11pt !important;
-                font-weight: bold !important;
-                color: #000 !important;
-                margin: 15px 0 8px 0 !important;
-                page-break-after: avoid !important;
-                border-bottom: 1px solid #ccc !important;
-                padding-bottom: 5px !important;
-            }
-            
-            /* تنسيق الجداول للطباعة */
-            #customReport table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                font-size: 9pt !important;
-                margin: 0 0 10px 0 !important;
-                page-break-inside: auto !important;
-            }
-            #customReport thead { display: table-header-group !important; }
-            #customReport tr { page-break-inside: avoid !important; page-break-after: auto !important; }
-            #customReport th, #customReport td {
-                border: 1px solid #000 !important;
-                padding: 6px 8px !important;
-                text-align: right !important;
-                background: #fff !important;
-                color: #000 !important;
-                vertical-align: middle !important;
-                word-wrap: break-word !important;
-                overflow-wrap: break-word !important;
-            }
-            #customReport th {
-                background: #f5f5f5 !important;
-                font-weight: bold !important;
-                font-size: 9pt !important;
-            }
-            
-            /* إخفاء العناصر غير الضرورية في الطباعة */
-            .bar, .bar-fill, .status, .btn-print, .filters, .comparison-section, 
-            .report-builder, #reportActions, header, .container > header {
+            /* إخفاء كل شيء إلا التقرير */
+            body > *:not(#customReport) {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
                 overflow: hidden !important;
             }
             
-            /* تنسيق التنبيهات للطباعة */
-            .alert {
-                border: 1px solid #000 !important;
-                padding: 8px 12px !important;
-                margin: 10px 0 !important;
+            /* تنسيق حاوية التقرير */
+            #customReport {
+                display: block !important;
+                visibility: visible !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
                 background: #fff !important;
                 color: #000 !important;
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                overflow: visible !important;
+            }
+            
+            /* رأس التقرير للطباعة */
+            .report-header {
+                display: block !important;
+                padding: 8mm 0 6mm !important;
+                margin: 0 !important;
+                background: #fff !important;
+                color: #000 !important;
+                border-bottom: 3px double #000 !important;
+                text-align: center !important;
+            }
+            
+            .report-header .school-name {
+                font-size: 16pt !important;
+                font-weight: bold !important;
+                color: #000 !important;
+                margin: 0 0 4pt 0 !important;
+                letter-spacing: normal !important;
+            }
+            
+            .report-header .report-title {
+                font-size: 13pt !important;
+                font-weight: 600 !important;
+                color: #000 !important;
+                margin: 0 0 6pt 0 !important;
+                opacity: 1 !important;
+            }
+            
+            .report-header .report-meta {
+                display: flex !important;
+                justify-content: center !important;
+                gap: 20pt !important;
+                flex-wrap: wrap !important;
                 font-size: 9pt !important;
-                border-right-width: 3px !important;
+                color: #333 !important;
+                margin: 0 !important;
+            }
+            
+            .report-header .report-meta span {
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 4pt !important;
+            }
+            
+            /* معلومات الموضوع */
+            .report-subject {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8pt 15pt !important;
+                padding: 5mm 0 !important;
+                margin: 0 !important;
+                background: #fff !important;
+                border-bottom: 1pt solid #000 !important;
+            }
+            
+            .subject-item {
+                display: flex !important;
+                gap: 6pt !important;
+                align-items: baseline !important;
+            }
+            
+            .subject-item .label {
+                font-weight: bold !important;
+                color: #000 !important;
+                min-width: 70pt !important;
+                font-size: 10pt !important;
+            }
+            
+            .subject-item .value {
+                color: #000 !important;
+                font-weight: 500 !important;
+                flex: 1 !important;
+                font-size: 10pt !important;
+            }
+            
+            /* شبكة الإحصائيات */
+            .stats-grid {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 8pt !important;
+                padding: 4mm 0 !important;
+                margin: 0 !important;
+                background: #fff !important;
+                border-bottom: 1pt solid #ddd !important;
+            }
+            
+            .stat-card {
+                text-align: center !important;
+                padding: 10pt 4pt !important;
+                background: #fff !important;
+                border: 1pt solid #000 !important;
+                border-radius: 0 !important;
+                transition: none !important;
+            }
+            
+            .stat-card:hover { transform: none !important; }
+            
+            .stat-card .stat-value {
+                font-size: 15pt !important;
+                font-weight: bold !important;
+                color: #000 !important;
+                line-height: 1.1 !important;
+                margin: 0 0 3pt 0 !important;
+            }
+            
+            .stat-card .stat-label {
+                font-size: 8.5pt !important;
+                color: #333 !important;
+                font-weight: 500 !important;
+            }
+            
+            .stat-card.danger .stat-value,
+            .stat-card.warning .stat-value,
+            .stat-card.success .stat-value {
+                color: #000 !important;
+            }
+            
+            /* عناوين الأقسام */
+            .section-title {
+                padding: 8pt 0 5pt !important;
+                margin: 4mm 0 3mm !important;
+                color: #000 !important;
+                font-size: 11pt !important;
+                font-weight: bold !important;
+                border-bottom: 2pt solid #000 !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 6pt !important;
+            }
+            
+            .section-title::before {
+                content: '■' !important;
+                width: auto !important;
+                height: auto !important;
+                background: transparent !important;
+                color: #000 !important;
+                font-size: 8pt !important;
+            }
+            
+            /* الجداول للطباعة */
+            .table-container {
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            
+            .data-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin: 0 0 3mm 0 !important;
+                font-size: 9pt !important;
+                page-break-inside: auto !important;
+            }
+            
+            .data-table thead {
+                display: table-header-group !important;
+                background: #f0f0f0 !important;
+                color: #000 !important;
+            }
+            
+            .data-table th {
+                padding: 8pt 10pt !important;
+                text-align: right !important;
+                font-weight: bold !important;
+                font-size: 9pt !important;
+                border: 1pt solid #000 !important;
+                background: #f5f5f5 !important;
+                white-space: nowrap !important;
+            }
+            
+            .data-table td {
+                padding: 7pt 10pt !important;
+                border: 1pt solid #000 !important;
+                vertical-align: middle !important;
+                color: #000 !important;
+                font-size: 9pt !important;
+            }
+            
+            .data-table tbody tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+            }
+            
+            .data-table tbody tr:last-child td {
+                border-bottom: 1pt solid #000 !important;
+            }
+            
+            .data-table .text-center { text-align: center !important; }
+            .data-table .text-danger,
+            .data-table .text-success {
+                color: #000 !important;
+                font-weight: bold !important;
+            }
+            
+            /* التنبيهات للطباعة */
+            .alert {
+                margin: 4mm 0 !important;
+                padding: 10pt 14pt !important;
+                border-radius: 0 !important;
+                font-size: 9.5pt !important;
+                border: 1pt solid #000 !important;
+                border-right-width: 4pt !important;
+                display: flex !important;
+                align-items: flex-start !important;
+                gap: 10pt !important;
+                background: #fff !important;
+                color: #000 !important;
                 page-break-inside: avoid !important;
             }
             
-            /* إعدادات الصفحة للطباعة */
-            @page { size: auto; margin: 10mm; }
+            .alert-icon {
+                font-size: 12pt !important;
+                margin-top: 1pt !important;
+            }
             
-            /* تحسينات الجسم للطباعة */
-            body {
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
+            .alert-warning,
+            .alert-info {
                 background: #fff !important;
+                color: #000 !important;
+                border-color: #000 !important;
+            }
+            
+            /* إخفاء العناصر غير الضرورية */
+            .btn-print,
+            .actions,
+            .bar,
+            .progress-bar,
+            .progress-fill,
+            .badge,
+            header,
+            .filters,
+            .comparison-section,
+            .report-builder {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                overflow: hidden !important;
+            }
+            
+            /* منع قص المحتوى */
+            .report-subject,
+            .stats-grid,
+            .section-title,
+            .alert {
+                page-break-inside: avoid !important;
+            }
+            
+            /* تحسين عرض النصوص */
+            .subject-item .value,
+            .data-table td {
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+            
+            /* ضمان ظهور جميع المحتويات */
+            #customReport * {
+                visibility: visible !important;
+                position: static !important;
+                display: block !important;
+                float: none !important;
+                clear: none !important;
+            }
+            
+            /* الجداول المرنة */
+            .data-table {
+                table-layout: auto !important;
             }
         }
-
-        /* === تحسينات الطباعة للهاتف === */
+        
+        /* === طباعة الهاتف الصغير === */
         @media print and (max-width: 480px) {
-            #customReport { padding: 5mm !important; font-size: 10pt !important; }
-            .summary-item { flex: 1 1 45% !important; }
-            #customReport th, #customReport td { padding: 4px 6px !important; font-size: 8pt !important; }
-            .summary-item .value { font-size: 11pt !important; }
+            @page { margin: 10mm 8mm; }
+            body { font-size: 10pt !important; }
+            
+            .report-header .school-name { font-size: 14pt !important; }
+            .report-header .report-title { font-size: 11pt !important; }
+            .report-header .report-meta { gap: 12pt !important; font-size: 8pt !important; }
+            
+            .report-subject { grid-template-columns: 1fr !important; gap: 6pt !important; }
+            .subject-item .label { min-width: 60pt !important; font-size: 9pt !important; }
+            .subject-item .value { font-size: 9pt !important; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6pt !important; }
+            .stat-card .stat-value { font-size: 13pt !important; }
+            .stat-card .stat-label { font-size: 8pt !important; }
+            
+            .section-title { font-size: 10pt !important; padding: 6pt 0 4pt !important; }
+            .data-table { font-size: 8.5pt !important; }
+            .data-table th, .data-table td { padding: 6pt 8pt !important; }
+            .alert { font-size: 9pt !important; padding: 8pt 12pt !important; }
         }
 
         /* === تحسينات الوصول === */
         @media (prefers-reduced-motion: reduce) {
-            * {
+            *, *::before, *::after {
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
             }
         }
         
-        /* دعم الوضع الداكن (اختياري) */
+        /* === الوضع الداكن (للعرض فقط) === */
         @media (prefers-color-scheme: dark) {
-            :root { --surface: #1a1a2e; --light: #16213e; }
-            body { background: linear-gradient(135deg, #1a1a2e, #16213e); }
+            :root {
+                --surface: #1a202c;
+                --light: #2d3748;
+                --border: #4a5568;
+                --text: #e2e8f0;
+                --text-muted: #a0aec0;
+            }
+            body { background: linear-gradient(135deg, #1a202c, #2d3748); }
             .container { background: var(--surface); }
-            .filters, .report-builder, .summary-box { background: #0f3460; }
-            select, .builder-filters select { background: #1a1a2e; color: #fff; border-color: #0f3460; }
-            .comparison-table, #customReport table { background: #1a1a2e; }
-            .comparison-table td, #customReport td { border-color: #0f3460; }
-            .comparison-table tr:hover, #customReport tr:hover { background: #0f3460; }
+            .filters, .report-builder, .stat-card { background: #2d3748; border-color: var(--border); }
+            select, .builder-filters select { background: #1a202c; color: var(--text); border-color: var(--border); }
+            .comparison-table, .data-table { background: #1a202c; }
+            .comparison-table td, .data-table td { border-color: var(--border); }
+            .comparison-table tr:hover, .data-table tbody tr:hover { background: #2d3748; }
         }
     </style>
 </head>
 <body>
+
 <div class="container">
     <header>
-        <h1>📊 تقارير الغياب المدرسية</h1>
-        <p>مقارنة الشعب • إنشاء تقارير مفصلة</p>
+        <h1>📊 نظام تقارير الغياب المدرسية</h1>
+        <p>مدرسة تحفيظ القرآن الكريم • إدارة المتابعة والحضور</p>
     </header>
 
+    <!-- الفلاتر -->
     <div class="filters">
-        <select id="filterGroup" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
-        <select id="filterSection" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
-        <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث</button>
+        <select id="filterGroup" onchange="onFilterChange()" disabled>
+            <option value="">⏳ جاري تحميل المجموعات...</option>
+        </select>
+        <select id="filterSection" onchange="onFilterChange()" disabled>
+            <option value="">⏳ جاري تحميل الشعب...</option>
+        </select>
+        <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث البيانات</button>
     </div>
 
+    <!-- جدول المقارنة -->
     <div class="comparison-section">
-        <h3>📈 مقارنة نسب الغياب بين الشعب</h3>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <h3>📈 مقارنة نسب الغياب بين الشعب الدراسية</h3>
+        <div class="table-wrapper">
             <table class="comparison-table">
-                <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
-                <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:20px;">⏳ جاري تحميل البيانات...</td></tr></tbody>
+                <thead>
+                    <tr>
+                        <th>اسم الشعبة</th>
+                        <th>المجموعة</th>
+                        <th>عدد الطلاب</th>
+                        <th>أيام الغياب</th>
+                        <th>نسبة الغياب</th>
+                        <th>حالة الشعبة</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonBody">
+                    <tr><td colspan="6" style="text-align:center;padding:25px;color:var(--text-muted);">⏳ جاري تحميل بيانات المقارنة...</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
+    <!-- منشئ التقارير -->
     <div class="report-builder">
-        <h3>📋 إنشاء تقرير مفصل</h3>
+        <h3>📋 إنشاء تقرير مفصل للطباعة</h3>
+        
         <div class="radio-group">
-            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
-            <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
+            <label class="radio-label active">
+                <input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()">
+                👤 تقرير طالب فردي
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="reportType" value="section" onchange="toggleReportFields()">
+                🏫 تقرير شعبة كاملة
+            </label>
         </div>
+        
         <div class="builder-filters">
-            <select id="rptGroup" onchange="onReportGroupChange()" disabled><option value="">✦ اختر المجموعة ✦</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
-            <select id="rptSection" onchange="onReportSectionChange()" disabled><option value="">✦ اختر الشعبة ✦</option></select>
-            <select id="rptStudent" style="display:none;"><option value="">✦ اختر الطالب ✦</option></select>
-            <button onclick="generateCustomReport()" id="genBtn" disabled>📊 عرض التقرير</button>
+            <select id="rptGroup" onchange="onReportGroupChange()" disabled>
+                <option value="">✦ اختر المجموعة أولاً ✦</option>
+                <option value="أ">المجموعة (أ)</option>
+                <option value="ب">المجموعة (ب)</option>
+            </select>
+            <select id="rptSection" onchange="onReportSectionChange()" disabled>
+                <option value="">✦ اختر الشعبة ✦</option>
+            </select>
+            <select id="rptStudent" style="display:none;">
+                <option value="">✦ اختر الطالب ✦</option>
+            </select>
+            <button onclick="generateCustomReport()" id="genBtn" disabled>📊 إنشاء وعرض التقرير</button>
         </div>
     </div>
 
+    <!-- منطقة التقرير المخصص -->
     <div id="customReport"></div>
-    <div id="reportActions" style="display:none; margin-top:15px;">
-        <button class="btn-print" onclick="printReport()" style="touch-action: manipulation; -webkit-tap-highlight-color: transparent;">🖨️ طباعة التقرير</button>
+    
+    <!-- أزرار الإجراءات -->
+    <div id="reportActions" style="display:none;">
+        <div class="actions">
+            <button class="btn-print" onclick="printReport()">
+                🖨️ طباعة التقرير
+            </button>
+        </div>
     </div>
 </div>
 
@@ -572,7 +1064,7 @@ let allSections = [];
 let attendanceRecords = [];
 let dataLoaded = false;
 
-// ✅ دالة تنظيف المسافات من المفاتيح والقيم
+// تنظيف البيانات من المسافات الزائدة
 function deepTrim(obj) {
     if (typeof obj === 'string') return obj.trim();
     if (Array.isArray(obj)) return obj.map(deepTrim);
@@ -582,7 +1074,7 @@ function deepTrim(obj) {
     return obj;
 }
 
-// === 📦 تحميل البيانات من واجهات API ===
+// تحميل البيانات من API
 async function loadData() {
     try {
         const [resA, resB] = await Promise.all([
@@ -598,8 +1090,10 @@ async function loadData() {
             if (clean.section_id) return [{...clean, group}];
             return [];
         };
+        
         allSections = [...parseSections(resA, 'أ'), ...parseSections(resB, 'ب')];
         
+        // تحميل سجلات الغياب (اختياري)
         try {
             const attRes = await fetch('/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31');
             if (attRes.ok) {
@@ -607,18 +1101,19 @@ async function loadData() {
                 const summary = attData.data || attData.summary || {};
                 if (summary.dailyData) {
                     attendanceRecords = summary.dailyData.map(d => ({
-                        date: d.date,
-                        section_id: 'all',
-                        absent_ids: []
+                        date: d.date, section_id: 'all', absent_ids: []
                     }));
                 }
             }
-        } catch(e) { console.warn('⚠️ لم يتم تحميل سجلات الغياب:', e); }
+        } catch(e) { console.warn('⚠️ تعذر تحميل سجلات الغياب'); }
         
-        if (allSections.length === 0) throw new Error('لا توجد بيانات شعب');
+        if (allSections.length === 0) throw new Error('لا توجد بيانات شعب متاحة');
         
-        ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn'].forEach(id => $(id).disabled = false);
-        $('filterGroup').innerHTML = `<option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+        // تفعيل عناصر التحكم
+        ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn']
+            .forEach(id => $(id).disabled = false);
+        
+        $('filterGroup').innerHTML = `<option value="">📁 عرض كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
         $('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة ✦</option><option value="أ">أ</option><option value="ب">ب</option>`;
         
         updateSectionsDropdown();
@@ -627,8 +1122,8 @@ async function loadData() {
         dataLoaded = true;
         
     } catch(err) {
-        console.error('❌ فشل تحميل البيانات:', err);
-        $('comparisonBody').innerHTML = `<tr><td colspan="6" class="alert alert-error">❌ خطأ: ${err.message}<br><small>تأكد من تشغيل المشروع على Vercel</small></td></tr>`;
+        console.error('❌ خطأ في تحميل البيانات:', err);
+        $('comparisonBody').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:25px;color:var(--danger);">❌ ${err.message}<br><small style="color:var(--text-muted)">تأكد من تشغيل الخادم بشكل صحيح</small></td></tr>`;
         ['loadBtn','genBtn'].forEach(btn => $(btn).disabled = true);
     }
 }
@@ -638,30 +1133,44 @@ function updateSectionsDropdown() {
     const sel = $('filterSection');
     const current = sel.value;
     
-    sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
+    sel.innerHTML = '<option value="">🏫 عرض كل الشعب</option>';
     const sections = group ? allSections.filter(s => s.group === group) : allSections;
+    
     sections.forEach(sec => {
         const opt = document.createElement('option');
         opt.value = sec.section_id;
         opt.textContent = sec.section_label || sec.section_id;
         sel.appendChild(opt);
     });
-    if (current && [...sel.options].some(o => o.value === current)) sel.value = current;
+    
+    if (current && [...sel.options].some(o => o.value === current)) {
+        sel.value = current;
+    }
 }
 
-function onFilterChange() { updateSectionsDropdown(); loadComparisonTable(); }
+function onFilterChange() {
+    updateSectionsDropdown();
+    loadComparisonTable();
+}
 
 async function loadComparisonTable() {
     if (!dataLoaded) return;
+    
     const group = $('filterGroup').value;
     const section = $('filterSection').value;
     const tbody = $('comparisonBody');
     
-    let data = allSections.filter(s => (!group || s.group === group) && (!section || s.section_id === section));
+    let data = allSections.filter(s => 
+        (!group || s.group === group) && 
+        (!section || s.section_id === section)
+    );
+    
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#666;padding:20px;">لا توجد بيانات</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:25px;color:var(--text-muted);">📭 لا توجد بيانات مطابقة للفلتر المحدد</td></tr>';
         return;
     }
+    
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;">⏳ جاري حساب النسب...</td></tr>';
     
     const results = await Promise.all(data.map(async sec => {
         const studentCount = sec.students?.length || 0;
@@ -671,23 +1180,38 @@ async function loadComparisonTable() {
             const summary = json.data || json.summary || {};
             const absentDays = summary.totalAbsent || 0;
             const totalDays = summary.totalDays || 1;
-            const rate = studentCount > 0 && totalDays > 0 ? ((absentDays / (studentCount * totalDays)) * 100).toFixed(1) : 0;
+            const rate = studentCount > 0 && totalDays > 0 
+                ? ((absentDays / (studentCount * totalDays)) * 100).toFixed(1) 
+                : 0;
             return {...sec, studentCount, absentDays, rate: parseFloat(rate)};
-        } catch { return {...sec, studentCount, absentDays: 0, rate: 0}; }
+        } catch {
+            return {...sec, studentCount, absentDays: 0, rate: 0};
+        }
     }));
     
     const maxRate = Math.max(...results.map(r => r.rate), 1);
     
     tbody.innerHTML = results.map(sec => {
-        const barW = Math.min((sec.rate / maxRate) * 100, 100);
-        const status = sec.rate >= 5 ? {c:'status-danger',t:'🔴 عالي'} : sec.rate >= 2 ? {c:'status-warning',t:'🟡 متوسط'} : {c:'status-good',t:'🟢 منخفض'};
+        const barWidth = Math.min((sec.rate / maxRate) * 100, 100);
+        let badge;
+        if (sec.rate >= 5) {
+            badge = {class: 'badge-danger', text: '🔴 عالي'};
+        } else if (sec.rate >= 2) {
+            badge = {class: 'badge-warning', text: '🟡 متوسط'};
+        } else {
+            badge = {class: 'badge-success', text: '🟢 منخفض'};
+        }
+        
         return `<tr>
             <td><strong>${sec.section_label || sec.section_id}</strong></td>
             <td>${sec.group}</td>
-            <td>${sec.studentCount}</td>
-            <td>${sec.absentDays}</td>
-            <td><strong>${sec.rate}%</strong><div class="bar"><div class="bar-fill" style="width:${barW}%"></div></div></td>
-            <td><span class="status ${status.c}">${status.t}</span></td>
+            <td class="text-center">${sec.studentCount}</td>
+            <td class="text-center">${sec.absentDays}</td>
+            <td>
+                <strong>${sec.rate}%</strong>
+                <div class="progress-bar"><div class="progress-fill" style="width:${barWidth}%"></div></div>
+            </td>
+            <td class="text-center"><span class="badge ${badge.class}">${badge.text}</span></td>
         </tr>`;
     }).join('');
 }
@@ -695,19 +1219,28 @@ async function loadComparisonTable() {
 function toggleReportFields() {
     const type = document.querySelector('input[name="reportType"]:checked').value;
     $('rptStudent').style.display = (type === 'student') ? 'block' : 'none';
-    document.querySelectorAll('.radio-label').forEach(l => l.classList.toggle('active', l.querySelector('input').checked));
-    if (type === 'student' && $('rptSection').value) updateStudentsDropdown();
+    
+    document.querySelectorAll('.radio-label').forEach(label => {
+        label.classList.toggle('active', label.querySelector('input').checked);
+    });
+    
+    if (type === 'student' && $('rptSection').value) {
+        updateStudentsDropdown();
+    }
 }
 
 function onReportGroupChange() {
     const group = $('rptGroup').value;
-    const secSel = $('rptSection'), stuSel = $('rptStudent');
+    const secSel = $('rptSection');
+    const stuSel = $('rptStudent');
+    
     secSel.disabled = !group;
     secSel.innerHTML = '<option value="">✦ اختر الشعبة ✦</option>';
     stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
     stuSel.style.display = 'none';
     
     if (!group) return;
+    
     const sections = allSections.filter(s => s.group === group);
     sections.forEach(sec => {
         const opt = document.createElement('option');
@@ -728,39 +1261,59 @@ function onReportSectionChange() {
 }
 
 function updateStudentsDropdown() {
-    const sec = $('rptSection').value;
+    const sectionId = $('rptSection').value;
     const stuSel = $('rptStudent');
+    
     stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
-    const secData = allSections.find(s => s.section_id === sec);
-    secData?.students?.forEach(st => {
-        const opt = document.createElement('option');
-        opt.value = st.id; opt.textContent = st.name;
-        stuSel.appendChild(opt);
-    });
+    
+    const section = allSections.find(s => s.section_id === sectionId);
+    if (section?.students) {
+        section.students.forEach(student => {
+            const opt = document.createElement('option');
+            opt.value = student.id;
+            opt.textContent = student.name;
+            stuSel.appendChild(opt);
+        });
+    }
 }
 
 function generateCustomReport() {
     const type = document.querySelector('input[name="reportType"]:checked').value;
-    const group = $('rptGroup').value, section = $('rptSection').value;
-    if (!group || !section) return alert('❌ اختر المجموعة والشعبة');
-    if (type === 'student' && !$('rptStudent').value) return alert('❌ اختر الطالب');
+    const group = $('rptGroup').value;
+    const section = $('rptSection').value;
     
-    const rpt = $('customReport'), actions = $('reportActions');
-    rpt.innerHTML = '<div style="text-align:center;padding:30px;color:#666;">⏳ جاري الإنشاء...</div>';
-    rpt.classList.add('show');
+    if (!group || !section) {
+        return alert('⚠️ يرجى اختيار المجموعة والشعبة أولاً');
+    }
+    if (type === 'student' && !$('rptStudent').value) {
+        return alert('⚠️ يرجى اختيار الطالب لعرض تقريره');
+    }
+    
+    const report = $('customReport');
+    const actions = $('reportActions');
+    
+    report.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:1.1em;">⏳ جاري إعداد التقرير...</div>';
+    report.classList.add('show');
     actions.style.display = 'none';
     
     setTimeout(() => {
-        if (type === 'student') generateStudentReport(group, section, $('rptStudent').value, rpt);
-        else generateSectionReport(group, section, rpt);
+        if (type === 'student') {
+            generateStudentReport(group, section, $('rptStudent').value, report);
+        } else {
+            generateSectionReport(group, section, report);
+        }
         actions.style.display = 'block';
-    }, 300);
+    }, 250);
 }
 
-async function generateStudentReport(group, section, studentId, container) {
-    const secData = allSections.find(s => s.section_id === section);
-    const student = secData?.students?.find(st => st.id === studentId);
-    if (!student) return container.innerHTML = '<div class="alert alert-error">❌ لم يُعثر على الطالب</div>';
+async function generateStudentReport(group, sectionId, studentId, container) {
+    const section = allSections.find(s => s.section_id === sectionId);
+    const student = section?.students?.find(st => st.id === studentId);
+    
+    if (!student) {
+        container.innerHTML = '<div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>لم يتم العثور على بيانات الطالب المحدد</div></div>';
+        return;
+    }
     
     try {
         const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(studentId)}`);
@@ -768,96 +1321,334 @@ async function generateStudentReport(group, section, studentId, container) {
         const history = json.data?.history || json.history || [];
         
         const totalDays = 20;
-        const rate = ((totalDays - history.length) / totalDays * 100).toFixed(0);
-        const status = history.length >= 5 ? {t:'🔴 متكرر',c:'var(--danger)'} : history.length >= 3 ? {t:'🟡 مراقبة',c:'var(--accent)'} : {t:'🟢 جيد',c:'var(--secondary)'};
+        const attendanceRate = ((totalDays - history.length) / totalDays * 100).toFixed(0);
+        
+        let status;
+        if (history.length >= 5) {
+            status = {text: 'متكرر الغياب', class: 'danger', icon: '🔴'};
+        } else if (history.length >= 3) {
+            status = {text: 'تحت المراقبة', class: 'warning', icon: '🟡'};
+        } else {
+            status = {text: 'مستوى جيد', class: 'success', icon: '🟢'};
+        }
         
         container.innerHTML = `
+            <!-- رأس التقرير الرسمي -->
             <div class="report-header">
-                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
-                <p>تقرير غياب طالب • ${new Date().toLocaleDateString('ar-EG')}</p>
+                <div class="school-name">🕌 مدرسة تحفيظ القرآن الكريم</div>
+                <div class="report-title">تقرير متابعة الغياب الفردي</div>
+                <div class="report-meta">
+                    <span>📅 التاريخ: ${new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'})}</span>
+                    <span>🕐 الوقت: ${new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <span>📄 رقم التقرير: ${Date.now().toString(36).toUpperCase()}</span>
+                </div>
             </div>
-            <div style="text-align:center;margin-bottom:20px;">
-                <h3 style="color:var(--primary);margin-bottom:5px;">👤 ${student.name}</h3>
-                <p style="color:#666;">${secData.section_label} • المجموعة (${group})</p>
+            
+            <!-- معلومات الطالب -->
+            <div class="report-subject">
+                <div class="subject-item">
+                    <span class="label">اسم الطالب:</span>
+                    <span class="value">${student.name}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">رقم القيد:</span>
+                    <span class="value">${student.id || 'غير محدد'}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">الشعبة:</span>
+                    <span class="value">${section.section_label || sectionId}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">المجموعة:</span>
+                    <span class="value">${group}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">فترة التقرير:</span>
+                    <span class="value">الفصل الدراسي الحالي</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">حالة المتابعة:</span>
+                    <span class="value" style="color:var(--${status.class})">${status.icon} ${status.text}</span>
+                </div>
             </div>
-            <div class="summary-box">
-                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value" style="color:${status.c}">${history.length}</div></div>
-                <div class="summary-item"><div class="label">الحالة</div><div class="value" style="font-size:1.1em;color:${status.c}">${status.t}</div></div>
-                <div class="summary-item"><div class="label">نسبة الحضور</div><div class="value">${rate}%</div></div>
+            
+            <!-- الإحصائيات -->
+            <div class="stats-grid">
+                <div class="stat-card ${history.length >= 5 ? 'danger' : history.length >= 3 ? 'warning' : 'success'}">
+                    <div class="stat-value">${history.length}</div>
+                    <div class="stat-label">أيام الغياب</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value">${attendanceRate}%</div>
+                    <div class="stat-label">نسبة الحضور</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalDays}</div>
+                    <div class="stat-label">إجمالي الأيام</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${status.text}</div>
+                    <div class="stat-label">التقييم النهائي</div>
+                </div>
             </div>
-            <h4 style="color:var(--primary);margin:20px 0 10px;">📅 سجل الغياب</h4>
-            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-                <table><thead><tr><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>
-                    ${history.length ? history.map(h => `<tr><td>${h.date}</td><td style="color:var(--danger);font-weight:600">❌ غائب</td><td>${h.section || '-'}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:var(--secondary)">✅ لا توجد سجلات غياب</td></tr>'}
-                </tbody></table>
+            
+            <!-- جدول سجل الغياب -->
+            <div class="section-title">📅 سجل تفصيلي لأيام الغياب</div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width:35%">تاريخ الغياب</th>
+                            <th style="width:25%">اليوم</th>
+                            <th style="width:25%">الحصة/المادة</th>
+                            <th style="width:15%">ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${history.length > 0 
+                            ? history.map(h => `
+                                <tr>
+                                    <td><strong>${h.date || '-'}</strong></td>
+                                    <td class="text-center">${getDayName(h.date)}</td>
+                                    <td>${h.subject || h.section || 'جميع الحصص'}</td>
+                                    <td class="text-center">${h.note || '-'}</td>
+                                </tr>
+                            `).join('')
+                            : '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--secondary);font-weight:500;">✅ لا توجد سجلات غياب مسجلة لهذا الطالب</td></tr>'
+                        }
+                    </tbody>
+                </table>
             </div>
-            ${history.length >= 3 ? `<div class="alert" style="background:#fff3e0;color:#e65100;margin-top:15px;">⚠️ تنبيه: يُرجى التواصل مع ولي الأمر</div>` : ''}
+            
+            <!-- ملاحظات وتوصيات -->
+            ${history.length >= 3 ? `
+            <div class="alert alert-warning">
+                <span class="alert-icon">⚠️</span>
+                <div>
+                    <strong>تنبيه إداري:</strong> يُوصى بالتواصل مع ولي أمر الطالب لمناقشة أسباب الغياب المتكرر، 
+                    واتخاذ الإجراءات الوقائية اللازمة لضمان استمرار الطالب في التحصيل الدراسي.
+                </div>
+            </div>
+            ` : ''}
+            
+            ${history.length === 0 ? `
+            <div class="alert alert-info">
+                <span class="alert-icon">✨</span>
+                <div>
+                    <strong>ملاحظة إيجابية:</strong> الطالب ملتزم بحضوره الدراسي، 
+                    نوصي بالاستمرار في التشجيع والمتابعة للحفاظ على هذا المستوى المتميز.
+                </div>
+            </div>
+            ` : ''}
         `;
+        
     } catch(e) {
-        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-warning"><span class="alert-icon">❌</span><div>حدث خطأ أثناء جلب البيانات: ${e.message}</div></div>`;
     }
 }
 
-async function generateSectionReport(group, section, container) {
-    const secData = allSections.find(s => s.section_id === section);
-    const students = secData?.students || [];
+async function generateSectionReport(group, sectionId, container) {
+    const section = allSections.find(s => s.section_id === sectionId);
+    const students = section?.students || [];
+    
+    if (!section) {
+        container.innerHTML = '<div class="alert alert-warning"><span class="alert-icon">⚠️</span><div>لم يتم العثور على بيانات الشعبة المحددة</div></div>';
+        return;
+    }
     
     try {
-        const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+        const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(sectionId)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
         const json = await res.json();
         const summary = json.data || json.summary || {};
         
         const totalAbsent = summary.totalAbsent || 0;
         const totalDays = summary.totalDays || 1;
-        const rate = students.length > 0 && totalDays > 0 ? ((totalAbsent / (students.length * totalDays)) * 100).toFixed(1) : 0;
+        const absenceRate = students.length > 0 && totalDays > 0 
+            ? ((totalAbsent / (students.length * totalDays)) * 100).toFixed(1) 
+            : 0;
+        
+        const avgPerStudent = students.length > 0 ? (totalAbsent / students.length).toFixed(1) : 0;
+        
+        let rateStatus;
+        if (absenceRate >= 5) {
+            rateStatus = {text: 'عالي', class: 'danger'};
+        } else if (absenceRate >= 2) {
+            rateStatus = {text: 'متوسط', class: 'warning'};
+        } else {
+            rateStatus = {text: 'منخفض', class: 'success'};
+        }
         
         container.innerHTML = `
+            <!-- رأس التقرير الرسمي -->
             <div class="report-header">
-                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
-                <p>تقرير شعبة • ${new Date().toLocaleDateString('ar-EG')}</p>
+                <div class="school-name">🕌 مدرسة تحفيظ القرآن الكريم</div>
+                <div class="report-title">تقرير متابعة الغياب للشعب الدراسية</div>
+                <div class="report-meta">
+                    <span>📅 التاريخ: ${new Date().toLocaleDateString('ar-EG', {year:'numeric', month:'long', day:'numeric'})}</span>
+                    <span>🕐 الوقت: ${new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</span>
+                    <span>📄 رقم التقرير: ${Date.now().toString(36).toUpperCase()}</span>
+                </div>
             </div>
-            <div style="text-align:center;margin-bottom:20px;">
-                <h3 style="color:var(--primary);margin-bottom:5px;">🏫 ${secData?.section_label || section}</h3>
-                <p style="color:#666;">المجموعة (${group})</p>
+            
+            <!-- معلومات الشعبة -->
+            <div class="report-subject">
+                <div class="subject-item">
+                    <span class="label">اسم الشعبة:</span>
+                    <span class="value">${section.section_label || sectionId}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">المجموعة:</span>
+                    <span class="value">${group}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">عدد الطلاب:</span>
+                    <span class="value">${students.length} طالب</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">المعلم المسؤول:</span>
+                    <span class="value">${section.teacher || 'غير محدد'}</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">فترة التقرير:</span>
+                    <span class="value">الفصل الدراسي الحالي</span>
+                </div>
+                <div class="subject-item">
+                    <span class="label">مستوى الغياب:</span>
+                    <span class="value" style="color:var(--${rateStatus.class})">${rateStatus.text}</span>
+                </div>
             </div>
-            <div class="summary-box">
-                <div class="summary-item"><div class="label">الطلاب</div><div class="value">${students.length}</div></div>
-                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value">${totalAbsent}</div></div>
-                <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:${rate>=5?'var(--danger)':rate>=2?'var(--accent)':'var(--secondary)'}">${rate}%</div></div>
-                <div class="summary-item"><div class="label">متوسط/طالب</div><div class="value">${students.length > 0 ? (totalAbsent/students.length).toFixed(1) : 0}</div></div>
+            
+            <!-- الإحصائيات -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">${students.length}</div>
+                    <div class="stat-label">إجمالي الطلاب</div>
+                </div>
+                <div class="stat-card ${rateStatus.class === 'danger' ? 'danger' : rateStatus.class === 'warning' ? 'warning' : 'success'}">
+                    <div class="stat-value">${absenceRate}%</div>
+                    <div class="stat-label">نسبة الغياب</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalAbsent}</div>
+                    <div class="stat-label">أيام غياب</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${avgPerStudent}</div>
+                    <div class="stat-label">متوسط/طالب</div>
+                </div>
             </div>
-            <h4 style="color:var(--primary);margin:20px 0 10px;">👥 تفصيل الطلاب</h4>
-            <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-                <table><thead><tr><th>الطالب</th><th>الغياب</th><th>الحضور%</th><th>الحالة</th></tr></thead><tbody>
-                    ${students.length ? await Promise.all(students.map(async st => {
-                        try {
-                            const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(st.id)}`);
-                            const d = await r.json();
-                            const stAbsent = (d.data?.history || d.history || []).length;
-                            const stRate = ((20 - stAbsent)/20*100).toFixed(0);
-                            const stSt = stAbsent >= 5 ? {t:'متكرر',c:'var(--danger)'} : stAbsent >= 3 ? {t:'مراقبة',c:'var(--accent)'} : {t:'جيد',c:'var(--secondary)'};
-                            return `<tr><td><strong>${st.name}</strong></td><td style="color:${stAbsent?'var(--danger)':'inherit'}">${stAbsent}</td><td>${stRate}%</td><td style="color:${stSt.c};font-weight:600">${stSt.t}</td></tr>`;
-                        } catch { return `<tr><td><strong>${st.name}</strong></td><td>-</td><td>-</td><td>-</td></tr>`; }
-                    })).then(rows => rows.join('')) : '<tr><td colspan="4" style="text-align:center;color:#666">لا توجد بيانات طلاب</td></tr>'}
-                </tbody></table>
+            
+            <!-- جدول الطلاب -->
+            <div class="section-title">👥 كشف متابعة الطلاب</div>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>اسم الطالب</th>
+                            <th class="text-center">رقم القيد</th>
+                            <th class="text-center">أيام الغياب</th>
+                            <th class="text-center">نسبة الحضور</th>
+                            <th class="text-center">حالة المتابعة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.length > 0 
+                            ? await Promise.all(students.map(async st => {
+                                try {
+                                    const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(st.id)}`);
+                                    const d = await r.json();
+                                    const stAbsent = (d.data?.history || d.history || []).length;
+                                    const stRate = ((20 - stAbsent)/20*100).toFixed(0);
+                                    
+                                    let stStatus;
+                                    if (stAbsent >= 5) stStatus = {text:'متكرر', class:'text-danger'};
+                                    else if (stAbsent >= 3) stStatus = {text:'مراقبة', class:'text-warning'};
+                                    else stStatus = {text:'جيد', class:'text-success'};
+                                    
+                                    return `<tr>
+                                        <td><strong>${st.name}</strong></td>
+                                        <td class="text-center">${st.id || '-'}</td>
+                                        <td class="text-center ${stAbsent ? 'text-danger' : ''}">${stAbsent}</td>
+                                        <td class="text-center"><strong>${stRate}%</strong></td>
+                                        <td class="text-center ${stStatus.class}">${stStatus.text}</td>
+                                    </tr>`;
+                                } catch {
+                                    return `<tr>
+                                        <td><strong>${st.name}</strong></td>
+                                        <td class="text-center">${st.id || '-'}</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">-</td>
+                                        <td class="text-center">-</td>
+                                    </tr>`;
+                                }
+                            })).then(rows => rows.join(''))
+                            : '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted);">📭 لا توجد بيانات طلاب مسجلة لهذه الشعبة</td></tr>'
+                        }
+                    </tbody>
+                </table>
             </div>
+            
+            <!-- ملاحظات إدارية -->
+            ${absenceRate >= 5 ? `
+            <div class="alert alert-warning">
+                <span class="alert-icon">⚠️</span>
+                <div>
+                    <strong>توصية إدارية:</strong> نسبة الغياب في هذه الشعبة مرتفعة، 
+                    يُوصى بعقد اجتماع مع المعلم المسؤول وأولياء الأمور لمعالجة الأسباب واتخاذ الإجراءات اللازمة.
+                </div>
+            </div>
+            ` : absenceRate >= 2 ? `
+            <div class="alert alert-info">
+                <span class="alert-icon">📋</span>
+                <div>
+                    <strong>ملاحظة:</strong> نسبة الغياب في مستوى متوسط، 
+                    نوصى بمتابعة الطلاب ذوي الغياب المتكرر بشكل فردي لمنع تفاقم الوضع.
+                </div>
+            </div>
+            ` : `
+            <div class="alert alert-info">
+                <span class="alert-icon">✅</span>
+                <div>
+                    <strong>تقييم إيجابي:</strong> الشعبة تحافظ على مستوى حضور ممتاز، 
+                    الاستمرار في التحفيز والمتابعة الدورية لضمان بقاء المؤشرات إيجابية.
+                </div>
+            </div>
+            `}
         `;
+        
     } catch(e) {
-        container.innerHTML = `<div class="alert alert-error">❌ خطأ في جلب البيانات: ${e.message}</div>`;
+        container.innerHTML = `<div class="alert alert-warning"><span class="alert-icon">❌</span><div>حدث خطأ أثناء جلب البيانات: ${e.message}</div></div>`;
     }
 }
 
+// دالة مساعدة للحصول على اسم اليوم
+function getDayName(dateStr) {
+    if (!dateStr) return '-';
+    const days = ['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const date = new Date(dateStr);
+    return days[date.getDay()] || '-';
+}
+
+// دالة الطباعة المحسنة
 function printReport() {
     const report = $('customReport');
     if (!report || !report.innerHTML.trim()) {
-        return alert('❌ لا يوجد تقرير للطباعة');
+        return alert('⚠️ لا يوجد تقرير جاهز للطباعة');
     }
+    
+    // التأكد من ظهور التقرير
     report.style.display = 'block';
     report.classList.add('show');
-    setTimeout(() => { window.print(); }, 100);
+    
+    // تأخير بسيط لضمان اكتمال العرض
+    setTimeout(() => {
+        window.print();
+    }, 150);
 }
 
+// بدء التحميل عند جاهزية الصفحة
 document.addEventListener('DOMContentLoaded', loadData);
 </script>
+
 </body>
 </html>
