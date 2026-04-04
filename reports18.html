@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root {
+            --primary: #1a3a5c;
+            --primary-light: #e8f0f8;
+            --secondary: #27ae60;
+            --secondary-light: #eafaf1;
+            --accent: #e67e22;
+            --accent-light: #fef5ec;
+            --danger: #c0392b;
+            --danger-light: #fdedec;
+            --light: #f4f6f9;
+            --border: #dde3ed;
+            --text: #1f2d3d;
+            --text-muted: #7a8fa6;
+            --surface: #ffffff;
+            --r: 10px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
+            background: linear-gradient(135deg, #1a3a5c 0%, #2980b9 100%);
+            padding: 20px;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 1000px; margin: 0 auto; background: var(--surface);
+            border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        header { text-align: center; margin-bottom: 28px; padding-bottom: 18px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); font-size: 1.5em; font-weight: 700; }
+        header p { color: var(--text-muted); font-size: 0.9em; margin-top: 5px; }
+
+        .filters {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px; margin-bottom: 22px; background: var(--light); padding: 16px; border-radius: var(--r);
+        }
+        .filters select, .filters button {
+            width: 100%; padding: 12px 15px; border: 2px solid var(--border);
+            border-radius: 8px; font-size: 14px; font-family: inherit; background: white; color: var(--text); transition: border-color 0.2s;
+        }
+        .filters select:focus { border-color: var(--primary); outline: none; }
+        .filters button { background: var(--primary); color: white; border-color: var(--primary); cursor: pointer; font-weight: 600; }
+        .filters button:hover { background: #0f2840; }
+        .filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .comparison-section { margin-bottom: 30px; }
+        .comparison-section h3 { color: var(--primary); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--light); font-size: 1.15em; }
+        .comparison-table { width: 100%; border-collapse: collapse; border-radius: var(--r); overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+        .comparison-table th { background: var(--primary); color: white; padding: 13px 15px; text-align: right; font-weight: 600; font-size: 0.88em; }
+        .comparison-table td { padding: 13px 15px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
+        .comparison-table tr:hover td { background: #f8fafd; }
+        .comparison-table tr:last-child td { border-bottom: none; }
+        .bar { height: 7px; background: #e8ecf1; border-radius: 4px; overflow: hidden; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--secondary); border-radius: 4px; transition: width 0.5s ease; }
+        .status { padding: 4px 12px; border-radius: 20px; font-size: 0.78em; font-weight: 700; display: inline-block; }
+        .status-good { background: var(--secondary-light); color: #1e8449; }
+        .status-warning { background: var(--accent-light); color: #c0720a; }
+        .status-danger { background: var(--danger-light); color: var(--danger); }
+
+        .report-builder { background: var(--light); padding: 20px; border-radius: var(--r); border: 1px solid var(--border); margin-bottom: 22px; }
+        .report-builder h3 { color: var(--primary); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #c5cdd8; font-size: 1.05em; }
+        .radio-group { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+        .radio-label {
+            display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600;
+            background: white; padding: 10px 18px; border-radius: 8px; border: 2px solid transparent;
+            transition: all 0.2s; font-size: 0.95em; flex: 1; min-width: 140px; justify-content: center; color: var(--text);
+        }
+        .radio-label:hover { border-color: var(--primary); }
+        .radio-label.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+        .radio-label input { transform: scale(1.2); }
+        .builder-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .builder-filters select, .builder-filters button {
+            padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px;
+            font-size: 14px; font-family: inherit; background: white; color: var(--text); transition: border-color 0.2s;
+        }
+        .builder-filters select:focus { border-color: var(--secondary); outline: none; }
+        .builder-filters button { background: var(--secondary); color: white; border-color: var(--secondary); cursor: pointer; font-weight: 700; }
+        .builder-filters button:hover { background: #1e8449; }
+        .builder-filters button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #customReport {
+            display: none; margin-top: 20px; padding: 24px; background: white;
+            border: 2px solid var(--primary); border-radius: var(--r); box-shadow: 0 4px 20px rgba(26,58,92,0.1);
+        }
+        #customReport.show { display: block; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .web-report-header { text-align: center; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 2px dashed var(--border); }
+        .web-report-header h2 { color: var(--primary); font-size: 1.25em; }
+        .web-report-header p { color: var(--text-muted); font-size: 0.85em; margin-top: 4px; }
+        .summary-box { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 22px; }
+        .summary-item { flex: 1; min-width: 90px; text-align: center; padding: 14px 10px; background: var(--light); border-radius: 8px; border: 1px solid var(--border); }
+        .summary-item .label { font-size: 0.78em; color: var(--text-muted); margin-bottom: 6px; }
+        .summary-item .value { font-size: 1.4em; font-weight: 700; color: var(--primary); }
+        #customReport table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 0.9em; }
+        #customReport th, #customReport td { padding: 11px 14px; text-align: right; border: 1px solid #e4e8ef; }
+        #customReport th { background: var(--light); color: var(--primary); font-weight: 600; font-size: 0.87em; }
+        #customReport tr:hover td { background: #f8fafd; }
+        .alert { padding: 12px 16px; border-radius: 8px; margin: 12px 0; font-size: 0.9em; border-right: 4px solid; }
+        .alert-error { background: var(--danger-light); color: var(--danger); border-color: var(--danger); }
+        .alert-warning { background: var(--accent-light); color: #b7600e; border-color: var(--accent); }
+        .btn-print {
+            background: var(--primary); color: white; padding: 13px 24px; border: none; border-radius: 8px;
+            cursor: pointer; font-weight: 700; font-size: 15px; transition: all 0.2s; width: 100%; font-family: inherit;
+        }
+        .btn-print:hover { background: #0f2840; transform: translateY(-1px); }
+
+        /* ==============================
+           نافذة الطباعة
+        ============================== */
+        #printOverlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(10,25,45,0.78); z-index: 9999; overflow-y: auto; padding: 30px 16px;
+        }
+        #printOverlay.active { display: block; }
+        #printWindow {
+            background: white; max-width: 780px; margin: 0 auto;
+            border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+        .print-toolbar {
+            background: #1a3a5c; padding: 13px 22px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .print-toolbar-label { color: #8ab4cc; font-size: 0.85em; font-weight: 500; }
+        .print-toolbar-actions { display: flex; gap: 10px; }
+        .pt-btn { padding: 9px 22px; border: none; border-radius: 7px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+        .pt-btn-print { background: #27ae60; color: white; }
+        .pt-btn-print:hover { background: #1e8449; }
+        .pt-btn-close { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .pt-btn-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* ==============================
+           تصميم صفحة التقرير المطبوع
+        ============================== */
+        .pr-page {
+            padding: 32px 36px;
+            font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
+            color: #1a2533; direction: rtl; line-height: 1.55; background: white;
+        }
+
+        /* الهيدر */
+        .pr-header {
+            display: flex; border-radius: 12px; overflow: hidden;
+            box-shadow: 0 3px 14px rgba(26,58,92,0.18); margin-bottom: 22px;
+        }
+        .pr-header-accent { width: 8px; background: #e67e22; flex-shrink: 0; }
+        .pr-header-main {
+            flex: 1; background: linear-gradient(130deg, #1a3a5c 0%, #1d608e 100%);
+            padding: 20px 26px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;
+        }
+        .pr-school-name { font-size: 1.22em; font-weight: 800; color: #fff; margin-bottom: 3px; letter-spacing: 0.2px; }
+        .pr-report-subtitle { font-size: 0.86em; color: #8cc0e0; font-weight: 500; margin-bottom: 8px; }
+        .pr-date-pill {
+            display: inline-block; background: rgba(255,255,255,0.13); border: 1px solid rgba(255,255,255,0.28);
+            color: #c5dff2; font-size: 0.79em; padding: 4px 14px; border-radius: 20px;
+        }
+        .pr-header-emblem {
+            width: 60px; height: 60px; border-radius: 50%;
+            background: rgba(255,255,255,0.13); border: 2px solid rgba(255,255,255,0.28);
+            display: flex; align-items: center; justify-content: center; font-size: 1.8em;
+        }
+
+        /* بطاقة الهوية */
+        .pr-id-card {
+            display: flex; flex-wrap: wrap; gap: 6px 20px; align-items: center;
+            background: #f2f6fb; border: 1.5px solid #d0dcea; border-radius: 10px;
+            padding: 14px 20px; margin-bottom: 18px;
+        }
+        .pr-id-row { display: flex; align-items: center; gap: 7px; }
+        .pr-id-key { font-size: 0.78em; font-weight: 700; color: #6a87a8; text-transform: uppercase; letter-spacing: 0.4px; }
+        .pr-id-val { font-size: 0.95em; font-weight: 700; color: #1a2533; }
+        .pr-id-div { width: 1px; height: 18px; background: #bccfe0; }
+
+        /* بطاقات الإحصاء */
+        .pr-stats { display: flex; gap: 11px; margin-bottom: 20px; flex-wrap: wrap; }
+        .pr-sc {
+            flex: 1; min-width: 85px; border-radius: 10px; padding: 14px 10px;
+            text-align: center; border: 1.5px solid;
+        }
+        .pr-sc.n { background: #f0f4fa; border-color: #c0cfe4; }
+        .pr-sc.s { background: #eafaf1; border-color: #a2d9b1; }
+        .pr-sc.d { background: #fdedec; border-color: #f0a09a; }
+        .pr-sc.w { background: #fef5ec; border-color: #f0cc8a; }
+        .pr-sc.i { background: #eaf4fb; border-color: #85c0e4; }
+        .pr-sc-num { font-size: 1.9em; font-weight: 800; line-height: 1.1; margin-bottom: 4px; }
+        .pr-sc.n .pr-sc-num { color: #1a3a5c; }
+        .pr-sc.s .pr-sc-num { color: #1a7a41; }
+        .pr-sc.d .pr-sc-num { color: #a93226; }
+        .pr-sc.w .pr-sc-num { color: #b7600e; }
+        .pr-sc.i .pr-sc-num { color: #1a5f8a; }
+        .pr-sc-lbl { font-size: 0.73em; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+        .pr-sc.n .pr-sc-lbl { color: #4a6880; }
+        .pr-sc.s .pr-sc-lbl { color: #1e8449; }
+        .pr-sc.d .pr-sc-lbl { color: #c0392b; }
+        .pr-sc.w .pr-sc-lbl { color: #c07010; }
+        .pr-sc.i .pr-sc-lbl { color: #2471a3; }
+
+        /* شريط عنوان القسم */
+        .pr-sec-bar {
+            display: flex; align-items: center; gap: 10px;
+            background: #1a3a5c; color: white; padding: 9px 16px;
+            border-radius: 8px; margin-bottom: 13px; font-size: 0.91em; font-weight: 700;
+        }
+
+        /* الجدول */
+        .pr-tbl { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; border: 1.5px solid #cdd6e6; font-size: 0.88em; }
+        .pr-tbl thead tr { background: #1a3a5c; }
+        .pr-tbl th { padding: 10px 14px; text-align: right; color: white; font-weight: 700; font-size: 0.85em; letter-spacing: 0.2px; }
+        .pr-tbl tbody tr:nth-child(even) td { background: #f2f6fb; }
+        .pr-tbl tbody tr:nth-child(odd) td { background: white; }
+        .pr-tbl td { padding: 10px 14px; border-bottom: 1px solid #e0e8f3; color: #1a2533; vertical-align: middle; }
+        .pr-tbl tbody tr:last-child td { border-bottom: none; }
+        .td-ab { color: #a93226; font-weight: 700; }
+        .td-ok { color: #1a7a41; font-weight: 600; }
+        .pr-badge { display: inline-block; padding: 3px 11px; border-radius: 20px; font-size: 0.8em; font-weight: 700; }
+        .bd { background: #fdedec; color: #a93226; border: 1px solid #f0a09a; }
+        .bw { background: #fef5ec; color: #b7600e; border: 1px solid #f0cc8a; }
+        .bs { background: #eafaf1; color: #1a7a41; border: 1px solid #a2d9b1; }
+
+        /* تنبيه */
+        .pr-alert {
+            border-radius: 8px; padding: 12px 16px; font-size: 0.88em; font-weight: 600;
+            margin-top: 16px; border-right: 5px solid; display: flex; align-items: center; gap: 10px;
+        }
+        .pr-alert.aw { background: #fef5ec; color: #9c5c00; border-color: #e67e22; }
+        .pr-alert.ad { background: #fdedec; color: #922b21; border-color: #c0392b; }
+
+        /* التذييل */
+        .pr-footer {
+            margin-top: 26px; padding-top: 14px; border-top: 1.5px solid #d8e2ef;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+        }
+        .pf-school { font-size: 0.83em; font-weight: 700; color: #1a3a5c; }
+        .pf-sub { font-size: 0.74em; color: #8a9bb5; margin-top: 2px; }
+        .pf-date { font-size: 0.78em; color: #8a9bb5; }
+        .pf-stamp {
+            display: inline-block; border: 1.5px solid #c5d3e8; border-radius: 6px;
+            padding: 4px 14px; font-size: 0.75em; color: #4a6580; margin-top: 4px;
+        }
+
+        /* ==============================
+           CSS Print
+        ============================== */
+        @media print {
+            * { visibility: hidden !important; }
+            #printOverlay, #printOverlay * { visibility: visible !important; }
+            #printOverlay {
+                display: block !important; position: fixed !important; inset: 0 !important;
+                background: white !important; padding: 0 !important; overflow: visible !important;
+            }
+            #printWindow { box-shadow: none !important; border-radius: 0 !important; max-width: 100% !important; }
+            .print-toolbar { display: none !important; }
+            .pr-page { padding: 12mm 14mm !important; }
+            .pr-header, .pr-header-main, .pr-header-accent { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .pr-sc, .pr-sec-bar, .pr-tbl thead tr, .pr-tbl tbody tr:nth-child(even) td, .pr-alert, .pr-badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .pr-tbl thead { display: table-header-group !important; }
+            .pr-tbl tr { page-break-inside: avoid !important; }
+            @page { size: A4; margin: 0; }
+            body { background: white !important; }
+        }
+
+        /* موبايل */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 16px; border-radius: 12px; }
+            .filters { grid-template-columns: 1fr; }
+            .filters select, .filters button { padding: 13px 15px; font-size: 15px; min-height: 48px; }
+            .comparison-table { display: block; overflow-x: auto; }
+            .comparison-table thead, .comparison-table tbody { display: table; width: 100%; }
+            .comparison-table th, .comparison-table td { white-space: nowrap; padding: 11px 10px; font-size: 0.88em; }
+            .radio-group { flex-direction: column; }
+            .radio-label { min-height: 48px; }
+            .builder-filters { grid-template-columns: 1fr; }
+            .builder-filters select, .builder-filters button { padding: 13px 15px; font-size: 15px; min-height: 48px; }
+            #customReport { padding: 16px; }
+            .summary-box { flex-direction: column; }
+            .summary-item { display: flex; justify-content: space-between; align-items: center; }
+            .summary-item .label { margin: 0; }
+            #printOverlay { padding: 0; }
+            #printWindow { border-radius: 0; min-height: 100vh; }
+            .print-toolbar { padding: 12px 14px; }
+            .pr-page { padding: 18px 15px; }
+            .pr-header-main { padding: 15px 18px; }
+            .pr-stats { flex-wrap: wrap; }
+            .pr-sc { min-width: 70px; padding: 11px 8px; }
+            .pr-sc-num { font-size: 1.55em; }
+            input, select, textarea, button { font-size: 16px !important; }
+            select { -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 12px center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📊 تقارير الغياب المدرسية</h1>
+        <p>مقارنة الشعب • إنشاء تقارير مفصلة</p>
+    </header>
+
+    <div class="filters">
+        <select id="filterGroup" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+        <select id="filterSection" onchange="onFilterChange()" disabled><option value="">⏳ جاري التحميل...</option></select>
+        <button id="loadBtn" onclick="loadComparisonTable()" disabled>🔄 تحديث</button>
+    </div>
+
+    <div class="comparison-section">
+        <h3>📈 مقارنة نسب الغياب بين الشعب</h3>
+        <div style="overflow-x:auto;">
+            <table class="comparison-table">
+                <thead><tr><th>الشعبة</th><th>المجموعة</th><th>الطلاب</th><th>أيام الغياب</th><th>نسبة الغياب</th><th>الحالة</th></tr></thead>
+                <tbody id="comparisonBody"><tr><td colspan="6" style="text-align:center;padding:22px;color:#7a8fa6;">⏳ جاري تحميل البيانات...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="report-builder">
+        <h3>📋 إنشاء تقرير مفصل</h3>
+        <div class="radio-group">
+            <label class="radio-label active"><input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 👤 تقرير طالب</label>
+            <label class="radio-label"><input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 🏫 تقرير شعبة</label>
+        </div>
+        <div class="builder-filters">
+            <select id="rptGroup" onchange="onReportGroupChange()" disabled><option value="">✦ اختر المجموعة</option></select>
+            <select id="rptSection" onchange="onReportSectionChange()" disabled><option value="">✦ اختر الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">✦ اختر الطالب</option></select>
+            <button onclick="generateCustomReport()" id="genBtn" disabled>📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <div id="customReport"></div>
+    <div id="reportActions" style="display:none;margin-top:14px;">
+        <button class="btn-print" onclick="openPrintPreview()">🖨️ طباعة التقرير</button>
+    </div>
+</div>
+
+<!-- نافذة الطباعة -->
+<div id="printOverlay">
+    <div id="printWindow">
+        <div class="print-toolbar">
+            <span class="print-toolbar-label">🖨️ معاينة التقرير قبل الطباعة</span>
+            <div class="print-toolbar-actions">
+                <button class="pt-btn pt-btn-print" onclick="window.print()">طباعة</button>
+                <button class="pt-btn pt-btn-close" onclick="closePrint()">✕ إغلاق</button>
+            </div>
+        </div>
+        <div id="printContent"></div>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [], dataLoaded = false, currentPrintHTML = '';
+
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object')
+        return Object.fromEntries(Object.entries(obj).map(([k,v]) => [k.trim(), deepTrim(v)]));
+    return obj;
+}
+
+async function loadData() {
+    try {
+        const [rA, rB] = await Promise.all([
+            fetch('/api/get-section?group=أ').then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('/api/get-section?group=ب').then(r => r.ok ? r.json() : null).catch(() => null)
+        ]);
+        const parse = (raw, g) => {
+            if (!raw) return [];
+            const c = deepTrim(raw);
+            if (Array.isArray(c)) return c.map(s => ({...s, group:g}));
+            if (c.sections) return c.sections.map(s => ({...s, group:g}));
+            if (c.section_id) return [{...c, group:g}];
+            return [];
+        };
+        allSections = [...parse(rA,'أ'), ...parse(rB,'ب')];
+        if (!allSections.length) throw new Error('لا توجد بيانات شعب');
+        ['filterGroup','filterSection','rptGroup','rptSection','loadBtn','genBtn'].forEach(id => $(id).disabled = false);
+        $('filterGroup').innerHTML = `<option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+        $('rptGroup').innerHTML = `<option value="">✦ اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option>`;
+        updateSectionsDropdown(); onReportGroupChange(); loadComparisonTable(); dataLoaded = true;
+    } catch(e) {
+        $('comparisonBody').innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#c0392b;">❌ ${e.message}</td></tr>`;
+    }
+}
+
+function updateSectionsDropdown() {
+    const g = $('filterGroup').value, sel = $('filterSection'), cur = sel.value;
+    sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
+    (g ? allSections.filter(s => s.group===g) : allSections).forEach(s => {
+        const o = document.createElement('option'); o.value = s.section_id; o.textContent = s.section_label||s.section_id; sel.appendChild(o);
+    });
+    if (cur && [...sel.options].some(o => o.value===cur)) sel.value = cur;
+}
+
+function onFilterChange() { updateSectionsDropdown(); loadComparisonTable(); }
+
+async function loadComparisonTable() {
+    if (!dataLoaded) return;
+    const g = $('filterGroup').value, sec = $('filterSection').value, tbody = $('comparisonBody');
+    let data = allSections.filter(s => (!g||s.group===g) && (!sec||s.section_id===sec));
+    if (!data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#7a8fa6;">لا توجد بيانات</td></tr>'; return; }
+    const results = await Promise.all(data.map(async s => {
+        const sc = s.students?.length||0;
+        try {
+            const r = await fetch(`/api/get-reports?action=summary&group=${s.group}&section=${s.section_id}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const j = await r.json(), sum = j.data||j.summary||{};
+            const ab = sum.totalAbsent||0, td = sum.totalDays||1;
+            return {...s, sc, ab, rate: sc>0 ? parseFloat(((ab/(sc*td))*100).toFixed(1)) : 0};
+        } catch { return {...s, sc, ab:0, rate:0}; }
+    }));
+    const mx = Math.max(...results.map(r => r.rate), 1);
+    tbody.innerHTML = results.map(s => {
+        const bw = Math.min((s.rate/mx)*100,100);
+        const st = s.rate>=5 ? {c:'status-danger',t:'🔴 عالي'} : s.rate>=2 ? {c:'status-warning',t:'🟡 متوسط'} : {c:'status-good',t:'🟢 منخفض'};
+        return `<tr><td><strong>${s.section_label||s.section_id}</strong></td><td>${s.group}</td><td>${s.sc}</td><td>${s.ab}</td>
+            <td><strong>${s.rate}%</strong><div class="bar"><div class="bar-fill" style="width:${bw}%"></div></div></td>
+            <td><span class="status ${st.c}">${st.t}</span></td></tr>`;
+    }).join('');
+}
+
+function toggleReportFields() {
+    const t = document.querySelector('input[name="reportType"]:checked').value;
+    $('rptStudent').style.display = t==='student' ? 'block' : 'none';
+    document.querySelectorAll('.radio-label').forEach(l => l.classList.toggle('active', l.querySelector('input').checked));
+    if (t==='student' && $('rptSection').value) updateStudentsDropdown();
+}
+
+function onReportGroupChange() {
+    const g = $('rptGroup').value, ss = $('rptSection'), st = $('rptStudent');
+    ss.disabled = !g; ss.innerHTML = '<option value="">✦ اختر الشعبة</option>';
+    st.innerHTML = '<option value="">✦ اختر الطالب</option>'; st.style.display = 'none';
+    if (!g) return;
+    allSections.filter(s => s.group===g).forEach(s => { const o = document.createElement('option'); o.value=s.section_id; o.textContent=s.section_label||s.section_id; ss.appendChild(o); });
+}
+
+function onReportSectionChange() {
+    const t = document.querySelector('input[name="reportType"]:checked').value;
+    if (t==='student' && $('rptSection').value) { updateStudentsDropdown(); $('rptStudent').style.display='block'; }
+    else $('rptStudent').style.display='none';
+}
+
+function updateStudentsDropdown() {
+    const sec = $('rptSection').value, sel = $('rptStudent');
+    sel.innerHTML = '<option value="">✦ اختر الطالب</option>';
+    allSections.find(s => s.section_id===sec)?.students?.forEach(st => { const o=document.createElement('option'); o.value=st.id; o.textContent=st.name; sel.appendChild(o); });
+}
+
+function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    if (!g||!sec) return alert('❌ اختر المجموعة والشعبة');
+    if (type==='student' && !$('rptStudent').value) return alert('❌ اختر الطالب');
+    const rpt = $('customReport');
+    rpt.innerHTML = '<div style="text-align:center;padding:30px;color:#7a8fa6;">⏳ جاري إنشاء التقرير...</div>';
+    rpt.classList.add('show'); $('reportActions').style.display='none'; currentPrintHTML='';
+    setTimeout(() => {
+        if (type==='student') generateStudentReport(g, sec, $('rptStudent').value, rpt);
+        else generateSectionReport(g, sec, rpt);
+    }, 300);
+}
+
+/* ====== بناء قالب الطباعة ====== */
+function dateStr() {
+    return new Date().toLocaleDateString('ar-SA', {year:'numeric', month:'long', day:'numeric', weekday:'long'});
+}
+function shortDate() { return new Date().toLocaleDateString('ar-SA'); }
+
+function printHeader(subtitle) {
+    return `<div class="pr-header">
+        <div class="pr-header-accent"></div>
+        <div class="pr-header-main">
+            <div>
+                <div class="pr-school-name">🕌 مدرسة تحفيظ القرآن الكريم</div>
+                <div class="pr-report-subtitle">${subtitle}</div>
+                <div class="pr-date-pill">📅 ${dateStr()}</div>
+            </div>
+            <div class="pr-header-emblem">📖</div>
+        </div>
+    </div>`;
+}
+
+function printIdCard(items) {
+    return `<div class="pr-id-card">${items.map((it,i) =>
+        `<div class="pr-id-row"><span class="pr-id-key">${it.k}</span><span class="pr-id-val">${it.v}</span></div>` +
+        (i < items.length-1 ? '<div class="pr-id-div"></div>' : '')
+    ).join('')}</div>`;
+}
+
+function printStats(cards) {
+    return `<div class="pr-stats">${cards.map(c =>
+        `<div class="pr-sc ${c.t}"><div class="pr-sc-num">${c.v}</div><div class="pr-sc-lbl">${c.l}</div></div>`
+    ).join('')}</div>`;
+}
+
+function printFooter(extra) {
+    return `<div class="pr-footer">
+        <div><div class="pf-school">مدرسة تحفيظ القرآن الكريم</div><div class="pf-sub">نظام إدارة الغياب الإلكتروني</div></div>
+        <div style="text-align:left"><div class="pf-date">${extra||''}</div><div class="pf-stamp">وثيقة رسمية — ${shortDate()}</div></div>
+    </div>`;
+}
+
+/* ====== تقرير طالب ====== */
+async function generateStudentReport(group, section, studentId, container) {
+    const secData = allSections.find(s => s.section_id===section);
+    const student = secData?.students?.find(st => st.id===studentId);
+    if (!student) { container.innerHTML = '<div class="alert alert-error">❌ لم يُعثر على الطالب</div>'; return; }
+    try {
+        const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(studentId)}`);
+        const json = await res.json();
+        const history = json.data?.history || json.history || [];
+        const total = 20, abRate = Math.round(history.length/total*100);
+        const stLabel = history.length>=5 ? 'متكرر' : history.length>=3 ? 'مراقبة' : 'جيد';
+        const stColor = history.length>=5 ? 'var(--danger)' : history.length>=3 ? 'var(--accent)' : 'var(--secondary)';
+
+        container.innerHTML = `
+            <div class="web-report-header"><h2>🕌 مدرسة تحفيظ القرآن الكريم</h2><p>تقرير غياب طالب • ${dateStr()}</p></div>
+            <div style="text-align:center;margin-bottom:18px;">
+                <h3 style="color:var(--primary);font-size:1.1em;">👤 ${student.name}</h3>
+                <p style="color:var(--text-muted);font-size:0.9em;">${secData.section_label||section} • المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">أيام الغياب</div><div class="value" style="color:${stColor}">${history.length}</div></div>
+                <div class="summary-item"><div class="label">الحالة</div><div class="value" style="font-size:1em;color:${stColor}">${stLabel}</div></div>
+                <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:var(--danger)">${abRate}%</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:18px 0 10px;font-size:0.93em;border-bottom:1px solid var(--border);padding-bottom:8px;">📅 سجل الغياب التفصيلي</h4>
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>#</th><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead>
+                <tbody>${history.length ? history.map((h,i) => `<tr><td>${i+1}</td><td>${h.date}</td><td style="color:var(--danger);font-weight:700;">غائب</td><td>${h.section||'—'}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;padding:14px;color:var(--secondary);">✅ لا توجد سجلات غياب</td></tr>'}</tbody>
+                </table>
+            </div>
+            ${history.length>=3 ? `<div class="alert alert-warning" style="margin-top:14px;">⚠️ الطالب تجاوز الحد المسموح به. يُرجى التواصل مع ولي الأمر.</div>` : ''}`;
+
+        const scType = history.length>=5 ? 'd' : history.length>=3 ? 'w' : 's';
+        const tableRows = history.length
+            ? history.map((h,i) => `<tr><td>${i+1}</td><td>${h.date}</td><td class="td-ab">غائب</td><td>${h.section||'—'}</td></tr>`).join('')
+            : '<tr><td colspan="4" style="text-align:center;padding:14px;">لا توجد سجلات غياب</td></tr>';
+        const alertHTML = history.length>=5
+            ? `<div class="pr-alert ad">⚠️ الطالب تجاوز الحد الأقصى للغيابات — يستوجب التواصل الفوري مع ولي الأمر.</div>`
+            : history.length>=3
+            ? `<div class="pr-alert aw">⚠️ الطالب تجاوز الحد المسموح به من الغيابات — يُرجى التواصل مع ولي الأمر.</div>` : '';
+
+        currentPrintHTML = `<div class="pr-page">
+            ${printHeader('تقرير غياب طالب')}
+            ${printIdCard([{k:'اسم الطالب',v:student.name},{k:'الشعبة',v:secData.section_label||section},{k:'المجموعة',v:`(${group})`},{k:'الحالة',v:stLabel}])}
+            ${printStats([
+                {l:'أيام الغياب', v:history.length, t:scType},
+                {l:'نسبة الغياب', v:abRate+'%', t:scType},
+            ])}
+            <div class="pr-sec-bar">📋 سجل الغياب التفصيلي</div>
+            <table class="pr-tbl"><thead><tr><th>#</th><th>التاريخ</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>${tableRows}</tbody></table>
+            ${alertHTML}
+            ${printFooter('إجمالي الغيابات: ' + history.length + ' يوم')}
+        </div>`;
+
+        $('reportActions').style.display = 'block';
+    } catch(e) { container.innerHTML = `<div class="alert alert-error">❌ خطأ: ${e.message}</div>`; }
+}
+
+/* ====== تقرير شعبة ====== */
+async function generateSectionReport(group, section, container) {
+    const secData = allSections.find(s => s.section_id===section);
+    const students = secData?.students || [];
+    try {
+        const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+        const json = await res.json(), sum = json.data||json.summary||{};
+        const totalAb = sum.totalAbsent||0, totalDays = sum.totalDays||1;
+        const abRate = students.length>0 ? ((totalAb/(students.length*totalDays))*100).toFixed(1) : 0;
+        const avg = students.length>0 ? (totalAb/students.length).toFixed(1) : 0;
+
+        const rows = await Promise.all(students.map(async st => {
+            try {
+                const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(st.id)}`);
+                const d = await r.json(), ab = (d.data?.history||d.history||[]).length;
+                const at = Math.round((20-ab)/20*100);
+                const sl = ab>=5?'متكرر':ab>=3?'مراقبة':'جيد';
+                const sc = ab>=5?'d':ab>=3?'w':'s';
+                return {name:st.name, ab, at, sl, sc};
+            } catch { return {name:st.name, ab:'—', at:'—', sl:'—', sc:'n'}; }
+        }));
+
+        container.innerHTML = `
+            <div class="web-report-header"><h2>🕌 مدرسة تحفيظ القرآن الكريم</h2><p>تقرير شعبة • ${dateStr()}</p></div>
+            <div style="text-align:center;margin-bottom:18px;">
+                <h3 style="color:var(--primary);font-size:1.1em;">🏫 ${secData?.section_label||section}</h3>
+                <p style="color:var(--text-muted);font-size:0.9em;">المجموعة (${group})</p>
+            </div>
+            <div class="summary-box">
+                <div class="summary-item"><div class="label">عدد الطلاب</div><div class="value">${students.length}</div></div>
+                <div class="summary-item"><div class="label">إجمالي الغياب</div><div class="value" style="color:var(--danger)">${totalAb}</div></div>
+                <div class="summary-item"><div class="label">نسبة الغياب</div><div class="value" style="color:${abRate>=5?'var(--danger)':abRate>=2?'var(--accent)':'var(--secondary)'}">${abRate}%</div></div>
+                <div class="summary-item"><div class="label">متوسط/طالب</div><div class="value">${avg}</div></div>
+            </div>
+            <h4 style="color:var(--primary);margin:18px 0 10px;font-size:0.93em;border-bottom:1px solid var(--border);padding-bottom:8px;">👥 تفصيل بيانات الطلاب</h4>
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>#</th><th>اسم الطالب</th><th>أيام الغياب</th><th>نسبة الحضور</th><th>الحالة</th></tr></thead>
+                <tbody>${rows.map((s,i) => `<tr><td>${i+1}</td><td><strong>${s.name}</strong></td>
+                    <td style="color:${s.ab>0?'var(--danger)':'inherit'};font-weight:${s.ab>0?700:400}">${s.ab}</td>
+                    <td>${s.at}%</td>
+                    <td style="color:${s.sl==='متكرر'?'var(--danger)':s.sl==='مراقبة'?'var(--accent)':'var(--secondary)'};font-weight:600">${s.sl}</td>
+                </tr>`).join('')}</tbody>
+                </table>
+            </div>`;
+
+        const rt = abRate>=5?'d':abRate>=2?'w':'s';
+        const tRows = rows.map((s,i) => `<tr><td>${i+1}</td><td><strong>${s.name}</strong></td>
+            <td class="${s.ab>0?'td-ab':'td-ok'}">${s.ab}</td><td>${s.at}%</td>
+            <td><span class="pr-badge b${s.sc}">${s.sl}</span></td></tr>`).join('');
+
+        currentPrintHTML = `<div class="pr-page">
+            ${printHeader('تقرير غياب شعبة')}
+            ${printIdCard([{k:'الشعبة',v:secData?.section_label||section},{k:'المجموعة',v:`(${group})`},{k:'عدد الطلاب',v:students.length+' طالب'}])}
+            ${printStats([
+                {l:'عدد الطلاب', v:students.length, t:'n'},
+                {l:'إجمالي الغياب', v:totalAb, t:rt},
+                {l:'نسبة الغياب', v:abRate+'%', t:rt},
+                {l:'متوسط / طالب', v:avg, t:'i'},
+            ])}
+            <div class="pr-sec-bar">📋 تفصيل بيانات الطلاب</div>
+            <table class="pr-tbl"><thead><tr><th>#</th><th>اسم الطالب</th><th>أيام الغياب</th><th>نسبة الحضور</th><th>الحالة</th></tr></thead><tbody>${tRows}</tbody></table>
+            ${printFooter('الشعبة: ' + (secData?.section_label||section) + ' • المجموعة ('+group+')')}
+        </div>`;
+
+        $('reportActions').style.display = 'block';
+    } catch(e) { container.innerHTML = `<div class="alert alert-error">❌ خطأ: ${e.message}</div>`; }
+}
+
+/* ====== إدارة نافذة الطباعة ====== */
+function openPrintPreview() {
+    if (!currentPrintHTML) return alert('❌ لا يوجد تقرير');
+    $('printContent').innerHTML = currentPrintHTML;
+    $('printOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closePrint() { $('printOverlay').classList.remove('active'); document.body.style.overflow = ''; }
+$('printOverlay').addEventListener('click', e => { if (e.target === $('printOverlay')) closePrint(); });
+document.addEventListener('keydown', e => { if (e.key==='Escape') closePrint(); });
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
