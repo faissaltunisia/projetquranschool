@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقارير الغياب - مدرسة القرآن الكريم</title>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22; --light: #ecf0f1; --danger: #c0392b; --warning: #f39c12; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 20px; min-height: 100vh; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); }
+        header h1 { color: var(--primary); margin: 0; font-size: 1.6em; }
+        header p { color: #666; margin: 5px 0 0; }
+
+        /* === فلاتر الإحصائيات المخصصة === */
+        .stats-filters { background: linear-gradient(135deg, #667eea20, #764ba220); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #ddd; }
+        .stats-filters h4 { margin: 0 0 12px; color: var(--primary); font-size: 1em; }
+        .stats-filters .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .stats-filters select { padding: 8px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; min-width: 150px; }
+        .stats-filters button { background: var(--secondary); color: white; padding: 8px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .stats-filters button:hover { background: #219653; }
+
+        /* === بطاقات الإحصائيات === */
+        .stats-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 15px; border-right: 4px solid var(--primary); box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card.gold { border-color: #f1c40f; background: linear-gradient(135deg, #fff9e6, #fff); }
+        .stat-card.red { border-color: var(--danger); background: linear-gradient(135deg, #fff5f5, #fff); }
+        .stat-card.green { border-color: var(--secondary); background: linear-gradient(135deg, #f0fff4, #fff); }
+        .stat-card.blue { border-color: #3498db; background: linear-gradient(135deg, #ebf5fb, #fff); }
+        .stat-card.purple { border-color: #9b59b6; background: linear-gradient(135deg, #f4ecf7, #fff); }
+        .stat-card h4 { margin: 0 0 8px; font-size: 0.9em; color: #555; display: flex; align-items: center; gap: 6px; }
+        .stat-card .value { font-size: 1.6em; font-weight: bold; color: var(--primary); margin-bottom: 5px; }
+        .stat-card .detail { font-size: 0.85em; color: #666; }
+        .stat-card .trend { font-size: 0.8em; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+        .trend.up { color: var(--danger); }
+        .trend.down { color: var(--secondary); }
+
+        /* === ملخص سريع للشعبة === */
+        .section-summary { background: #e8f4fd; padding: 12px 18px; border-radius: 10px; margin-bottom: 20px; border-right: 4px solid #3498db; display: none; }
+        .section-summary.show { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+        .section-summary .item { display: flex; flex-direction: column; }
+        .section-summary .item .label { font-size: 0.8em; color: #666; }
+        .section-summary .item .val { font-weight: bold; color: var(--primary); font-size: 1.1em; }
+
+        .report-builder { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e0e0e0; }
+        .report-builder h3 { margin: 0 0 15px; color: var(--primary); border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .radio-group { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .radio-label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: bold; font-size: 1.05em; background: var(--light); padding: 10px 15px; border-radius: 8px; border: 2px solid transparent; transition: all 0.2s; flex: 1; justify-content: center; }
+        .radio-label:hover { background: #e0e5ec; border-color: #bbb; }
+        .radio-label.active { background: #e8f0fe; border-color: var(--primary); color: var(--primary); }
+        .radio-label input[type="radio"] { margin: 0; transform: scale(1.4); cursor: pointer; }
+
+        #customReport { display: none; margin-top: 15px; padding: 25px; background: #fff; border: 2px solid var(--primary); border-radius: 12px; }
+        #customReport.show { display: block; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .report-header { display: none; text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px dashed #ccc; }
+        .section-title { margin: 25px 0 15px; color: var(--primary); font-size: 1.2em; border-bottom: 2px solid var(--light); padding-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+        th, td { padding: 10px; text-align: right; border: 1px solid #ddd; }
+        th { background: var(--light); color: var(--primary); font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+
+        .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-act { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; color: white; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-act:hover { opacity: 0.9; }
+        .btn-print { background: var(--primary); }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 10px; }
+            .stats-filters, .radio-group, .actions { display: none !important; }
+            #customReport { display: block !important; border: none; padding: 0; margin: 0; }
+            .report-header { display: block !important; border-bottom: 2px solid #000; margin-bottom: 20px; }
+            .section-summary { display: flex !important; background: #f0f0f0; }
+        }
+        @media (max-width: 600px) {
+            .stats-cards { grid-template-columns: 1fr 1fr; }
+            .stats-filters .row { grid-template-columns: 1fr 1fr; }
+            .radio-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>📊 تقارير الغياب - مدرسة القرآن الكريم</h1>
+        <p>نظام التقارير المخصصة</p>
+    </header>
+
+    <!-- 🎯 فلاتر الإحصائيات المخصصة -->
+    <div class="stats-filters">
+        <h4>📈 إحصائيات شعبة محددة</h4>
+        <div class="row">
+            <select id="statGroup" onchange="onStatFilterChange()">
+                <option value="">اختر المجموعة</option>
+                <option value="أ">المجموعة (أ)</option>
+                <option value="ب">المجموعة (ب)</option>
+            </select>
+            <select id="statSection" onchange="onStatFilterChange()" disabled>
+                <option value="">اختر الشعبة أولاً</option>
+            </select>
+            <button onclick="loadSectionStats()">🔍 عرض إحصائيات الشعبة</button>
+            <span id="statStatus" style="font-size:0.85em;color:#666;margin-right:auto;"></span>
+        </div>
+    </div>
+
+    <!-- 📋 ملخص سريع للشعبة المختارة -->
+    <div id="sectionSummary" class="section-summary">
+        <div class="item"><span class="label">👥 عدد الطلاب</span><span class="val" id="sumStudents">-</span></div>
+        <div class="item"><span class="label">📅 إجمالي أيام الغياب</span><span class="val" id="sumAbsentDays">-</span></div>
+        <div class="item"><span class="label">📊 نسبة الغياب</span><span class="val" id="sumRate">-</span></div>
+        <div class="item"><span class="label">🔴 تحت المراقبة</span><span class="val" id="sumAtRisk">-</span></div>
+    </div>
+
+    <!-- 📊 بطاقات الإحصائيات -->
+    <div class="stats-cards">
+        <div class="stat-card gold">
+            <h4>🏆 أكثر طالب غياباً</h4>
+            <div class="value" id="topStudent">-</div>
+            <div class="detail" id="topStudentDetail">اختر شعبة لعرض التفاصيل</div>
+        </div>
+        <div class="stat-card red">
+            <h4>📊 متوسط الغياب/طالب</h4>
+            <div class="value" id="avgAbsent">-</div>
+            <div class="detail" id="avgDetail">-</div>
+        </div>
+        <div class="stat-card green">
+            <h4>✅ نسبة الحضور</h4>
+            <div class="value" id="attendanceRate">-</div>
+            <div class="detail" id="attendanceDetail">-</div>
+        </div>
+        <div class="stat-card blue">
+            <h4>📈 اتجاه الغياب</h4>
+            <div class="value" id="trendText">-</div>
+            <div class="trend" id="trendIndicator">-</div>
+        </div>
+        <div class="stat-card purple">
+            <h4>🔴 طلاب تحت المراقبة</h4>
+            <div class="value" id="atRiskCount">-</div>
+            <div class="detail">غيابهم ≥ 3 أيام</div>
+        </div>
+        <div class="stat-card">
+            <h4>👥 إجمالي الطلاب</h4>
+            <div class="value" id="totalStudents">-</div>
+            <div class="detail" id="studentsDetail">عدد ثابت من البيانات</div>
+        </div>
+    </div>
+
+    <!-- 📄 منشئ التقارير المخصصة -->
+    <div class="report-builder">
+        <h3>📄 إنشاء تقرير مفصل</h3>
+        <div class="radio-group">
+            <label class="radio-label active">
+                <input type="radio" name="reportType" value="student" checked onchange="toggleReportFields()"> 
+                👤 تقرير طالب
+            </label>
+            <label class="radio-label">
+                <input type="radio" name="reportType" value="section" onchange="toggleReportFields()"> 
+                🏫 تقرير شعبة
+            </label>
+        </div>
+        <div class="filters" style="background:transparent; padding:0; margin:0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+            <select id="rptGroup" onchange="onReportFilterChange()"><option value="">المجموعة</option><option value="أ">أ</option><option value="ب">ب</option></select>
+            <select id="rptSection" onchange="onReportFilterChange()"><option value="">الشعبة</option></select>
+            <select id="rptStudent" style="display:none;"><option value="">اختر الطالب</option></select>
+            <button onclick="generateCustomReport()">📊 عرض التقرير</button>
+        </div>
+    </div>
+
+    <!-- 📋 منطقة عرض التقرير -->
+    <div id="customReport"></div>
+    
+    <!-- 🎯 أزرار الإجراءات -->
+    <div id="reportActionsBtn" style="display:none; margin:10px 0; gap:10px;" class="actions">
+        <button class="btn-act btn-print" onclick="window.print()">🖨️ طباعة</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let allSections = [];
+let sectionAbsenceData = {};
+
+// ✅ تنظيف البيانات من المسافات الزائدة
+function deepTrim(obj) {
+    if (typeof obj === 'string') return obj.trim();
+    if (Array.isArray(obj)) return obj.map(deepTrim);
+    if (obj !== null && typeof obj === 'object') {
+        return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k.trim(), deepTrim(v)]));
+    }
+    return obj;
+}
+
+// ✅ توحيد هيكل البيانات القادمة من API
+function normalizeData(raw, groupLetter) {
+    const clean = deepTrim(raw);
+    if (clean.sections) return clean.sections.map(s => ({...s, group: groupLetter}));
+    if (clean.section_id) return [{...clean, group: groupLetter}];
+    return [];
+}
+
+// ✅ تحديث قوائم الشعب
+function updateDropdowns() {
+    const g = $('statGroup').value;
+    const filtered = g ? allSections.filter(s => s.group === g) : allSections;
+    
+    const statSel = $('statSection');
+    statSel.innerHTML = '<option value="">اختر الشعبة</option>' + 
+        filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    statSel.disabled = !g;
+    
+    // تحديث قائمة الشعب في منشئ التقارير
+    const rptSel = $('rptSection');
+    const rptPrefix = 'الشعبة';
+    rptSel.innerHTML = `<option value="">${rptPrefix}</option>` + 
+        filtered.map(s => `<option value="${s.section_id}">${s.section_label || s.section_id}</option>`).join('');
+    
+    updateRptStudents();
+}
+
+function updateRptStudents() {
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    const stuSel = $('rptStudent');
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    
+    if (type !== 'student') { stuSel.style.display = 'none'; return; }
+    stuSel.style.display = 'block';
+    stuSel.innerHTML = '<option value="">✦ اختر الطالب ✦</option>';
+    
+    if(!g || !sec) return;
+    const secData = allSections.find(s => s.group === g && s.section_id === sec);
+    if(secData?.students) {
+        secData.students.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id; opt.textContent = st.name;
+            stuSel.appendChild(opt);
+        });
+    }
+}
+
+// ✅ عند تغيير فلاتر الإحصائيات
+function onStatFilterChange() {
+    updateDropdowns();
+    $('statStatus').textContent = $('statSection').value ? '✅ جاهز للعرض' : '⏳ اختر الشعبة';
+}
+
+function toggleReportFields() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    $('rptStudent').style.display = (type === 'student') ? 'block' : 'none';
+    updateRptStudents();
+}
+
+function onReportFilterChange() {
+    updateRptStudents();
+}
+
+// === 🚀 تهيئة الصفحة ===
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const fetchGroup = async (group) => {
+            try {
+                const res = await fetch(`/api/get-section?group=${encodeURIComponent(group)}`);
+                return res.ok ? await res.json() : {};
+            } catch { return {}; }
+        };
+        
+        const [resA, resB] = await Promise.all([fetchGroup('أ'), fetchGroup('ب')]);
+        allSections = [...normalizeData(resA, 'أ'), ...normalizeData(resB, 'ب')];
+        
+        updateDropdowns();
+        resetStatsCards();
+        
+    } catch(e) { 
+        console.warn('⚠️ فشل تحميل البيانات:', e);
+    }
+});
+
+// === 🔄 إعادة تعيين بطاقات الإحصائيات ===
+function resetStatsCards() {
+    $('topStudent').textContent = '-';
+    $('topStudentDetail').textContent = 'اختر شعبة لعرض التفاصيل';
+    $('avgAbsent').textContent = '-';
+    $('avgDetail').textContent = '-';
+    $('attendanceRate').textContent = '-';
+    $('attendanceDetail').textContent = '-';
+    $('trendText').textContent = '-';
+    $('trendIndicator').textContent = '-';
+    $('trendIndicator').className = 'trend';
+    $('atRiskCount').textContent = '-';
+    $('totalStudents').textContent = '-';
+    $('studentsDetail').textContent = 'عدد ثابت من البيانات';
+    $('sectionSummary').classList.remove('show');
+}
+
+// === 🔍 تحميل إحصائيات شعبة محددة (تم الإصلاح) ===
+async function loadSectionStats() {
+    const group = $('statGroup').value;
+    const section = $('statSection').value;
+    
+    if(!group || !section) {
+        alert('❌ يرجى اختيار المجموعة والشعبة أولاً');
+        return;
+    }
+    
+    $('statStatus').textContent = '⏳ جاري التحليل...';
+    
+    try {
+        // 1️⃣ جلب عدد الطلاب الثابت من البيانات الأساسية (مهم جداً!)
+        const secData = allSections.find(s => s.group === group && s.section_id === section);
+        const fixedStudentCount = secData?.students?.length || 0;
+        
+        if(fixedStudentCount === 0) {
+            alert('⚠️ لا توجد بيانات طلاب لهذه الشعبة');
+            $('statStatus').textContent = '❌ لا توجد بيانات';
+            return;
+        }
+        
+        $('totalStudents').textContent = fixedStudentCount;
+        $('studentsDetail').textContent = `عدد ثابت - ${secData?.section_label || section}`;
+        
+        // 2️⃣ جلب سجلات الغياب لهذه الشعبة
+        const url = `/api/get-reports?action=summary&group=${encodeURIComponent(group)}&section=${encodeURIComponent(section)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`;
+        const res = await fetch(url);
+        const json = await res.json();
+        
+        if(!json.success && !json.data && !json.summary) {
+            throw new Error('فشل جلب بيانات الغياب');
+        }
+        
+        const summary = json.data || json.summary || {};
+        
+        // 3️⃣ حساب غيابات كل طالب (كل طالب يُحسب مرة واحدة فقط)
+        const studentAbsences = {};
+        
+        // تهيئة العداد لكل طالب بـ 0
+        if(secData?.students) {
+            secData.students.forEach(stu => {
+                studentAbsences[stu.id] = 0;
+            });
+        }
+        
+        // جلب كل سجلات الغياب
+        const allRecords = await fetchAllAttendance(group, section);
+        
+        // حساب عدد أيام الغياب لكل طالب (وليس عدد الطلاب)
+        allRecords.forEach(record => {
+            if(record.absentIds && Array.isArray(record.absentIds)) {
+                record.absentIds.forEach(studentId => {
+                    if(studentAbsences[studentId] !== undefined) {
+                        studentAbsences[studentId]++; // زيادة يوم غياب واحد فقط
+                    }
+                });
+            }
+        });
+        
+        // حفظ البيانات
+        sectionAbsenceData[`${group}_${section}`] = { 
+            studentAbsences, 
+            fixedStudentCount, 
+            summary,
+            totalAbsentDays: Object.values(studentAbsences).reduce((a, b) => a + b, 0)
+        };
+        
+        // 4️⃣ تحديث البطاقات الإحصائية
+        await updateStatsForSection(studentAbsences, fixedStudentCount, summary, secData);
+        
+        // 5️⃣ عرض الملخص السريع
+        showSectionSummary(fixedStudentCount, summary, studentAbsences);
+        
+        $('statStatus').textContent = '✅ تم التحديث بنجاح';
+        
+    } catch(err) {
+        console.error('❌ خطأ في الإحصائيات:', err);
+        $('statStatus').textContent = '❌ حدث خطأ: ' + err.message;
+        alert('حدث خطأ أثناء تحميل الإحصائيات: ' + err.message);
+    }
+}
+
+// === 📋 عرض الملخص السريع (تم الإصلاح) ===
+function showSectionSummary(studentCount, summary, studentAbsences) {
+    // إجمالي أيام الغياب (مجموع غيابات كل الطلاب)
+    const totalAbsentDays = Object.values(studentAbsences).reduce((sum, val) => sum + val, 0);
+    
+    // حساب نسبة الغياب بناءً على الجلسات المتوقعة
+    // نفترض أن كل طالب له 30 جلسة في الشهر (يمكن تعديل هذا الرقم)
+    const sessionsPerStudent = 30; // عدد الجلسات المتوقعة لكل طالب
+    const totalExpectedSessions = studentCount * sessionsPerStudent;
+    
+    const absenceRate = totalExpectedSessions > 0 
+        ? ((totalAbsentDays / totalExpectedSessions) * 100).toFixed(1) 
+        : 0;
+    
+    // عدد الطلاب تحت المراقبة (الذين غيابهم 3 أيام أو أكثر)
+    const atRiskStudents = Object.values(studentAbsences).filter(days => days >= 3).length;
+    
+    $('sumStudents').textContent = studentCount;
+    $('sumAbsentDays').textContent = totalAbsentDays;
+    $('sumRate').textContent = absenceRate + '%';
+    $('sumRate').style.color = absenceRate > 20 ? 'var(--danger)' : (absenceRate > 10 ? 'var(--warning)' : 'var(--secondary)');
+    $('sumAtRisk').textContent = atRiskStudents;
+    $('sumAtRisk').style.color = atRiskStudents > 5 ? 'var(--danger)' : (atRiskStudents > 2 ? 'var(--warning)' : 'var(--secondary)');
+    
+    $('sectionSummary').classList.add('show');
+}
+
+// === 🎯 تحديث بطاقات الإحصائيات (تم الإصلاح) ===
+async function updateStatsForSection(studentAbsences, fixedStudentCount, summary, secData) {
+    // 1️⃣ أكثر طالب غياباً (بحث عن الطالب الذي له أكبر عدد أيام غياب)
+    const entries = Object.entries(studentAbsences);
+    const withAbsences = entries.filter(([_, days]) => days > 0);
+    
+    if(withAbsences.length > 0) {
+        // ترتيب حسب عدد أيام الغياب (تنازلي)
+        withAbsences.sort((a, b) => b[1] - a[1]);
+        const [topStudentId, topAbsentDays] = withAbsences[0];
+        
+        // البحث عن اسم الطالب
+        const student = secData?.students?.find(s => s.id === topStudentId);
+        const studentName = student ? student.name : topStudentId;
+        
+        $('topStudent').textContent = studentName;
+        $('topStudentDetail').textContent = `${topAbsentDays} أيام غياب`;
+    } else {
+        $('topStudent').textContent = '✅ لا يوجد';
+        $('topStudentDetail').textContent = 'لا توجد غيابات مسجلة';
+    }
+    
+    // 2️⃣ متوسط الغياب لكل طالب (مهم: قسمة على عدد الطلاب الثابت)
+    const totalAbsentDays = Object.values(studentAbsences).reduce((sum, val) => sum + val, 0);
+    const avgAbsentPerStudent = fixedStudentCount > 0 
+        ? (totalAbsentDays / fixedStudentCount).toFixed(2) 
+        : 0;
+    
+    $('avgAbsent').textContent = avgAbsentPerStudent;
+    $('avgDetail').textContent = `من ${fixedStudentCount} طالب | الإجمالي: ${totalAbsentDays} يوم`;
+    
+    // 3️⃣ نسبة الحضور (بناءً على الجلسات المتوقعة)
+    const sessionsPerStudent = 30; // عدد الجلسات المتوقعة
+    const totalExpectedSessions = fixedStudentCount * sessionsPerStudent;
+    const totalPresentSessions = totalExpectedSessions - totalAbsentDays;
+    
+    const attendanceRate = totalExpectedSessions > 0 
+        ? ((totalPresentSessions / totalExpectedSessions) * 100).toFixed(1) 
+        : 100;
+    
+    $('attendanceRate').textContent = attendanceRate + '%';
+    $('attendanceRate').style.color = attendanceRate >= 90 ? 'var(--secondary)' : 
+                                       attendanceRate >= 75 ? 'var(--warning)' : 'var(--danger)';
+    $('attendanceDetail').textContent = `حاضر: ${totalPresentSessions} | غائب: ${totalAbsentDays} من ${totalExpectedSessions}`;
+    
+    // 4️⃣ اتجاه الغياب (من البيانات اليومية)
+    if(summary.dailyData && summary.dailyData.length >= 2) {
+        const midPoint = Math.floor(summary.dailyData.length / 2);
+        const firstHalf = summary.dailyData.slice(0, midPoint);
+        const secondHalf = summary.dailyData.slice(midPoint);
+        
+        const avgFirst = firstHalf.reduce((sum, day) => sum + (day.absent || 0), 0) / firstHalf.length;
+        const avgSecond = secondHalf.reduce((sum, day) => sum + (day.absent || 0), 0) / secondHalf.length;
+        const diff = avgSecond - avgFirst;
+        
+        if(Math.abs(diff) < 0.5) {
+            $('trendText').textContent = 'مستقر';
+            $('trendIndicator').textContent = '➡️ لا تغيير ملحوظ';
+            $('trendIndicator').className = 'trend';
+        } else if(diff > 0) {
+            $('trendText').textContent = 'في زيادة';
+            $('trendIndicator').textContent = `📈 +${diff.toFixed(1)} يوم/يومياً`;
+            $('trendIndicator').className = 'trend up';
+        } else {
+            $('trendText').textContent = 'في تحسن';
+            $('trendIndicator').textContent = `📉 ${Math.abs(diff).toFixed(1)} انخفاض`;
+            $('trendIndicator').className = 'trend down';
+        }
+    } else {
+        $('trendText').textContent = '-';
+        $('trendIndicator').textContent = 'بيانات غير كافية';
+        $('trendIndicator').className = 'trend';
+    }
+    
+    // 5️⃣ طلاب تحت المراقبة (الذين غيابهم 3 أيام أو أكثر)
+    const atRiskCount = Object.values(studentAbsences).filter(days => days >= 3).length;
+    $('atRiskCount').textContent = atRiskCount;
+    $('atRiskCount').style.color = atRiskCount > 5 ? 'var(--danger)' : 
+                                    atRiskCount > 2 ? 'var(--warning)' : 'var(--secondary)';
+}
+
+// === 📥 جلب كل سجلات الغياب ===
+async function fetchAllAttendance(group, section) {
+    let url = `/api/get-reports?action=summary&period=custom&startDate=2000-01-01&endDate=2099-12-31`;
+    if(group) url += `&group=${encodeURIComponent(group)}`;
+    if(section) url += `&section=${encodeURIComponent(section)}`;
+    
+    try {
+        const res = await fetch(url);
+        const json = await res.json();
+        return (json.data?.rawRecords || json.summary?.rawRecords || []);
+    } catch(err) {
+        console.error('خطأ في جلب السجلات:', err);
+        return [];
+    }
+}
+
+// === 📄 إنشاء التقرير المخصص ===
+async function generateCustomReport() {
+    const type = document.querySelector('input[name="reportType"]:checked').value;
+    const g = $('rptGroup').value, sec = $('rptSection').value;
+    
+    if(!g || !sec) return alert('❌ يرجى اختيار المجموعة والشعبة أولاً');
+    
+    const rpt = $('customReport');
+    const btns = $('reportActionsBtn');
+    rpt.innerHTML = '<div style="text-align:center;color:#888;padding:30px;">⏳ جاري إعداد التقرير...</div>';
+    rpt.classList.add('show');
+    btns.style.display = 'none';
+
+    try {
+        let html = '';
+        
+        if(type === 'student') {
+            const stuId = $('rptStudent').value;
+            if(!stuId) return alert('❌ يرجى اختيار الطالب');
+            
+            const res = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stuId)}`);
+            const json = await res.json();
+            const history = json.data?.history || json.history || [];
+            const stuName = $('rptStudent').selectedOptions[0]?.text || stuId;
+            
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📋 تقرير غياب طالب: ${stuName}</h3>
+                <p style="color:#666">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            
+            if(!history.length) {
+                html += `<div class="alert alert-info">✅ ممتاز! لا توجد سجلات غياب</div>`;
+            } else {
+                html += `<table><thead><tr><th>📅 التاريخ</th><th>🏫 الشعبة</th><th>📝 ملاحظات</th></tr></thead><tbody>`;
+                history.forEach(h => {
+                    html += `<tr><td>${h.date}</td><td>${h.section}</td><td>${h.note || '-'}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                html += `<p style="margin-top:15px;font-weight:bold;color:var(--danger)">📊 إجمالي الغياب: <span style="font-size:1.2em">${history.length}</span> يوم</p>`;
+            }
+            
+        } else if(type === 'section') {
+            const res = await fetch(`/api/get-reports?action=summary&group=${encodeURIComponent(g)}&section=${encodeURIComponent(sec)}&period=custom&startDate=2000-01-01&endDate=2099-12-31`);
+            const json = await res.json();
+            const summary = json.data || json.summary || {};
+            const secLabel = $('rptSection').selectedOptions[0]?.text || sec;
+            
+            html = `<div class="report-header">
+                <h2>🕌 مدرسة تحفيظ القرآن الكريم</h2>
+                <h3>📊 تقرير شعبة: ${secLabel} - المجموعة (${g})</h3>
+                <p style="color:#666">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-EG')}</p>
+            </div>`;
+            
+            const total = summary.totalStudents || 0;
+            const absent = summary.totalAbsent || 0;
+            const rate = total > 0 ? ((absent/total)*100).toFixed(1) : 0;
+            html += `<div style="background:#f8f9fa;padding:15px;border-radius:10px;margin-bottom:20px;">
+                <strong>📈 الملخص:</strong> الطلاب: ${total} | الغياب: ${absent} | النسبة: <span style="color:${rate>20?'var(--danger)':'var(--secondary)'}">${rate}%</span>
+            </div>`;
+            
+            if(summary.dailyData?.length) {
+                html += `<h4>📅 السجل اليومي (آخر 14 يوم)</h4><table><thead><tr><th>التاريخ</th><th>الحضور</th><th>الغياب</th><th>النسبة</th></tr></thead><tbody>`;
+                summary.dailyData.slice(-14).forEach(d => {
+                    const r = d.total > 0 ? ((d.absent/d.total)*100).toFixed(1) : 0;
+                    html += `<tr><td>${d.date}</td><td>${d.total - d.absent}</td><td style="color:${r>30?'var(--danger)':'inherit'}">${d.absent}</td><td>${r}%</td></tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+
+            const secData = allSections.find(s => s.group === g && s.section_id === sec);
+            if(secData?.students?.length) {
+                html += `<div class="section-title">👥 تفصيل الطلاب</div><table><thead><tr><th>الطالب</th><th>تواريخ الغياب</th><th>الإجمالي</th><th>الحالة</th></tr></thead><tbody>`;
+                
+                const studentsData = await Promise.all(secData.students.map(async stu => {
+                    try {
+                        const r = await fetch(`/api/get-reports?action=student-history&studentId=${encodeURIComponent(stu.id)}`);
+                        const d = await r.json();
+                        const dates = (d.data?.history || d.history || []).map(h => h.date);
+                        return { name: stu.name, dates, count: dates.length };
+                    } catch { return { name: stu.name, dates: [], count: 0 }; }
+                }));
+
+                studentsData.sort((a,b) => b.count - a.count).forEach(s => {
+                    const daysStr = s.dates.length > 0 ? s.dates.slice(0,5).join('، ') + (s.dates.length>5?'...':'') : '-';
+                    const status = s.count >= 5 ? '🔴 متكرر' : (s.count >= 3 ? '🟡 مراقبة' : '🟢 جيد');
+                    const color = s.count >= 5 ? 'var(--danger)' : (s.count >= 3 ? 'var(--warning)' : 'var(--secondary)');
+                    html += `<tr>
+                        <td><strong>${s.name}</strong></td>
+                        <td style="font-size:0.85em;color:#555">${daysStr}</td>
+                        <td style="font-weight:bold">${s.count}</td>
+                        <td style="color:${color}">${status}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+        }
+        
+        rpt.innerHTML = html;
+        btns.style.display = 'flex';
+        
+    } catch(e) {
+        console.error(e);
+        rpt.innerHTML = `<div class="alert alert-warning">❌ خطأ: ${e.message}</div>`;
+    }
+}
+</script>
+</body>
+</html>
