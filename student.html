@@ -86,7 +86,7 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
 
 /* الجدول */
 .table-wrapper { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); background: white; }
-.data-table { width: 100%; border-collapse: collapse; min-width: 700px; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
 .data-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: right; font-weight: 600; font-size: 0.9em; white-space: nowrap; position: sticky; top: 0; }
 .data-table td { padding: 12px 16px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
 .data-table tr:hover td { background: #f8fafd; }
@@ -101,6 +101,7 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
 .empty-state { text-align: center; padding: 35px; color: var(--text-muted); }
 .empty-state span { font-size: 2.5em; display: block; margin-bottom: 10px; opacity: 0.6; }
 .loading-row td { text-align: center; padding: 25px; color: var(--text-muted); }
+.id-badge { font-family: monospace; background: var(--light); padding: 3px 8px; border-radius: 4px; font-size: 0.85em; color: var(--primary); font-weight: 600; }
 
 /* النافذة المنبثقة */
 .modal-overlay {
@@ -110,7 +111,7 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
 }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
 .modal-card {
-  background: white; padding: 28px; border-radius: 18px; width: 100%; max-width: 600px;
+  background: white; padding: 28px; border-radius: 18px; width: 100%; max-width: 520px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.35); transform: translateY(20px); transition: transform 0.35s ease;
   max-height: 90vh; overflow-y: auto;
 }
@@ -124,11 +125,18 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group.full-width { grid-column: span 2; }
 .form-group label { font-weight: 600; color: var(--primary); font-size: 0.9em; }
-.form-group input, .form-group select, .form-group textarea {
+.form-group input, .form-group select {
   padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px;
   font-family: inherit; background: #fafbfc; transition: all 0.2s;
 }
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.form-group input:disabled { background: var(--light); color: var(--text-muted); cursor: not-allowed; }
+.auto-id-preview { 
+  background: var(--primary-light); color: var(--primary); padding: 10px 14px; 
+  border-radius: 8px; font-family: monospace; font-weight: 700; font-size: 1.05em;
+  display: flex; align-items: center; gap: 8px;
+}
+.auto-id-preview::before { content: '🔖'; }
 .modal-actions { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
 .btn-secondary { background: var(--light); color: var(--text); padding: 12px 24px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
 .btn-secondary:hover { background: #e5e9f0; }
@@ -204,7 +212,7 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
 
     <div class="table-wrapper">
       <table class="data-table">
-        <thead><tr><th width="70">#</th><th>اسم الطالب</th><th>المجموعة</th><th>الشعبة</th><th>الرقم التعريفي</th><th width="100">الإجراءات</th></tr></thead>
+        <thead><tr><th width="60">#</th><th>اسم الطالب</th><th>المجموعة</th><th>الشعبة</th><th>الرقم التعريفي</th><th width="90">الإجراءات</th></tr></thead>
         <tbody id="studentsTableBody">
           <tr class="loading-row"><td colspan="6">⏳ جاري تحميل بيانات الطلاب من المستودع...</td></tr>
         </tbody>
@@ -229,13 +237,26 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
       <input type="hidden" id="editGroup">
       <input type="hidden" id="editSection">
       <div class="form-grid">
-        <div class="form-group full-width"><label>الاسم الرباعي *</label><input type="text" id="fullName" required placeholder="أدخل الاسم كاملًا"></div>
-        <div class="form-group"><label>الرقم التعريفي *</label><input type="text" id="studentId" required placeholder="مثال: a1-010" pattern="[a-z0-9\-]+" title="استخدم أحرف صغيرة وأرقام وشرطات فقط"></div>
-        <div class="form-group"><label>المجموعة *</label>
-          <select id="modalGroup" required onchange="updateModalSections()"><option value="">اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+        <div class="form-group full-width">
+          <label>الاسم الرباعي *</label>
+          <input type="text" id="fullName" required placeholder="أدخل الاسم كاملًا">
         </div>
-        <div class="form-group"><label>الشعبة *</label><select id="modalSection" required><option value="">اختر الشعبة أولاً</option></select></div>
-        <div class="form-group full-width"><label>ملاحظات إدارية</label><textarea id="notes" rows="3" placeholder="أي ملاحظات خاصة بالحالة الصحية أو الدراسية..."></textarea></div>
+        <div class="form-group">
+          <label>المجموعة *</label>
+          <select id="modalGroup" required onchange="updateModalSections()">
+            <option value="">اختر المجموعة</option>
+            <option value="أ">المجموعة (أ)</option>
+            <option value="ب">المجموعة (ب)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>الشعبة *</label>
+          <select id="modalSection" required><option value="">اختر الشعبة أولاً</option></select>
+        </div>
+        <div class="form-group full-width" id="autoIdPreview" style="display:none">
+          <label>الرقم التعريفي (يُولد تلقائياً)</label>
+          <div class="auto-id-preview" id="generatedId">a1-001</div>
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
@@ -284,12 +305,17 @@ const showToast = (msg, type='success') => {
   setTimeout(()=>t.classList.remove('show'), 3000);
 };
 const escapeHtml = s => s ? String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]) : '';
-const generateId = (group, section) => {
+
+// === توليد الرقم التعريفي تلقائياً ===
+function generateStudentId(group, section) {
   const prefix = group === 'أ' ? 'a' : 'b';
-  const secNum = section.replace(/\D/g,'') || '00';
-  const rand = Math.floor(Math.random() * 900) + 100;
-  return `${prefix}${secNum}-${rand}`;
-};
+  // استخراج رقم الشعبة (مثال: "1أ" → "1")
+  const secNum = section.replace(/[^0-9]/g, '') || '1';
+  // عد الطلاب الحاليين في هذه الشعبة + 1 للرقم الجديد
+  const count = studentsData.filter(s => s.group === group && s.sectionId === section).length + 1;
+  const studentNum = String(count).padStart(3, '0');
+  return `${prefix}${secNum}-${studentNum}`;
+}
 
 // === تحديث حالة الاتصال ===
 function updateConnectionStatus(online, msg) {
@@ -314,7 +340,6 @@ async function loadStudents(forceRefresh = false) {
   $('refreshBtn').disabled = true;
 
   try {
-    // محاولة جلب البيانات من الروابط المباشرة
     const [resA, resB] = await Promise.allSettled([
       fetch(DATA_URLS['أ']).then(r => r.ok ? r.json() : Promise.reject('أ')),
       fetch(DATA_URLS['ب']).then(r => r.ok ? r.json() : Promise.reject('ب'))
@@ -323,7 +348,6 @@ async function loadStudents(forceRefresh = false) {
     studentsData = [];
     sectionsMap = { 'أ': [], 'ب': [] };
 
-    // معالجة المجموعة أ
     if (resA.status === 'fulfilled') {
       const data = resA.value;
       if (data?.sections) {
@@ -340,7 +364,6 @@ async function loadStudents(forceRefresh = false) {
       }
     }
 
-    // معالجة المجموعة ب
     if (resB.status === 'fulfilled') {
       const data = resB.value;
       if (data?.sections) {
@@ -357,7 +380,6 @@ async function loadStudents(forceRefresh = false) {
       }
     }
 
-    // إذا لم تنجح أي من المحاولات، استخدام بيانات افتراضية
     if (studentsData.length === 0) {
       console.warn('⚠️ فشل جلب البيانات من المستودع، استخدام بيانات تجريبية');
       updateConnectionStatus(false, '⚠️ وضع غير متصل - بيانات تجريبية');
@@ -419,10 +441,10 @@ function renderTable(data) {
   tbody.innerHTML = data.map((s, i) => `
     <tr>
       <td><span style="font-weight:700;color:var(--primary)">${i+1}</span></td>
-      <td><strong>${escapeHtml(s.name)}</strong><div style="font-size:0.78em;color:var(--text-muted);margin-top:2px">${escapeHtml(s.id)}</div></td>
+      <td><strong>${escapeHtml(s.name)}</strong></td>
       <td><span class="badge badge-${s.group==='أ'?'a':'b'}">المجموعة ${s.group}</span></td>
       <td>${escapeHtml(s.section)}</td>
-      <td dir="ltr" style="text-align:right;font-family:monospace">${escapeHtml(s.id)}</td>
+      <td><span class="id-badge" dir="ltr">${escapeHtml(s.id)}</span></td>
       <td>
         <div class="action-btns">
           <button class="btn-icon btn-edit" onclick="openModal('edit', '${s.id}')" title="تعديل">✏️</button>
@@ -452,6 +474,7 @@ function openModal(mode, id = null) {
   const m = $('studentModal'), t = $('modalTitle'), f = $('studentForm');
   m.style.display = 'flex'; setTimeout(()=>m.classList.add('active'), 10);
   f.reset(); $('editId').value = '';
+  $('autoIdPreview').style.display = 'none';
 
   if (mode === 'add') {
     t.textContent = '➕ إضافة طالب جديد';
@@ -460,37 +483,49 @@ function openModal(mode, id = null) {
     t.textContent = '✏️ تعديل بيانات الطالب';
     const stu = studentsData.find(s => s.id === id);
     if (stu) {
-      $('editId').value = stu.id; $('fullName').value = stu.name; $('studentId').value = stu.id;
+      $('editId').value = stu.id; $('fullName').value = stu.name;
       $('modalGroup').value = stu.group; $('editGroup').value = stu.group;
       updateModalSections(); $('modalSection').value = stu.sectionId || stu.section;
-      $('notes').value = stu.notes || '';
-      // منع تعديل الرقم التعريفي عند التعديل
-      $('studentId').disabled = true;
+      $('modalSection').disabled = true; // منع تغيير الشعبة عند التعديل
     }
   }
 }
 function closeModal() {
   const m = $('studentModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300);
-  $('studentForm').reset(); $('studentId').disabled = false;
+  $('studentForm').reset(); $('modalSection').disabled = false;
 }
 function updateModalSections() {
-  const g = $('modalGroup').value, sel = $('modalSection');
+  const g = $('modalGroup').value, sec = $('modalSection').value;
+  const sel = $('modalSection');
   sel.innerHTML = '<option value="">اختر الشعبة</option>';
   if (sectionsMap[g]) sectionsMap[g].forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  
+  // عرض الرقم التعريفي المتوقع عند اختيار المجموعة والشعبة
+  if (g && sec) {
+    $('autoIdPreview').style.display = 'block';
+    $('generatedId').textContent = generateStudentId(g, sec);
+  } else {
+    $('autoIdPreview').style.display = 'none';
+  }
 }
+$('modalSection').addEventListener('change', updateModalSections);
 
 // === حفظ البيانات ===
 async function handleFormSubmit(e) {
   e.preventDefault();
   const btn = $('saveBtn'); btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
   
+  const group = $('modalGroup').value;
+  const section = $('modalSection').value;
+  const isEdit = !!$('editId').value;
+  
   const data = {
-    id: $('studentId').value.trim(),
+    id: isEdit ? $('editId').value : generateStudentId(group, section),
     name: $('fullName').value.trim(),
-    group: $('modalGroup').value,
-    section: $('modalSection').value,
-    sectionId: $('modalSection').value,
-    notes: $('notes').value.trim()
+    group: group,
+    section: section,
+    sectionId: section,
+    notes: ''
   };
 
   try {
@@ -508,18 +543,17 @@ async function handleFormSubmit(e) {
     // محاكاة الحفظ المحلي (للتجربة)
     await new Promise(r => setTimeout(r, 500));
     
-    const isEdit = !!$('editId').value;
     if (isEdit) {
       const idx = studentsData.findIndex(s => s.id === data.id);
       if (idx > -1) studentsData[idx] = {...studentsData[idx], ...data};
       showToast('تم تحديث بيانات الطالب بنجاح');
     } else {
-      // التحقق من عدم تكرار الرقم التعريفي
-      if (studentsData.some(s => s.id === data.id)) {
-        throw new Error('الرقم التعريفي مستخدم مسبقاً');
+      // التحقق من عدم تكرار الاسم في نفس الشعبة
+      if (studentsData.some(s => s.name === data.name && s.sectionId === data.sectionId)) {
+        throw new Error('اسم الطالب موجود مسبقاً في هذه الشعبة');
       }
       studentsData.unshift(data);
-      showToast('تمت إضافة الطالب بنجاح');
+      showToast(`تمت إضافة الطالب بنجاح • الرقم التعريفي: ${data.id}`);
     }
     
     updateSectionDropdowns(); applyFilters(); closeModal();
@@ -565,7 +599,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal
 
 // === تحميل أولي ===
 document.addEventListener('DOMContentLoaded', () => {
-  // تحديث قوائم الشعب في نموذج الإضافة عند تغيير المجموعة
   $('modalGroup').addEventListener('change', updateModalSections);
 });
 </script>
