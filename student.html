@@ -218,10 +218,6 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
         </tbody>
       </table>
     </div>
-    
-    <p style="text-align:center;color:var(--text-muted);font-size:0.85em;margin-top:15px">
-      💡 ملاحظة: التعديلات تُحفظ محلياً للتجربة. لربط الحفظ بالمستودع، استخدم <code>POST /api/save-student</code>
-    </p>
   </div>
 </div>
 
@@ -234,8 +230,6 @@ header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
     </div>
     <form id="studentForm" onsubmit="handleFormSubmit(event)">
       <input type="hidden" id="editId">
-      <input type="hidden" id="editGroup">
-      <input type="hidden" id="editSection">
       <div class="form-grid">
         <div class="form-group full-width">
           <label>الاسم الرباعي *</label>
@@ -294,7 +288,6 @@ const DATA_URLS = {
 let studentsData = [];
 let sectionsMap = { 'أ': [], 'ب': [] };
 let currentDeleteId = null;
-let isOnline = true;
 
 // === دوال مساعدة ===
 const $ = id => document.getElementById(id);
@@ -307,19 +300,16 @@ const showToast = (msg, type='success') => {
 const escapeHtml = s => s ? String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]) : '';
 
 // === توليد الرقم التعريفي تلقائياً ===
-function generateStudentId(group, section) {
+function generateStudentId(group, sectionId) {
   const prefix = group === 'أ' ? 'a' : 'b';
-  // استخراج رقم الشعبة (مثال: "1أ" → "1")
-  const secNum = section.replace(/[^0-9]/g, '') || '1';
-  // عد الطلاب الحاليين في هذه الشعبة + 1 للرقم الجديد
-  const count = studentsData.filter(s => s.group === group && s.sectionId === section).length + 1;
+  const secNum = sectionId.replace(/[^0-9]/g, '') || '1';
+  const count = studentsData.filter(s => s.group === group && s.sectionId === sectionId).length + 1;
   const studentNum = String(count).padStart(3, '0');
   return `${prefix}${secNum}-${studentNum}`;
 }
 
 // === تحديث حالة الاتصال ===
 function updateConnectionStatus(online, msg) {
-  isOnline = online;
   const dot = $('statusDot'), txt = $('statusText');
   dot.className = `status-dot${online?'':' error'}`;
   txt.textContent = msg;
@@ -334,7 +324,7 @@ $('enterBtn').addEventListener('click', () => {
 });
 
 // === تحميل البيانات من المستودع ===
-async function loadStudents(forceRefresh = false) {
+async function loadStudents() {
   updateConnectionStatus(true, 'جاري جلب البيانات من المستودع...');
   $('studentsTableBody').innerHTML = '<tr class="loading-row"><td colspan="6">⏳ جاري تحميل بيانات الطلاب من المستودع...</td></tr>';
   $('refreshBtn').disabled = true;
@@ -348,69 +338,39 @@ async function loadStudents(forceRefresh = false) {
     studentsData = [];
     sectionsMap = { 'أ': [], 'ب': [] };
 
-    if (resA.status === 'fulfilled') {
-      const data = resA.value;
-      if (data?.sections) {
-        data.sections.forEach(sec => {
-          sectionsMap['أ'].push(sec.section_id);
-          (sec.students || []).forEach(st => {
-            studentsData.push({
-              id: st.id, name: st.name, group: 'أ',
-              section: sec.section_label || sec.section_id,
-              sectionId: sec.section_id, notes: ''
-            });
-          });
-        });
-      }
+    if (resA.status === 'fulfilled' && resA.value?.sections) {
+      resA.value.sections.forEach(sec => {
+        sectionsMap['أ'].push(sec.section_id);
+        (sec.students || []).forEach(st => studentsData.push({ id: st.id, name: st.name, group: 'أ', section: sec.section_label || sec.section_id, sectionId: sec.section_id }));
+      });
     }
-
-    if (resB.status === 'fulfilled') {
-      const data = resB.value;
-      if (data?.sections) {
-        data.sections.forEach(sec => {
-          sectionsMap['ب'].push(sec.section_id);
-          (sec.students || []).forEach(st => {
-            studentsData.push({
-              id: st.id, name: st.name, group: 'ب',
-              section: sec.section_label || sec.section_id,
-              sectionId: sec.section_id, notes: ''
-            });
-          });
-        });
-      }
+    if (resB.status === 'fulfilled' && resB.value?.sections) {
+      resB.value.sections.forEach(sec => {
+        sectionsMap['ب'].push(sec.section_id);
+        (sec.students || []).forEach(st => studentsData.push({ id: st.id, name: st.name, group: 'ب', section: sec.section_label || sec.section_id, sectionId: sec.section_id }));
+      });
     }
 
     if (studentsData.length === 0) {
-      console.warn('⚠️ فشل جلب البيانات من المستودع، استخدام بيانات تجريبية');
       updateConnectionStatus(false, '⚠️ وضع غير متصل - بيانات تجريبية');
       loadFallbackData();
     } else {
       updateConnectionStatus(true, `✅ متصل • ${studentsData.length} طالب`);
-      showToast(`تم تحميل ${studentsData.length} طالب من المستودع`);
     }
 
-    updateSectionDropdowns();
-    renderTable(studentsData);
-
+    updateSectionDropdowns(); renderTable(studentsData);
   } catch (error) {
-    console.error('خطأ في جلب البيانات:', error);
     updateConnectionStatus(false, '❌ فشل الاتصال - بيانات محلية');
-    loadFallbackData();
-    updateSectionDropdowns();
-    renderTable(studentsData);
-    showToast('تم استخدام بيانات تجريبية للعرض', 'error');
-  } finally {
-    $('refreshBtn').disabled = false;
-  }
+    loadFallbackData(); updateSectionDropdowns(); renderTable(studentsData);
+  } finally { $('refreshBtn').disabled = false; }
 }
 
-// === بيانات احتياطية عند فشل الاتصال ===
 function loadFallbackData() {
   studentsData = [
-    { id: 'a1-001', name: 'إسرار حامد', group: 'أ', section: 'الشعبة 1أ', sectionId: '1أ', notes: '' },
-    { id: 'a1-002', name: 'خيار سعيد', group: 'أ', section: 'الشعبة 1أ', sectionId: '1أ', notes: '' },
-    { id: 'b1-001', name: 'خلف منصور السلمي', group: 'ب', section: 'الشعبة 1ب', sectionId: '1ب', notes: '' },
-    { id: 'b1-002', name: 'طلال إبراهيم العتيبي', group: 'ب', section: 'الشعبة 1ب', sectionId: '1ب', notes: '' }
+    { id: 'a1-001', name: 'إسرار حامد', group: 'أ', section: 'الشعبة 1أ', sectionId: '1أ' },
+    { id: 'a1-002', name: 'خيار سعيد', group: 'أ', section: 'الشعبة 1أ', sectionId: '1أ' },
+    { id: 'b1-001', name: 'خلف منصور السلمي', group: 'ب', section: 'الشعبة 1ب', sectionId: '1ب' },
+    { id: 'b1-002', name: 'طلال إبراهيم العتيبي', group: 'ب', section: 'الشعبة 1ب', sectionId: '1ب' }
   ];
   sectionsMap = {
     'أ': ['1أ','2أ','3أ','4أ','5أ','6أ','7أ','8أ','9أ','10أ'],
@@ -418,23 +378,13 @@ function loadFallbackData() {
   };
 }
 
-// === تحديث قوائم الشعب ===
 function updateSectionDropdowns() {
-  const fillFilter = (selId, data) => {
-    const s = $(selId); s.innerHTML = '<option value="">🏫 كل الشعب</option>';
-    data.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; s.appendChild(o); });
-  };
-  const fillModal = (selId, data) => {
-    const s = $(selId); s.innerHTML = '<option value="">اختر الشعبة</option>';
-    data.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; s.appendChild(o); });
-  };
-  
-  const g = $('filterGroup').value;
-  if (g && sectionsMap[g]) fillFilter('filterSection', sectionsMap[g]);
-  else fillFilter('filterSection', [...new Set(studentsData.map(s=>s.section))]);
+  const g = $('filterGroup').value, sel = $('filterSection');
+  sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
+  const list = g && sectionsMap[g] ? sectionsMap[g] : [...new Set(studentsData.map(s=>s.section))];
+  list.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
 }
 
-// === عرض الجدول ===
 function renderTable(data) {
   const tbody = $('studentsTableBody');
   if (!data.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span>📭</span>لا توجد نتائج مطابقة</td></tr>`; return; }
@@ -455,38 +405,40 @@ function renderTable(data) {
   `).join('');
 }
 
-// === الفلترة والبحث ===
 $('searchInput').addEventListener('input', applyFilters);
 function applyFilters() {
   const q = $('searchInput').value.toLowerCase().trim();
   const g = $('filterGroup').value, sec = $('filterSection').value;
   const filtered = studentsData.filter(s => {
-    const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
-    const matchG = !g || s.group === g;
-    const matchS = !sec || s.sectionId === sec || s.section === sec;
-    return matchQ && matchG && matchS;
+    return (!q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q)) &&
+           (!g || s.group === g) && (!sec || s.sectionId === sec || s.section === sec);
   });
   renderTable(filtered);
 }
 
-// === النافذة المنبثقة ===
+// === النافذة المنبثقة (تم إصلاح مشكلة اختيار الشعبة نهائياً) ===
 function openModal(mode, id = null) {
-  const m = $('studentModal'), t = $('modalTitle'), f = $('studentForm');
+  const m = $('studentModal'), f = $('studentForm');
   m.style.display = 'flex'; setTimeout(()=>m.classList.add('active'), 10);
   f.reset(); $('editId').value = '';
   $('autoIdPreview').style.display = 'none';
+  $('modalSection').disabled = false;
 
   if (mode === 'add') {
-    t.textContent = '➕ إضافة طالب جديد';
+    $('modalTitle').textContent = '➕ إضافة طالب جديد';
     updateModalSections();
   } else {
-    t.textContent = '✏️ تعديل بيانات الطالب';
+    $('modalTitle').textContent = '✏️ تعديل بيانات الطالب';
     const stu = studentsData.find(s => s.id === id);
     if (stu) {
       $('editId').value = stu.id; $('fullName').value = stu.name;
-      $('modalGroup').value = stu.group; $('editGroup').value = stu.group;
-      updateModalSections(); $('modalSection').value = stu.sectionId || stu.section;
+      $('modalGroup').value = stu.group;
+      updateModalSections(); 
+      $('modalSection').value = stu.sectionId || stu.section;
       $('modalSection').disabled = true; // منع تغيير الشعبة عند التعديل
+      // عرض الرقم الحالي للمراجعة فقط
+      $('autoIdPreview').style.display = 'block';
+      $('generatedId').textContent = stu.id;
     }
   }
 }
@@ -494,13 +446,22 @@ function closeModal() {
   const m = $('studentModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300);
   $('studentForm').reset(); $('modalSection').disabled = false;
 }
+
+// دالة منفصلة لتحديث قائمة الشعب فقط (لا تلمس المعاينة)
 function updateModalSections() {
-  const g = $('modalGroup').value, sec = $('modalSection').value;
+  const g = $('modalGroup').value;
   const sel = $('modalSection');
   sel.innerHTML = '<option value="">اختر الشعبة</option>';
-  if (sectionsMap[g]) sectionsMap[g].forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
-  
-  // عرض الرقم التعريفي المتوقع عند اختيار المجموعة والشعبة
+  if (sectionsMap[g]) {
+    sectionsMap[g].forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+  }
+  $('autoIdPreview').style.display = 'none';
+}
+
+// دالة منفصلة لعرض معاينة الرقم التعريفي (تُستدعى عند اختيار الشعبة فقط)
+function updateIdPreview() {
+  const g = $('modalGroup').value;
+  const sec = $('modalSection').value;
   if (g && sec) {
     $('autoIdPreview').style.display = 'block';
     $('generatedId').textContent = generateStudentId(g, sec);
@@ -508,7 +469,9 @@ function updateModalSections() {
     $('autoIdPreview').style.display = 'none';
   }
 }
-$('modalSection').addEventListener('change', updateModalSections);
+
+$('modalGroup').addEventListener('change', updateModalSections);
+$('modalSection').addEventListener('change', updateIdPreview);
 
 // === حفظ البيانات ===
 async function handleFormSubmit(e) {
@@ -524,31 +487,18 @@ async function handleFormSubmit(e) {
     name: $('fullName').value.trim(),
     group: group,
     section: section,
-    sectionId: section,
-    notes: ''
+    sectionId: section
   };
 
   try {
-    // 📌 نقطة الربط مع الخادم: استبدل هذا الجزء بـ:
-    /*
-    const response = await fetch('/api/save-student', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(data)
-    });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'فشل الحفظ');
-    */
-
-    // محاكاة الحفظ المحلي (للتجربة)
-    await new Promise(r => setTimeout(r, 500));
+    // 📌 نقطة الربط مع الخادم: استبدل هذا الجزء بـ fetch('/api/save-student', ...)
+    await new Promise(r => setTimeout(r, 400));
     
     if (isEdit) {
       const idx = studentsData.findIndex(s => s.id === data.id);
       if (idx > -1) studentsData[idx] = {...studentsData[idx], ...data};
       showToast('تم تحديث بيانات الطالب بنجاح');
     } else {
-      // التحقق من عدم تكرار الاسم في نفس الشعبة
       if (studentsData.some(s => s.name === data.name && s.sectionId === data.sectionId)) {
         throw new Error('اسم الطالب موجود مسبقاً في هذه الشعبة');
       }
@@ -557,7 +507,6 @@ async function handleFormSubmit(e) {
     }
     
     updateSectionDropdowns(); applyFilters(); closeModal();
-    
   } catch (error) {
     showToast(error.message || 'حدث خطأ أثناء الحفظ', 'error');
   } finally {
@@ -571,23 +520,10 @@ function closeDeleteModal() { const m = $('deleteModal'); m.classList.remove('ac
 async function confirmDelete() {
   if (!currentDeleteId) return;
   closeDeleteModal();
-  
-  try {
-    // 📌 نقطة الربط مع الخادم للحذف:
-    /*
-    const response = await fetch(`/api/delete-student/${currentDeleteId}`, { method: 'DELETE' });
-    if (!response.ok) throw new Error('فشل الحذف من الخادم');
-    */
-    
-    // حذف محلي للتجربة
-    await new Promise(r => setTimeout(r, 300));
-    studentsData = studentsData.filter(s => s.id !== currentDeleteId);
-    updateSectionDropdowns(); applyFilters();
-    showToast('تم حذف السجل بنجاح', 'error');
-    
-  } catch (error) {
-    showToast(error.message || 'حدث خطأ أثناء الحذف', 'error');
-  }
+  await new Promise(r => setTimeout(r, 300));
+  studentsData = studentsData.filter(s => s.id !== currentDeleteId);
+  updateSectionDropdowns(); applyFilters();
+  showToast('تم حذف السجل بنجاح', 'error');
 }
 
 // === إغلاق النوافذ ===
@@ -596,11 +532,6 @@ document.addEventListener('click', e => {
   if (e.target === $('deleteModal')) closeDeleteModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
-
-// === تحميل أولي ===
-document.addEventListener('DOMContentLoaded', () => {
-  $('modalGroup').addEventListener('change', updateModalSections);
-});
 </script>
 </body>
 </html>
