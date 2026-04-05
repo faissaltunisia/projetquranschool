@@ -1,391 +1,699 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>إدارة بيانات الطلاب - مدرسة تحفيظ القرآن</title>
-<style>
-:root {
-  --primary: #1a3a5c; --primary-light: #e8f0f8; --secondary: #27ae60; --secondary-light: #eafaf1;
-  --accent: #e67e22; --accent-light: #fef5ec; --danger: #c0392b; --danger-light: #fdedec;
-  --light: #f4f6f9; --border: #dde3ed; --text: #1f2d3d; --text-muted: #7a8fa6; --surface: #ffffff; --r: 10px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body {
-  font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
-  background: linear-gradient(135deg, #1a3a5c 0%, #2980b9 50%, #1a3a5c 100%);
-  background-size: 400% 400%;
-  animation: gradientBG 15s ease infinite;
-  padding: 20px; min-height: 100vh; -webkit-font-smoothing: antialiased; color: var(--text);
-}
-@keyframes gradientBG { 0% {background-position:0% 50%;} 50% {background-position:100% 50%;} 100% {background-position:0% 50%;} }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إدارة الطلاب - مدرسة القرآن الكريم</title>
+    <style>
+        :root {
+            --primary: #2c3e50; --secondary: #27ae60; --accent: #e67e22;
+            --danger: #c0392b; --light: #ecf0f1; --border: #dde3ed;
+            --text: #1f2d3d; --text-muted: #7a8fa6; --surface: #ffffff;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-/* شاشة الترحيب */
-#welcome-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  display: flex; align-items: center; justify-content: center;
-  padding: 20px; background: linear-gradient(135deg, rgba(26,58,92,0.97), rgba(41,128,185,0.97));
-}
-.welcome-card {
-  background: rgba(255,255,255,0.98); border-radius: 24px;
-  padding: 45px 35px; max-width: 550px; width: 100%;
-  text-align: center; box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-  border: 3px solid var(--accent); position: relative; overflow: hidden;
-  animation: fadeIn 0.6s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-.welcome-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
-  background: linear-gradient(90deg, var(--secondary), var(--accent), var(--primary));
-}
-.welcome-logo { font-size: 4em; margin-bottom: 10px; color: var(--primary); animation: pulse 2.5s infinite ease-in-out; display: inline-block; }
-@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
-.welcome-title { color: var(--primary); font-size: 1.5em; font-weight: 800; margin: 8px 0 3px; }
-.welcome-subtitle { color: var(--accent); font-size: 1.2em; font-weight: 700; margin: 3px 0 18px; letter-spacing: 1.5px; }
-.welcome-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 18px 0 22px; }
-.platform-name { color: var(--primary); font-size: 1.45em; font-weight: 800; margin: 12px 0; line-height: 1.4; }
-.welcome-desc { color: var(--text-muted); font-size: 0.98em; margin: 20px 0 30px; line-height: 1.7; padding: 0 10px; }
-.btn-enter {
-  background: linear-gradient(135deg, var(--secondary), #1e8449);
-  color: white; padding: 18px 55px; border: none; border-radius: 55px;
-  font-size: 1.2em; font-weight: 700; cursor: pointer;
-  transition: all 0.35s ease; box-shadow: 0 6px 20px rgba(39,174,96,0.45);
-  font-family: inherit; display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
-}
-.btn-enter:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(39,174,96,0.65); }
-.welcome-footer { margin-top: 30px; padding-top: 18px; border-top: 1px dashed var(--border); font-size: 0.83em; color: var(--text-muted); }
-.welcome-footer strong { color: var(--primary); font-weight: 600; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            padding: 15px; min-height: 100vh;
+        }
+        @keyframes gradientBG { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
 
-/* المحتوى الرئيسي */
-#main-content { display: none; }
-.container { max-width: 1050px; margin: 0 auto; background: var(--surface); border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--light); }
-header h1 { color: var(--primary); font-size: 1.6em; font-weight: 700; }
-header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
+        /* === شاشة الترحيب === */
+        .welcome-screen {
+            position: fixed; inset: 0; z-index: 3000;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center; padding: 20px;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        .welcome-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .welcome-card {
+            background: white; padding: 40px 30px; border-radius: 25px;
+            text-align: center; max-width: 420px; width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25); position: relative; overflow: hidden;
+        }
+        .welcome-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--secondary), var(--accent), var(--primary));
+        }
+        .welcome-img { width: 110px; height: auto; margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)); }
+        .welcome-card h2 { color: #555; margin: 5px 0; font-size: 1.05em; font-weight: 600; }
+        .welcome-card h3 { color: #444; margin: 5px 0; font-size: 1.2em; font-weight: 700; }
+        .welcome-card h4 { color: #666; margin: 5px 0 15px; font-size: 0.95em; }
+        .welcome-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); margin: 18px auto; width: 70%; }
+        .welcome-card h1 { color: var(--primary); margin: 10px 0 5px; font-size: 1.6em; font-weight: 800; }
+        .platform-name { color: var(--secondary); font-weight: 700; margin: 5px 0 25px; font-size: 1.1em; }
+        .btn-enter {
+            background: linear-gradient(135deg, var(--primary), #34495e); color: white;
+            padding: 15px; border-radius: 12px; width: 100%; font-size: 1.1em;
+            cursor: pointer; border: none; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(44,62,80,0.3); transition: all 0.3s;
+        }
+        .btn-enter:hover { transform: translateY(-2px); }
+        .btn-enter:active { transform: scale(0.98); }
 
-/* شريط الأدوات والفلترة */
-.toolbar {
-  display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 12px;
-  background: var(--light); padding: 16px; border-radius: var(--r); margin-bottom: 20px; align-items: end;
-}
-.toolbar input, .toolbar select {
-  width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px;
-  font-size: 15px; font-family: inherit; background: white; color: var(--text); transition: border-color 0.2s;
-}
-.toolbar input:focus, .toolbar select:focus { border-color: var(--primary); outline: none; }
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary), #0f2840); color: white; padding: 12px 20px;
-  border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px;
-  transition: all 0.25s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: inherit; min-height: 48px;
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,58,92,0.3); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        /* === الواجهة الرئيسية === */
+        .container { max-width: 680px; margin: 0 auto; display: none; }
 
-/* الجدول */
-.table-wrapper { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); background: white; }
-.data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
-.data-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: right; font-weight: 600; font-size: 0.9em; white-space: nowrap; }
-.data-table td { padding: 12px 16px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
-.data-table tr:hover td { background: #f8fafd; }
-.data-table tr:last-child td { border-bottom: none; }
-.badge { padding: 4px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 700; display: inline-block; }
-.badge-a { background: var(--primary-light); color: var(--primary); } .badge-b { background: var(--accent-light); color: var(--accent); }
-.action-btns { display: flex; gap: 8px; }
-.btn-icon { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 1.1em; }
-.btn-edit { background: #e8f0f8; color: #1a5f8a; } .btn-edit:hover { background: #d0e2f0; }
-.btn-delete { background: #fdedec; color: var(--danger); } .btn-delete:hover { background: #f8d7da; }
-.empty-state { text-align: center; padding: 35px; color: var(--text-muted); }
-.empty-state span { font-size: 2.5em; display: block; margin-bottom: 10px; opacity: 0.6; }
+        .page-header {
+            background: white; border-radius: 16px; padding: 18px 22px;
+            margin-bottom: 14px; box-shadow: var(--shadow);
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        }
+        .page-header h1 { color: var(--primary); font-size: 1.25em; font-weight: 800; margin-bottom: 3px; }
+        .page-header p { color: var(--text-muted); font-size: 0.83em; }
 
-/* النافذة المنبثقة (Modal) */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(10,25,45,0.65); backdrop-filter: blur(3px);
-  display: none; align-items: center; justify-content: center; z-index: 8000; padding: 20px;
-  opacity: 0; transition: opacity 0.3s ease;
-}
-.modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-card {
-  background: white; padding: 28px; border-radius: 18px; width: 100%; max-width: 600px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.35); transform: translateY(20px); transition: transform 0.35s ease;
-  max-height: 90vh; overflow-y: auto;
-}
-.modal-overlay.active .modal-card { transform: translateY(0); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.modal-header h3 { color: var(--primary); font-size: 1.25em; }
-.close-btn { background: none; border: none; font-size: 1.4em; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
-.close-btn:hover { color: var(--danger); }
+        /* فلاتر */
+        .filters-bar {
+            background: white; border-radius: 14px; padding: 14px 18px;
+            margin-bottom: 14px; box-shadow: var(--shadow);
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+        }
+        .filters-bar select, .filters-bar input {
+            padding: 11px 14px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 14px; font-family: inherit; background: #f8f9fa;
+            color: var(--text); transition: border-color 0.2s; flex: 1; min-width: 130px;
+        }
+        .filters-bar select:focus, .filters-bar input:focus { border-color: var(--primary); outline: none; background: white; }
 
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group.full-width { grid-column: span 2; }
-.form-group label { font-weight: 600; color: var(--primary); font-size: 0.9em; }
-.form-group input, .form-group select, .form-group textarea {
-  padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px;
-  font-family: inherit; background: #fafbfc; transition: all 0.2s;
-}
-.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
-.modal-actions { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
-.btn-secondary { background: var(--light); color: var(--text); padding: 12px 24px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
-.btn-secondary:hover { background: #e5e9f0; }
+        /* بطاقة الإضافة */
+        .add-card {
+            background: white; border-radius: 16px; padding: 20px 22px;
+            margin-bottom: 14px; box-shadow: var(--shadow);
+            border-right: 4px solid var(--secondary); display: none;
+        }
+        .add-card.open { display: block; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        .add-card h3 { color: var(--primary); font-size: 1em; font-weight: 700; margin-bottom: 16px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.83em; font-weight: 700; color: var(--primary); }
+        .form-group input, .form-group select {
+            padding: 11px 13px; border: 2px solid var(--border); border-radius: 10px;
+            font-size: 14px; font-family: inherit; background: #f8f9fa; color: var(--text);
+            transition: all 0.2s; width: 100%;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--secondary); outline: none; background: white; }
+        .form-group input.error, .form-group select.error { border-color: var(--danger); background: #fff5f5; }
+        .form-actions { display: flex; gap: 10px; }
 
-/* إشعارات Toast */
-.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: white; padding: 14px 22px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px; font-weight: 600; opacity: 0; pointer-events: none; transition: all 0.35s ease; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-.toast.success { border-right: 5px solid var(--secondary); color: #155724; background: #d4edda; }
-.toast.error { border-right: 5px solid var(--danger); color: #721c24; background: #f8d7da; }
+        /* أزرار */
+        .btn {
+            padding: 11px 20px; border: none; border-radius: 10px; font-size: 14px;
+            font-weight: 700; cursor: pointer; font-family: inherit;
+            display: inline-flex; align-items: center; gap: 7px;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-success { background: var(--secondary); color: white; }
+        .btn-success:hover { background: #1e8449; transform: translateY(-1px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-ghost { background: var(--light); color: var(--text); border: 2px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-sm { padding: 7px 13px; font-size: 13px; border-radius: 8px; }
+        .btn-icon { padding: 8px; width: 34px; height: 34px; justify-content: center; border-radius: 8px; }
 
-/* تأكيد الحذف */
-.confirm-modal .modal-card { max-width: 420px; text-align: center; }
-.confirm-icon { font-size: 3em; margin-bottom: 10px; }
-.confirm-btns { display: flex; gap: 10px; margin-top: 18px; }
-.confirm-btns button { flex: 1; }
+        /* قائمة الطلاب */
+        .students-card { background: white; border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; }
+        .students-header {
+            padding: 15px 20px; border-bottom: 2px solid var(--light);
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+        }
+        .students-header h3 { color: var(--primary); font-size: 0.98em; font-weight: 700; }
+        .students-count { background: var(--light); color: var(--text-muted); padding: 3px 12px; border-radius: 20px; font-size: 0.82em; font-weight: 600; }
 
-/* التجاوب مع الجوال */
-@media (max-width: 768px) {
-  body { padding: 10px; } .container { padding: 16px; }
-  .toolbar { grid-template-columns: 1fr; } .toolbar input, .toolbar select, .btn-primary { width: 100%; }
-  .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; }
-  .data-table { min-width: 100%; display: block; overflow-x: auto; }
-  .welcome-card { padding: 35px 25px; } .btn-enter { padding: 16px 45px; font-size: 1.1em; width: 100%; justify-content: center; }
-}
-</style>
+        .student-row {
+            display: flex; align-items: center; padding: 13px 20px;
+            border-bottom: 1px solid #f0f3f8; transition: background 0.2s; gap: 12px;
+        }
+        .student-row:last-child { border-bottom: none; }
+        .student-row:hover { background: #f8fafd; }
+
+        .student-num { color: var(--text-muted); font-size: 0.82em; font-weight: 600; width: 22px; flex-shrink: 0; }
+        .student-avatar {
+            width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85em; font-weight: 800; color: white;
+        }
+        .student-info { flex: 1; min-width: 0; }
+        .student-name { font-weight: 600; color: var(--text); font-size: 0.93em; }
+        .student-meta { font-size: 0.78em; color: var(--text-muted); margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .student-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .group-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.75em; font-weight: 700; }
+        .badge-a { background: #e8f0f8; color: #1a3a5c; }
+        .badge-b { background: #fef5ec; color: #a0530a; }
+
+        /* صف التعديل المضمّن */
+        .edit-row {
+            background: #f0f7ff; padding: 14px 20px;
+            border-bottom: 1px solid #c8dff5; display: none;
+            border-right: 3px solid var(--accent);
+        }
+        .edit-row.open { display: block; animation: slideDown 0.25s ease; }
+        .edit-form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
+        .edit-form-row label { font-size: 0.78em; font-weight: 700; color: var(--primary); display: block; margin-bottom: 5px; }
+        .edit-form-row input, .edit-form-row select {
+            padding: 10px 12px; border: 2px solid var(--border); border-radius: 9px;
+            font-size: 13px; font-family: inherit; background: white;
+            transition: border-color 0.2s; width: 100%;
+        }
+        .edit-form-row input:focus, .edit-form-row select:focus { border-color: var(--accent); outline: none; }
+        .edit-btns { display: flex; gap: 6px; }
+
+        /* حالات */
+        .empty-state { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+        .empty-icon { font-size: 3em; margin-bottom: 12px; opacity: 0.4; }
+        .loading-state { text-align: center; padding: 35px; color: var(--text-muted); }
+        .spinner { width: 32px; height: 32px; border: 3px solid var(--light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 0 auto 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: white; border-radius: 12px; padding: 13px 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+            display: flex; align-items: center; gap: 10px;
+            font-weight: 600; font-size: 0.9em; z-index: 9999;
+            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            border-right: 4px solid var(--secondary); min-width: 240px;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.t-error { border-color: var(--danger); }
+        .toast.t-warning { border-color: var(--accent); }
+
+        /* Modal الحذف */
+        .modal-overlay {
+            position: fixed; inset: 0; z-index: 4000;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+            display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: white; border-radius: 20px; padding: 30px;
+            max-width: 370px; width: 100%;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.25); text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+        .modal-icon { font-size: 3em; margin-bottom: 12px; }
+        .modal-card h3 { color: var(--primary); margin-bottom: 10px; font-size: 1.1em; }
+        .modal-card p { color: var(--text-muted); font-size: 0.9em; line-height: 1.6; margin-bottom: 22px; }
+        .modal-actions { display: flex; gap: 10px; }
+        .modal-actions .btn { flex: 1; justify-content: center; padding: 13px; }
+
+        @media (max-width: 550px) {
+            .form-row { grid-template-columns: 1fr; }
+            .edit-form-row { grid-template-columns: 1fr 1fr; }
+            .edit-form-row .edit-btns { grid-column: 1/-1; }
+            .filters-bar { flex-direction: column; }
+            .filters-bar select, .filters-bar input { min-width: 100%; }
+        }
+    </style>
 </head>
 <body>
 
 <!-- شاشة الترحيب -->
-<div id="welcome-screen">
-  <div class="welcome-card">
-    <div class="welcome-logo">🇴🇲</div>
-    <h1 class="welcome-title">سلطنة عُمان</h1>
-    <div class="welcome-subtitle">محافظة ظفار</div>
-    <div class="welcome-divider"></div>
-    <h2 class="platform-name">إدارة بيانات الطلاب</h2>
-    <p class="welcome-desc">نظام متكامل لإدارة سجلات الطلاب<br><strong>إضافة • تعديل • حذف • تصدير</strong></p>
-    <button type="button" id="enterBtn" class="btn-enter"><span>🚀</span><span>دخول المنصة</span></button>
-    <div class="welcome-footer">© 2026 <strong>مدرسة تحفيظ القرآن الكريم</strong> • جميع الحقوق محفوظة</div>
-  </div>
+<div id="welcomeScreen" class="welcome-screen">
+    <div class="welcome-card">
+        <img src="https://raw.githubusercontent.com/faissaltunisia/projetquranschool/main/quran.jpg" alt="شعار المدرسة" class="welcome-img">
+        <h2>سلطنة عُمان</h2>
+        <h3>وزارة التربية والتعليم</h3>
+        <h4>محافظة ظفار</h4>
+        <div class="welcome-divider"></div>
+        <h1>مدرسة القرآن الكريم</h1>
+        <p class="platform-name">إدارة بيانات الطلاب</p>
+        <button class="btn-enter" id="enterBtn">دخول المنصة</button>
+    </div>
 </div>
 
-<!-- المحتوى الرئيسي -->
-<div id="main-content">
-  <div class="container">
-    <header>
-      <h1>🎓 إدارة بيانات الطلاب</h1>
-      <p>قاعدة بيانات شاملة ومحدثة لجميع المتعلمين</p>
-    </header>
+<!-- الواجهة الرئيسية -->
+<div class="container" id="mainContent">
 
-    <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="🔍 بحث باسم الطالب أو الرقم التعريفي...">
-      <select id="filterGroup" onchange="applyFilters()"><option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
-      <select id="filterSection" onchange="applyFilters()"><option value="">🏫 كل الشعب</option></select>
-      <button class="btn-primary" onclick="openModal('add')">➕ إضافة طالب</button>
-    </div>
-
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead><tr><th width="80">#</th><th>اسم الطالب</th><th>المجموعة</th><th>الشعبة</th><th>الهاتف</th><th width="110">الإجراءات</th></tr></thead>
-        <tbody id="studentsTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- نافذة الإضافة/التعديل -->
-<div id="studentModal" class="modal-overlay">
-  <div class="modal-card">
-    <div class="modal-header">
-      <h3 id="modalTitle">➕ إضافة طالب جديد</h3>
-      <button class="close-btn" onclick="closeModal()">✕</button>
-    </div>
-    <form id="studentForm" onsubmit="handleFormSubmit(event)">
-      <input type="hidden" id="editId">
-      <div class="form-grid">
-        <div class="form-group full-width"><label>الاسم الرباعي *</label><input type="text" id="fullName" required placeholder="أدخل الاسم كاملًا"></div>
-        <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="phone" placeholder="9XXXXXXX"></div>
-        <div class="form-group"><label>المجموعة *</label>
-          <select id="modalGroup" required onchange="updateModalSections()"><option value="">اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+    <div class="page-header">
+        <div>
+            <h1>👨‍🎓 إدارة الطلاب</h1>
+            <p id="headerSub">جاري تحميل البيانات...</p>
         </div>
-        <div class="form-group"><label>الشعبة *</label><select id="modalSection" required><option value="">اختر الشعبة أولاً</option></select></div>
-        <div class="form-group full-width"><label>ملاحظات إدارية</label><textarea id="notes" rows="3" placeholder="أي ملاحظات خاصة بالحالة الصحية أو الدراسية..."></textarea></div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
-        <button type="submit" class="btn-primary" id="saveBtn">💾 حفظ البيانات</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- نافذة تأكيد الحذف -->
-<div id="deleteModal" class="modal-overlay confirm-modal">
-  <div class="modal-card">
-    <div class="confirm-icon">⚠️</div>
-    <h3 style="color:var(--danger);margin-bottom:8px;">تأكيد الحذف</h3>
-    <p style="color:var(--text-muted);line-height:1.6;">هل أنت متأكد من حذف هذا الطالب نهائياً؟<br>لا يمكن التراجع عن هذا الإجراء.</p>
-    <div class="confirm-btns">
-      <button class="btn-secondary" onclick="closeDeleteModal()">إلغاء</button>
-      <button class="btn-primary" style="background:var(--danger);" onclick="confirmDelete()">نعم، احذف</button>
+        <div style="display:flex;gap:8px">
+            <button class="btn btn-success" onclick="toggleAddForm()">➕ إضافة طالب</button>
+            <button class="btn btn-ghost btn-icon" onclick="loadAllData()" title="تحديث">🔄</button>
+        </div>
     </div>
-  </div>
+
+    <!-- بطاقة الإضافة -->
+    <div class="add-card" id="addCard">
+        <h3>➕ إضافة طالب جديد</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label>👤 اسم الطالب *</label>
+                <input type="text" id="addName" placeholder="الاسم الكامل">
+            </div>
+            <div class="form-group">
+                <label>👥 المجموعة *</label>
+                <select id="addGroup" onchange="onAddGroupChange()">
+                    <option value="">-- اختر --</option>
+                    <option value="أ">المجموعة (أ)</option>
+                    <option value="ب">المجموعة (ب)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📋 الشعبة *</label>
+                <select id="addSection" disabled>
+                    <option value="">-- اختر المجموعة أولاً --</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" id="addBtn" onclick="addStudent()">💾 حفظ الطالب</button>
+            <button class="btn btn-ghost" onclick="toggleAddForm()">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- فلاتر -->
+    <div class="filters-bar">
+        <input type="text" id="searchInput" placeholder="🔍 ابحث باسم الطالب..." oninput="renderStudents()">
+        <select id="filterGroup" onchange="onFilterGroupChange()">
+            <option value="">📁 كل المجموعات</option>
+            <option value="أ">المجموعة (أ)</option>
+            <option value="ب">المجموعة (ب)</option>
+        </select>
+        <select id="filterSection" onchange="renderStudents()">
+            <option value="">🏫 كل الشعب</option>
+        </select>
+    </div>
+
+    <!-- قائمة الطلاب -->
+    <div class="students-card">
+        <div class="students-header">
+            <h3 id="listTitle">جميع الطلاب</h3>
+            <span class="students-count" id="listCount">—</span>
+        </div>
+        <div id="studentsList">
+            <div class="loading-state"><div class="spinner"></div><p>جاري التحميل...</p></div>
+        </div>
+    </div>
+
 </div>
 
-<!-- إشعارات -->
-<div id="toast" class="toast"><span id="toastIcon">✅</span><span id="toastMsg">تمت العملية بنجاح</span></div>
+<!-- Modal الحذف -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-icon">🗑️</div>
+        <h3>تأكيد الحذف</h3>
+        <p id="deleteMsg">هل أنت متأكد؟</p>
+        <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeDeleteModal()">إلغاء</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">حذف نهائياً</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">تم</span>
+</div>
 
 <script>
-// === إدارة الحالة والبيانات ===
-let studentsData = [];
-let currentDeleteId = null;
-const sectionsMap = { 'أ': ['التحفيظ الأول', 'التلاوة المتقدمة', 'القواعد الأساسية'], 'ب': ['المراجعة المكثفة', 'حفظ الأجزاء', 'التجويد التطبيقي'] };
-
-// === دوال مساعدة ===
 const $ = id => document.getElementById(id);
-const showToast = (msg, type='success') => {
-  const t = $('toast'); $('toastMsg').textContent = msg; $('toastIcon').textContent = type==='success'?'✅':'❌';
-  t.className = `toast ${type}`;
-  setTimeout(()=>t.classList.add('show'), 10);
-  setTimeout(()=>t.classList.remove('show'), 3000);
-};
-const escapeHtml = s => s ? String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]) : '';
-const generateId = () => 'STU-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+let dataA = null;
+let dataB = null;
+let openEditId = null;
+let deleteTarget = null;
+let toastTimer = null;
 
-// === الانتقال من الترحيب ===
+// ======= الترحيب =======
 $('enterBtn').addEventListener('click', () => {
-  const w = $('welcome-screen'), m = $('main-content');
-  w.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-  w.style.opacity = '0'; w.style.transform = 'scale(0.98)';
-  setTimeout(()=>{ w.style.display='none'; m.style.display='block'; loadStudents(); }, 400);
+    $('welcomeScreen').classList.add('hidden');
+    $('mainContent').style.display = 'block';
+    loadAllData();
 });
 
-// === تحميل وعرض البيانات ===
-async function loadStudents() {
-  // 📌 استبدل هذا الجزء بـ fetch('/api/get-students') عند الربط مع الخادم
-  // محاكاة بيانات أولية
-  studentsData = [
-    { id: 'STU-1A2B', name: 'أحمد بن سالم الراشدي', group: 'أ', section: 'التحفيظ الأول', phone: '91234567', notes: '' },
-    { id: 'STU-9C8D', name: 'محمد بن علي الحارثي', group: 'ب', section: 'المراجعة المكثفة', phone: '99887766', notes: 'يحتاج متابعة في التجويد' },
-    { id: 'STU-3F4G', name: 'يوسف بن خالد البلوشي', group: 'أ', section: 'القواعد الأساسية', phone: '95554433', notes: '' }
-  ];
-  updateSectionDropdowns();
-  renderTable(studentsData);
-}
-
-function updateSectionDropdowns() {
-  const fill = (selId, data) => { const s = $(selId); s.innerHTML = '<option value="">🏫 كل الشعب</option>'; data.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; s.appendChild(o); }); };
-  fill('filterSection', [...new Set(studentsData.map(s=>s.section))]);
-}
-
-function renderTable(data) {
-  const tbody = $('studentsTableBody');
-  if (!data.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span>📭</span>لا توجد نتائج مطابقة</td></tr>`; return; }
-  tbody.innerHTML = data.map((s, i) => `
-    <tr>
-      <td><span style="font-weight:700;color:var(--primary)">${i+1}</span></td>
-      <td><strong>${escapeHtml(s.name)}</strong><div style="font-size:0.78em;color:var(--text-muted);margin-top:2px">${s.id}</div></td>
-      <td><span class="badge badge-${s.group==='أ'?'a':'b'}">المجموعة ${s.group}</span></td>
-      <td>${escapeHtml(s.section)}</td>
-      <td dir="ltr" style="text-align:right">${escapeHtml(s.phone) || '—'}</td>
-      <td>
-        <div class="action-btns">
-          <button class="btn-icon btn-edit" onclick="openModal('edit', '${s.id}')" title="تعديل">✏️</button>
-          <button class="btn-icon btn-delete" onclick="openDeleteModal('${s.id}')" title="حذف">🗑️</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-}
-
-// === الفلترة والبحث ===
-$('searchInput').addEventListener('input', applyFilters);
-function applyFilters() {
-  const q = $('searchInput').value.toLowerCase().trim();
-  const g = $('filterGroup').value, sec = $('filterSection').value;
-  const filtered = studentsData.filter(s => {
-    const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
-    const matchG = !g || s.group === g;
-    const matchS = !sec || s.section === sec;
-    return matchQ && matchG && matchS;
-  });
-  renderTable(filtered);
-}
-
-// === النافذة المنبثقة (إضافة/تعديل) ===
-function openModal(mode, id = null) {
-  const m = $('studentModal'), t = $('modalTitle'), f = $('studentForm');
-  m.style.display = 'flex'; setTimeout(()=>m.classList.add('active'), 10);
-  f.reset(); $('editId').value = '';
-
-  if (mode === 'add') {
-    t.textContent = '➕ إضافة طالب جديد';
-    updateModalSections();
-  } else {
-    t.textContent = '✏️ تعديل بيانات الطالب';
-    const stu = studentsData.find(s => s.id === id);
-    if (stu) {
-      $('editId').value = stu.id; $('fullName').value = stu.name; $('phone').value = stu.phone;
-      $('modalGroup').value = stu.group; updateModalSections(); $('modalSection').value = stu.section;
-      $('notes').value = stu.notes || '';
+// ======= تحميل البيانات =======
+async function loadAllData() {
+    $('studentsList').innerHTML = `<div class="loading-state"><div class="spinner"></div><p>جاري تحميل البيانات...</p></div>`;
+    try {
+        const [rA, rB] = await Promise.all([
+            fetch('/api/get-section?group=أ').then(r => { if(!r.ok) throw new Error('فشل تحميل المجموعة أ'); return r.json(); }),
+            fetch('/api/get-section?group=ب').then(r => { if(!r.ok) throw new Error('فشل تحميل المجموعة ب'); return r.json(); })
+        ]);
+        dataA = rA;
+        dataB = rB;
+        updateHeaderSub();
+        populateFilterSections();
+        renderStudents();
+    } catch(e) {
+        $('studentsList').innerHTML = `<div class="empty-state"><div class="empty-icon">❌</div><p>فشل التحميل: ${e.message}</p></div>`;
+        showToast('❌ ' + e.message, 'error');
     }
-  }
-}
-function closeModal() {
-  const m = $('studentModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300);
-}
-function updateModalSections() {
-  const g = $('modalGroup').value, sel = $('modalSection');
-  sel.innerHTML = '<option value="">اختر الشعبة</option>';
-  if (sectionsMap[g]) sectionsMap[g].forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
 }
 
-// === حفظ البيانات ===
-async function handleFormSubmit(e) {
-  e.preventDefault();
-  const btn = $('saveBtn'); btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
-  const isEdit = !!$('editId').value;
-  const data = {
-    id: isEdit ? $('editId').value : generateId(),
-    name: $('fullName').value.trim(),
-    group: $('modalGroup').value,
-    section: $('modalSection').value,
-    phone: $('phone').value.trim(),
-    notes: $('notes').value.trim()
-  };
-
-  // 📌 استبدل بـ fetch('/api/save-student', { method:'POST', body:JSON.stringify(data) })
-  setTimeout(()=>{
-    if (isEdit) {
-      const idx = studentsData.findIndex(s => s.id === data.id);
-      if (idx > -1) studentsData[idx] = data;
-      showToast('تم تحديث البيانات بنجاح');
-    } else {
-      studentsData.unshift(data);
-      showToast('تمت إضافة الطالب بنجاح');
+// ======= حفظ عبر API =======
+async function saveData(group) {
+    const data = group === 'أ' ? dataA : dataB;
+    const res = await fetch('/api/update-students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ group, sections: data.sections })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `فشل الحفظ (${res.status})`);
     }
-    updateSectionDropdowns(); applyFilters(); closeModal(); btn.disabled = false; btn.textContent = '💾 حفظ البيانات';
-  }, 600);
+    return res.json();
 }
 
-// === حذف الطالب ===
-function openDeleteModal(id) { currentDeleteId = id; const m = $('deleteModal'); m.style.display='flex'; setTimeout(()=>m.classList.add('active'), 10); }
-function closeDeleteModal() { const m = $('deleteModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300); currentDeleteId = null; }
+// ======= مساعدات البيانات =======
+function getGroupData(g) { return g === 'أ' ? dataA : dataB; }
+
+function getAllStudentsFiltered() {
+    const gf = $('filterGroup').value;
+    const sf = $('filterSection').value;
+    const search = ($('searchInput').value || '').trim().toLowerCase();
+    const students = [];
+    const groups = gf ? [gf] : ['أ', 'ب'];
+    groups.forEach(g => {
+        (getGroupData(g)?.sections || []).forEach(sec => {
+            if (sf && sec.section_id !== sf) return;
+            (sec.students || []).forEach(s => {
+                students.push({ ...s, group: g, section_id: sec.section_id, section_label: sec.section_label || sec.section_id });
+            });
+        });
+    });
+    return search ? students.filter(s => (s.name || '').toLowerCase().includes(search)) : students;
+}
+
+function totalStudents() {
+    return [...(dataA?.sections || []), ...(dataB?.sections || [])].reduce((a, s) => a + (s.students || []).length, 0);
+}
+
+function updateHeaderSub() {
+    $('headerSub').textContent = `إجمالي الطلاب: ${totalStudents()} — مدرسة القرآن الكريم`;
+}
+
+// ======= فلترة الشعب =======
+function populateFilterSections() {
+    const g = $('filterGroup').value;
+    const sel = $('filterSection');
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">🏫 كل الشعب</option>';
+    const sections = g
+        ? (getGroupData(g)?.sections || [])
+        : [...(dataA?.sections || []), ...(dataB?.sections || [])];
+    sections.forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.section_id;
+        o.textContent = s.section_label || s.section_id;
+        sel.appendChild(o);
+    });
+    if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+}
+
+function onFilterGroupChange() { populateFilterSections(); renderStudents(); }
+
+// ======= عرض الطلاب =======
+function renderStudents() {
+    if (!dataA && !dataB) return;
+    const students = getAllStudentsFiltered();
+    const gf = $('filterGroup').value;
+    const sf = $('filterSection').value;
+
+    let title = 'جميع الطلاب';
+    if (sf) {
+        const allSecs = [...(dataA?.sections||[]), ...(dataB?.sections||[])];
+        const sec = allSecs.find(s => s.section_id === sf);
+        title = sec?.section_label || sf;
+    } else if (gf) {
+        title = `المجموعة (${gf})`;
+    }
+    $('listTitle').textContent = title;
+    $('listCount').textContent = `${students.length} طالب`;
+
+    if (!students.length) {
+        $('studentsList').innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><p>لا يوجد طلاب مطابقون</p></div>`;
+        return;
+    }
+
+    $('studentsList').innerHTML = students.map((stu, i) => {
+        const initials = (stu.name || '?').split(' ').slice(0, 2).map(w => w[0] || '').join('');
+        const color = avatarColor(stu.name);
+        // استخدام index بدلاً من id لتجنب مشاكل CSS.escape
+        const key = `s${i}`;
+        return `<div>
+            <div class="student-row">
+                <span class="student-num">${i + 1}</span>
+                <div class="student-avatar" style="background:${color}">${initials}</div>
+                <div class="student-info">
+                    <div class="student-name">${escH(stu.name)}</div>
+                    <div class="student-meta">
+                        <span class="group-badge ${stu.group === 'أ' ? 'badge-a' : 'badge-b'}">المجموعة ${escH(stu.group)}</span>
+                        <span>${escH(stu.section_label)}</span>
+                    </div>
+                </div>
+                <div class="student-actions">
+                    <button class="btn btn-ghost btn-sm btn-icon"
+                        onclick="toggleEdit('${key}','${escH(stu.id)}','${escH(stu.group)}','${escH(stu.section_id)}')"
+                        title="تعديل">✏️</button>
+                    <button class="btn btn-sm btn-icon"
+                        style="background:#fff0ee;color:var(--danger);border:1px solid #fcc"
+                        onclick="openDeleteModal('${escH(stu.id)}','${escH(stu.group)}','${escH(stu.section_id)}','${escH(stu.name)}')"
+                        title="حذف">🗑️</button>
+                </div>
+            </div>
+            <div class="edit-row" id="edit-${key}">
+                <div class="edit-form-row">
+                    <div>
+                        <label>👤 الاسم</label>
+                        <input type="text" id="ename-${key}" value="${escH(stu.name)}" placeholder="اسم الطالب">
+                    </div>
+                    <div>
+                        <label>👥 المجموعة</label>
+                        <select id="egroup-${key}" onchange="onEditGroupChange('${key}')">
+                            <option value="أ" ${stu.group === 'أ' ? 'selected' : ''}>المجموعة (أ)</option>
+                            <option value="ب" ${stu.group === 'ب' ? 'selected' : ''}>المجموعة (ب)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>📋 الشعبة</label>
+                        <select id="esec-${key}">${buildSectionOptions(stu.group, stu.section_id)}</select>
+                    </div>
+                    <div class="edit-btns">
+                        <button class="btn btn-success btn-sm" id="esave-${key}"
+                            onclick="saveEdit('${key}','${escH(stu.id)}','${escH(stu.group)}','${escH(stu.section_id)}')">💾</button>
+                        <button class="btn btn-ghost btn-sm" onclick="toggleEdit(null)">✕</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    if (openEditId) {
+        const el = $(`edit-${openEditId}`);
+        if (el) el.classList.add('open');
+    }
+}
+
+function buildSectionOptions(group, currentSecId) {
+    return (getGroupData(group)?.sections || [])
+        .map(s => `<option value="${escH(s.section_id)}" ${s.section_id === currentSecId ? 'selected' : ''}>${escH(s.section_label || s.section_id)}</option>`)
+        .join('');
+}
+
+function onEditGroupChange(key) {
+    const g = $(`egroup-${key}`).value;
+    $(`esec-${key}`).innerHTML = buildSectionOptions(g, '');
+}
+
+// ======= فتح / إغلاق التعديل =======
+function toggleEdit(key, stuId, group, secId) {
+    if (openEditId) {
+        const prev = $(`edit-${openEditId}`);
+        if (prev) prev.classList.remove('open');
+    }
+    if (!key || openEditId === key) { openEditId = null; return; }
+    openEditId = key;
+    const el = $(`edit-${key}`);
+    if (el) el.classList.add('open');
+}
+
+// ======= حفظ التعديل =======
+async function saveEdit(key, stuId, origGroup, origSecId) {
+    const newName  = $(`ename-${key}`).value.trim();
+    const newGroup = $(`egroup-${key}`).value;
+    const newSecId = $(`esec-${key}`).value;
+
+    if (!newName || !newGroup || !newSecId) return showToast('⚠️ أكمل جميع الحقول', 'warning');
+
+    const btn = $(`esave-${key}`);
+    btn.textContent = '⏳'; btn.disabled = true;
+
+    try {
+        // حذف من المصدر
+        const srcData = getGroupData(origGroup);
+        const srcSec  = srcData.sections.find(s => s.section_id === origSecId);
+        if (!srcSec) throw new Error('الشعبة الأصلية غير موجودة');
+        srcSec.students = srcSec.students.filter(s => s.id !== stuId);
+
+        // إضافة للهدف
+        const dstData = getGroupData(newGroup);
+        const dstSec  = dstData.sections.find(s => s.section_id === newSecId);
+        if (!dstSec) throw new Error('الشعبة المستهدفة غير موجودة');
+        dstSec.students.push({ id: stuId, name: newName });
+
+        await saveData(origGroup);
+        if (origGroup !== newGroup) await saveData(newGroup);
+
+        openEditId = null;
+        updateHeaderSub();
+        renderStudents();
+        showToast('✅ تم تحديث بيانات الطالب');
+    } catch(e) {
+        showToast('❌ ' + e.message, 'error');
+        btn.textContent = '💾'; btn.disabled = false;
+    }
+}
+
+// ======= إضافة طالب =======
+function toggleAddForm() {
+    const card = $('addCard');
+    const isOpen = card.classList.contains('open');
+    card.classList.toggle('open');
+    if (!isOpen) {
+        $('addName').value = '';
+        $('addGroup').value = '';
+        $('addSection').innerHTML = '<option value="">-- اختر المجموعة أولاً --</option>';
+        $('addSection').disabled = true;
+        [$('addName'), $('addGroup'), $('addSection')].forEach(el => el.classList.remove('error'));
+        setTimeout(() => $('addName').focus(), 300);
+    }
+}
+
+function onAddGroupChange() {
+    const g   = $('addGroup').value;
+    const sel = $('addSection');
+    sel.innerHTML = '<option value="">-- اختر الشعبة --</option>';
+    sel.disabled = !g;
+    if (!g) return;
+    (getGroupData(g)?.sections || []).forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.section_id;
+        o.textContent = s.section_label || s.section_id;
+        sel.appendChild(o);
+    });
+}
+
+function generateId(group, sectionId) {
+    const data  = getGroupData(group);
+    const sec   = data?.sections.find(s => s.section_id === sectionId);
+    const count = (sec?.students || []).length + 1;
+    const prefix = sectionId
+        .replace(/\d+/, n => n)
+        .replace('أ','a').replace('ب','b')
+        .replace(/[^a-z0-9]/gi,'').toLowerCase();
+    return `${prefix}-${String(count).padStart(3, '0')}`;
+}
+
+async function addStudent() {
+    const name  = $('addName').value.trim();
+    const group = $('addGroup').value;
+    const secId = $('addSection').value;
+
+    let valid = true;
+    [$('addName'), $('addGroup'), $('addSection')].forEach(el => el.classList.remove('error'));
+    if (!name)  { $('addName').classList.add('error');    valid = false; }
+    if (!group) { $('addGroup').classList.add('error');   valid = false; }
+    if (!secId) { $('addSection').classList.add('error'); valid = false; }
+    if (!valid) return showToast('⚠️ أكمل جميع الحقول المطلوبة', 'warning');
+
+    const btn = $('addBtn');
+    btn.textContent = '⏳ جاري الحفظ...'; btn.disabled = true;
+
+    try {
+        const data = getGroupData(group);
+        const sec  = data.sections.find(s => s.section_id === secId);
+        if (!sec) throw new Error('الشعبة غير موجودة');
+
+        const newId = generateId(group, secId);
+        sec.students.push({ id: newId, name });
+
+        await saveData(group);
+
+        toggleAddForm();
+        updateHeaderSub();
+        populateFilterSections();
+        renderStudents();
+        showToast(`✅ تمت إضافة "${name}" بنجاح`);
+    } catch(e) {
+        // استرجاع البيانات في حالة الخطأ
+        await loadAllData();
+        showToast('❌ ' + e.message, 'error');
+    } finally {
+        btn.textContent = '💾 حفظ الطالب'; btn.disabled = false;
+    }
+}
+
+// ======= حذف طالب =======
+function openDeleteModal(stuId, group, secId, name) {
+    deleteTarget = { stuId, group, secId };
+    $('deleteMsg').innerHTML = `هل أنت متأكد من حذف الطالب:<br><strong style="color:var(--primary)">${escH(name)}</strong>؟<br><small style="color:var(--text-muted)">لا يمكن التراجع عن هذا الإجراء.</small>`;
+    $('deleteModal').classList.add('active');
+}
+
+function closeDeleteModal() { $('deleteModal').classList.remove('active'); deleteTarget = null; }
+
 async function confirmDelete() {
-  if (!currentDeleteId) return;
-  closeDeleteModal();
-  // 📌 استبدل بـ fetch('/api/delete-student/'+currentDeleteId, {method:'DELETE'})
-  setTimeout(()=>{
-    studentsData = studentsData.filter(s => s.id !== currentDeleteId);
-    updateSectionDropdowns(); applyFilters();
-    showToast('تم حذف السجل بنجاح', 'error');
-  }, 400);
+    if (!deleteTarget) return;
+    const { stuId, group, secId } = deleteTarget;
+    const btn = $('confirmDeleteBtn');
+    btn.textContent = '⏳ جاري الحذف...'; btn.disabled = true;
+
+    try {
+        const data = getGroupData(group);
+        const sec  = data.sections.find(s => s.section_id === secId);
+        if (!sec) throw new Error('الشعبة غير موجودة');
+        sec.students = sec.students.filter(s => s.id !== stuId);
+
+        await saveData(group);
+
+        closeDeleteModal();
+        updateHeaderSub();
+        renderStudents();
+        showToast('🗑️ تم حذف الطالب بنجاح');
+    } catch(e) {
+        await loadAllData();
+        showToast('❌ ' + e.message, 'error');
+        btn.textContent = 'حذف نهائياً'; btn.disabled = false;
+    }
 }
 
-// إغلاق النوافذ عند النقر خارجها
-document.addEventListener('click', e => {
-  if (e.target === $('studentModal')) closeModal();
-  if (e.target === $('deleteModal')) closeDeleteModal();
-});
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
+// ======= مساعدات =======
+function escH(t) {
+    if (t == null) return '';
+    return String(t).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]);
+}
+
+function avatarColor(name) {
+    const colors = ['#2c3e50','#27ae60','#e67e22','#8e44ad','#2980b9','#c0392b','#16a085','#d35400','#1a5276'];
+    let h = 0;
+    for (const c of (name || '')) h = c.charCodeAt(0) + h;
+    return colors[Math.abs(h) % colors.length];
+}
+
+function showToast(msg, type = 'success') {
+    clearTimeout(toastTimer);
+    const t = $('toast');
+    $('toastMsg').textContent = msg;
+    $('toastIcon').textContent = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '✅';
+    t.className = `toast ${type !== 'success' ? 't-' + type : ''} show`;
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+$('deleteModal').addEventListener('click', e => { if (e.target === $('deleteModal')) closeDeleteModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteModal(); });
 </script>
 </body>
 </html>
