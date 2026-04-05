@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>إدارة بيانات الطلاب - مدرسة تحفيظ القرآن</title>
+<style>
+:root {
+  --primary: #1a3a5c; --primary-light: #e8f0f8; --secondary: #27ae60; --secondary-light: #eafaf1;
+  --accent: #e67e22; --accent-light: #fef5ec; --danger: #c0392b; --danger-light: #fdedec;
+  --light: #f4f6f9; --border: #dde3ed; --text: #1f2d3d; --text-muted: #7a8fa6; --surface: #ffffff; --r: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
+  background: linear-gradient(135deg, #1a3a5c 0%, #2980b9 50%, #1a3a5c 100%);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+  padding: 20px; min-height: 100vh; -webkit-font-smoothing: antialiased; color: var(--text);
+}
+@keyframes gradientBG { 0% {background-position:0% 50%;} 50% {background-position:100% 50%;} 100% {background-position:0% 50%;} }
+
+/* شاشة الترحيب */
+#welcome-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; background: linear-gradient(135deg, rgba(26,58,92,0.97), rgba(41,128,185,0.97));
+}
+.welcome-card {
+  background: rgba(255,255,255,0.98); border-radius: 24px;
+  padding: 45px 35px; max-width: 550px; width: 100%;
+  text-align: center; box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+  border: 3px solid var(--accent); position: relative; overflow: hidden;
+  animation: fadeIn 0.6s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.welcome-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, var(--secondary), var(--accent), var(--primary));
+}
+.welcome-logo { font-size: 4em; margin-bottom: 10px; color: var(--primary); animation: pulse 2.5s infinite ease-in-out; display: inline-block; }
+@keyframes pulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.08);} }
+.welcome-title { color: var(--primary); font-size: 1.5em; font-weight: 800; margin: 8px 0 3px; }
+.welcome-subtitle { color: var(--accent); font-size: 1.2em; font-weight: 700; margin: 3px 0 18px; letter-spacing: 1.5px; }
+.welcome-divider { height: 2px; background: linear-gradient(90deg, transparent, var(--border), transparent); margin: 18px 0 22px; }
+.platform-name { color: var(--primary); font-size: 1.45em; font-weight: 800; margin: 12px 0; line-height: 1.4; }
+.welcome-desc { color: var(--text-muted); font-size: 0.98em; margin: 20px 0 30px; line-height: 1.7; padding: 0 10px; }
+.btn-enter {
+  background: linear-gradient(135deg, var(--secondary), #1e8449);
+  color: white; padding: 18px 55px; border: none; border-radius: 55px;
+  font-size: 1.2em; font-weight: 700; cursor: pointer;
+  transition: all 0.35s ease; box-shadow: 0 6px 20px rgba(39,174,96,0.45);
+  font-family: inherit; display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+}
+.btn-enter:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(39,174,96,0.65); }
+.welcome-footer { margin-top: 30px; padding-top: 18px; border-top: 1px dashed var(--border); font-size: 0.83em; color: var(--text-muted); }
+.welcome-footer strong { color: var(--primary); font-weight: 600; }
+
+/* المحتوى الرئيسي */
+#main-content { display: none; }
+.container { max-width: 1050px; margin: 0 auto; background: var(--surface); border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+header { text-align: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--light); }
+header h1 { color: var(--primary); font-size: 1.6em; font-weight: 700; }
+header p { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; }
+
+/* شريط الأدوات والفلترة */
+.toolbar {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr auto; gap: 12px;
+  background: var(--light); padding: 16px; border-radius: var(--r); margin-bottom: 20px; align-items: end;
+}
+.toolbar input, .toolbar select {
+  width: 100%; padding: 12px 15px; border: 2px solid var(--border); border-radius: 8px;
+  font-size: 15px; font-family: inherit; background: white; color: var(--text); transition: border-color 0.2s;
+}
+.toolbar input:focus, .toolbar select:focus { border-color: var(--primary); outline: none; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), #0f2840); color: white; padding: 12px 20px;
+  border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 15px;
+  transition: all 0.25s; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit; min-height: 48px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,58,92,0.3); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* الجدول */
+.table-wrapper { overflow-x: auto; border-radius: var(--r); border: 1px solid var(--border); background: white; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.data-table th { background: var(--primary); color: white; padding: 14px 16px; text-align: right; font-weight: 600; font-size: 0.9em; white-space: nowrap; }
+.data-table td { padding: 12px 16px; border-bottom: 1px solid #eef0f4; font-size: 0.93em; color: var(--text); }
+.data-table tr:hover td { background: #f8fafd; }
+.data-table tr:last-child td { border-bottom: none; }
+.badge { padding: 4px 10px; border-radius: 12px; font-size: 0.78em; font-weight: 700; display: inline-block; }
+.badge-a { background: var(--primary-light); color: var(--primary); } .badge-b { background: var(--accent-light); color: var(--accent); }
+.action-btns { display: flex; gap: 8px; }
+.btn-icon { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; font-size: 1.1em; }
+.btn-edit { background: #e8f0f8; color: #1a5f8a; } .btn-edit:hover { background: #d0e2f0; }
+.btn-delete { background: #fdedec; color: var(--danger); } .btn-delete:hover { background: #f8d7da; }
+.empty-state { text-align: center; padding: 35px; color: var(--text-muted); }
+.empty-state span { font-size: 2.5em; display: block; margin-bottom: 10px; opacity: 0.6; }
+
+/* النافذة المنبثقة (Modal) */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,25,45,0.65); backdrop-filter: blur(3px);
+  display: none; align-items: center; justify-content: center; z-index: 8000; padding: 20px;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.modal-card {
+  background: white; padding: 28px; border-radius: 18px; width: 100%; max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.35); transform: translateY(20px); transition: transform 0.35s ease;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.active .modal-card { transform: translateY(0); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.modal-header h3 { color: var(--primary); font-size: 1.25em; }
+.close-btn { background: none; border: none; font-size: 1.4em; color: var(--text-muted); cursor: pointer; transition: color 0.2s; }
+.close-btn:hover { color: var(--danger); }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full-width { grid-column: span 2; }
+.form-group label { font-weight: 600; color: var(--primary); font-size: 0.9em; }
+.form-group input, .form-group select, .form-group textarea {
+  padding: 12px 14px; border: 2px solid var(--border); border-radius: 8px; font-size: 15px;
+  font-family: inherit; background: #fafbfc; transition: all 0.2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); background: white; outline: none; box-shadow: 0 0 0 3px rgba(26,58,92,0.08); }
+.modal-actions { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
+.btn-secondary { background: var(--light); color: var(--text); padding: 12px 24px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+.btn-secondary:hover { background: #e5e9f0; }
+
+/* إشعارات Toast */
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px); background: white; padding: 14px 22px; border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); z-index: 9999; display: flex; align-items: center; gap: 10px; font-weight: 600; opacity: 0; pointer-events: none; transition: all 0.35s ease; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.toast.success { border-right: 5px solid var(--secondary); color: #155724; background: #d4edda; }
+.toast.error { border-right: 5px solid var(--danger); color: #721c24; background: #f8d7da; }
+
+/* تأكيد الحذف */
+.confirm-modal .modal-card { max-width: 420px; text-align: center; }
+.confirm-icon { font-size: 3em; margin-bottom: 10px; }
+.confirm-btns { display: flex; gap: 10px; margin-top: 18px; }
+.confirm-btns button { flex: 1; }
+
+/* التجاوب مع الجوال */
+@media (max-width: 768px) {
+  body { padding: 10px; } .container { padding: 16px; }
+  .toolbar { grid-template-columns: 1fr; } .toolbar input, .toolbar select, .btn-primary { width: 100%; }
+  .form-grid { grid-template-columns: 1fr; } .form-group.full-width { grid-column: span 1; }
+  .data-table { min-width: 100%; display: block; overflow-x: auto; }
+  .welcome-card { padding: 35px 25px; } .btn-enter { padding: 16px 45px; font-size: 1.1em; width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- شاشة الترحيب -->
+<div id="welcome-screen">
+  <div class="welcome-card">
+    <div class="welcome-logo">🇴🇲</div>
+    <h1 class="welcome-title">سلطنة عُمان</h1>
+    <div class="welcome-subtitle">محافظة ظفار</div>
+    <div class="welcome-divider"></div>
+    <h2 class="platform-name">إدارة بيانات الطلاب</h2>
+    <p class="welcome-desc">نظام متكامل لإدارة سجلات الطلاب<br><strong>إضافة • تعديل • حذف • تصدير</strong></p>
+    <button type="button" id="enterBtn" class="btn-enter"><span>🚀</span><span>دخول المنصة</span></button>
+    <div class="welcome-footer">© 2026 <strong>مدرسة تحفيظ القرآن الكريم</strong> • جميع الحقوق محفوظة</div>
+  </div>
+</div>
+
+<!-- المحتوى الرئيسي -->
+<div id="main-content">
+  <div class="container">
+    <header>
+      <h1>🎓 إدارة بيانات الطلاب</h1>
+      <p>قاعدة بيانات شاملة ومحدثة لجميع المتعلمين</p>
+    </header>
+
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="🔍 بحث باسم الطالب أو الرقم التعريفي...">
+      <select id="filterGroup" onchange="applyFilters()"><option value="">📁 كل المجموعات</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+      <select id="filterSection" onchange="applyFilters()"><option value="">🏫 كل الشعب</option></select>
+      <button class="btn-primary" onclick="openModal('add')">➕ إضافة طالب</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th width="80">#</th><th>اسم الطالب</th><th>المجموعة</th><th>الشعبة</th><th>الهاتف</th><th width="110">الإجراءات</th></tr></thead>
+        <tbody id="studentsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الإضافة/التعديل -->
+<div id="studentModal" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="modalTitle">➕ إضافة طالب جديد</h3>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <form id="studentForm" onsubmit="handleFormSubmit(event)">
+      <input type="hidden" id="editId">
+      <div class="form-grid">
+        <div class="form-group full-width"><label>الاسم الرباعي *</label><input type="text" id="fullName" required placeholder="أدخل الاسم كاملًا"></div>
+        <div class="form-group"><label>رقم الهاتف</label><input type="tel" id="phone" placeholder="9XXXXXXX"></div>
+        <div class="form-group"><label>المجموعة *</label>
+          <select id="modalGroup" required onchange="updateModalSections()"><option value="">اختر المجموعة</option><option value="أ">المجموعة (أ)</option><option value="ب">المجموعة (ب)</option></select>
+        </div>
+        <div class="form-group"><label>الشعبة *</label><select id="modalSection" required><option value="">اختر الشعبة أولاً</option></select></div>
+        <div class="form-group full-width"><label>ملاحظات إدارية</label><textarea id="notes" rows="3" placeholder="أي ملاحظات خاصة بالحالة الصحية أو الدراسية..."></textarea></div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
+        <button type="submit" class="btn-primary" id="saveBtn">💾 حفظ البيانات</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- نافذة تأكيد الحذف -->
+<div id="deleteModal" class="modal-overlay confirm-modal">
+  <div class="modal-card">
+    <div class="confirm-icon">⚠️</div>
+    <h3 style="color:var(--danger);margin-bottom:8px;">تأكيد الحذف</h3>
+    <p style="color:var(--text-muted);line-height:1.6;">هل أنت متأكد من حذف هذا الطالب نهائياً؟<br>لا يمكن التراجع عن هذا الإجراء.</p>
+    <div class="confirm-btns">
+      <button class="btn-secondary" onclick="closeDeleteModal()">إلغاء</button>
+      <button class="btn-primary" style="background:var(--danger);" onclick="confirmDelete()">نعم، احذف</button>
+    </div>
+  </div>
+</div>
+
+<!-- إشعارات -->
+<div id="toast" class="toast"><span id="toastIcon">✅</span><span id="toastMsg">تمت العملية بنجاح</span></div>
+
+<script>
+// === إدارة الحالة والبيانات ===
+let studentsData = [];
+let currentDeleteId = null;
+const sectionsMap = { 'أ': ['التحفيظ الأول', 'التلاوة المتقدمة', 'القواعد الأساسية'], 'ب': ['المراجعة المكثفة', 'حفظ الأجزاء', 'التجويد التطبيقي'] };
+
+// === دوال مساعدة ===
+const $ = id => document.getElementById(id);
+const showToast = (msg, type='success') => {
+  const t = $('toast'); $('toastMsg').textContent = msg; $('toastIcon').textContent = type==='success'?'✅':'❌';
+  t.className = `toast ${type}`;
+  setTimeout(()=>t.classList.add('show'), 10);
+  setTimeout(()=>t.classList.remove('show'), 3000);
+};
+const escapeHtml = s => s ? String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'})[m]) : '';
+const generateId = () => 'STU-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+// === الانتقال من الترحيب ===
+$('enterBtn').addEventListener('click', () => {
+  const w = $('welcome-screen'), m = $('main-content');
+  w.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+  w.style.opacity = '0'; w.style.transform = 'scale(0.98)';
+  setTimeout(()=>{ w.style.display='none'; m.style.display='block'; loadStudents(); }, 400);
+});
+
+// === تحميل وعرض البيانات ===
+async function loadStudents() {
+  // 📌 استبدل هذا الجزء بـ fetch('/api/get-students') عند الربط مع الخادم
+  // محاكاة بيانات أولية
+  studentsData = [
+    { id: 'STU-1A2B', name: 'أحمد بن سالم الراشدي', group: 'أ', section: 'التحفيظ الأول', phone: '91234567', notes: '' },
+    { id: 'STU-9C8D', name: 'محمد بن علي الحارثي', group: 'ب', section: 'المراجعة المكثفة', phone: '99887766', notes: 'يحتاج متابعة في التجويد' },
+    { id: 'STU-3F4G', name: 'يوسف بن خالد البلوشي', group: 'أ', section: 'القواعد الأساسية', phone: '95554433', notes: '' }
+  ];
+  updateSectionDropdowns();
+  renderTable(studentsData);
+}
+
+function updateSectionDropdowns() {
+  const fill = (selId, data) => { const s = $(selId); s.innerHTML = '<option value="">🏫 كل الشعب</option>'; data.forEach(d => { const o=document.createElement('option'); o.value=d; o.textContent=d; s.appendChild(o); }); };
+  fill('filterSection', [...new Set(studentsData.map(s=>s.section))]);
+}
+
+function renderTable(data) {
+  const tbody = $('studentsTableBody');
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><span>📭</span>لا توجد نتائج مطابقة</td></tr>`; return; }
+  tbody.innerHTML = data.map((s, i) => `
+    <tr>
+      <td><span style="font-weight:700;color:var(--primary)">${i+1}</span></td>
+      <td><strong>${escapeHtml(s.name)}</strong><div style="font-size:0.78em;color:var(--text-muted);margin-top:2px">${s.id}</div></td>
+      <td><span class="badge badge-${s.group==='أ'?'a':'b'}">المجموعة ${s.group}</span></td>
+      <td>${escapeHtml(s.section)}</td>
+      <td dir="ltr" style="text-align:right">${escapeHtml(s.phone) || '—'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon btn-edit" onclick="openModal('edit', '${s.id}')" title="تعديل">✏️</button>
+          <button class="btn-icon btn-delete" onclick="openDeleteModal('${s.id}')" title="حذف">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// === الفلترة والبحث ===
+$('searchInput').addEventListener('input', applyFilters);
+function applyFilters() {
+  const q = $('searchInput').value.toLowerCase().trim();
+  const g = $('filterGroup').value, sec = $('filterSection').value;
+  const filtered = studentsData.filter(s => {
+    const matchQ = !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q);
+    const matchG = !g || s.group === g;
+    const matchS = !sec || s.section === sec;
+    return matchQ && matchG && matchS;
+  });
+  renderTable(filtered);
+}
+
+// === النافذة المنبثقة (إضافة/تعديل) ===
+function openModal(mode, id = null) {
+  const m = $('studentModal'), t = $('modalTitle'), f = $('studentForm');
+  m.style.display = 'flex'; setTimeout(()=>m.classList.add('active'), 10);
+  f.reset(); $('editId').value = '';
+
+  if (mode === 'add') {
+    t.textContent = '➕ إضافة طالب جديد';
+    updateModalSections();
+  } else {
+    t.textContent = '✏️ تعديل بيانات الطالب';
+    const stu = studentsData.find(s => s.id === id);
+    if (stu) {
+      $('editId').value = stu.id; $('fullName').value = stu.name; $('phone').value = stu.phone;
+      $('modalGroup').value = stu.group; updateModalSections(); $('modalSection').value = stu.section;
+      $('notes').value = stu.notes || '';
+    }
+  }
+}
+function closeModal() {
+  const m = $('studentModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300);
+}
+function updateModalSections() {
+  const g = $('modalGroup').value, sel = $('modalSection');
+  sel.innerHTML = '<option value="">اختر الشعبة</option>';
+  if (sectionsMap[g]) sectionsMap[g].forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; sel.appendChild(o); });
+}
+
+// === حفظ البيانات ===
+async function handleFormSubmit(e) {
+  e.preventDefault();
+  const btn = $('saveBtn'); btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+  const isEdit = !!$('editId').value;
+  const data = {
+    id: isEdit ? $('editId').value : generateId(),
+    name: $('fullName').value.trim(),
+    group: $('modalGroup').value,
+    section: $('modalSection').value,
+    phone: $('phone').value.trim(),
+    notes: $('notes').value.trim()
+  };
+
+  // 📌 استبدل بـ fetch('/api/save-student', { method:'POST', body:JSON.stringify(data) })
+  setTimeout(()=>{
+    if (isEdit) {
+      const idx = studentsData.findIndex(s => s.id === data.id);
+      if (idx > -1) studentsData[idx] = data;
+      showToast('تم تحديث البيانات بنجاح');
+    } else {
+      studentsData.unshift(data);
+      showToast('تمت إضافة الطالب بنجاح');
+    }
+    updateSectionDropdowns(); applyFilters(); closeModal(); btn.disabled = false; btn.textContent = '💾 حفظ البيانات';
+  }, 600);
+}
+
+// === حذف الطالب ===
+function openDeleteModal(id) { currentDeleteId = id; const m = $('deleteModal'); m.style.display='flex'; setTimeout(()=>m.classList.add('active'), 10); }
+function closeDeleteModal() { const m = $('deleteModal'); m.classList.remove('active'); setTimeout(()=>m.style.display='none', 300); currentDeleteId = null; }
+async function confirmDelete() {
+  if (!currentDeleteId) return;
+  closeDeleteModal();
+  // 📌 استبدل بـ fetch('/api/delete-student/'+currentDeleteId, {method:'DELETE'})
+  setTimeout(()=>{
+    studentsData = studentsData.filter(s => s.id !== currentDeleteId);
+    updateSectionDropdowns(); applyFilters();
+    showToast('تم حذف السجل بنجاح', 'error');
+  }, 400);
+}
+
+// إغلاق النوافذ عند النقر خارجها
+document.addEventListener('click', e => {
+  if (e.target === $('studentModal')) closeModal();
+  if (e.target === $('deleteModal')) closeDeleteModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeDeleteModal(); } });
+</script>
+</body>
+</html>
